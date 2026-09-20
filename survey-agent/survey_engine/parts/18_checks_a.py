@@ -599,6 +599,8 @@ def county_dropdown_regression_self_check() -> bool:
     else:
         logger.error("[SELF-CHECK] County failed closed=%s open=%s wrong=%s good=%s nxt=%s",
                      d_closed, d_open, d_wrong, d_good, nxt)
+    _COUNTY_SESSION["picked"] = False
+    _COUNTY_OPEN_TRIES.clear()
     return passed
 
 

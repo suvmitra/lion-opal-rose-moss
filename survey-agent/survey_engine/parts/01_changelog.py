@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.109": [
+        "County picked flag must not leak into later self-checks or unrelated screens.",
+        "RL replay of Hovis select-one works again after the county module.",
+    ],
     "24.0.108": [
         "Continue is the LOWEST orange bar (~y=910), never the selected county row at y=780 (Wexford).",
         "RL replay cannot click y=780 on a county list. Footer Continue is allowed at y>0.86.",

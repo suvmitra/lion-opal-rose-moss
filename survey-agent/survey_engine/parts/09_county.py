@@ -419,10 +419,8 @@ def county_picked_visual(obs: Observation) -> bool:
 
 
 def county_list_context(obs: Observation) -> bool:
-    """County list even when OCR is only the status bar."""
+    """County list even when OCR is only the status bar. Never a leaked picked flag."""
     if county_question_visible(obs.ocr_text) or county_dropdown_open(obs.ocr_text):
-        return True
-    if _COUNTY_SESSION.get("picked"):
         return True
     if len(visible_counties_in_ocr_order(obs.ocr_text)) >= 2:
         return True
