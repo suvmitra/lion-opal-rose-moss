@@ -416,6 +416,13 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 coords, (obs.image_width, obs.image_height), (obs.device_width, obs.device_height)
             )
             logger.info("[AUTH TAP] native=(%s,%s) from coords=%s text=%r", x, y, coords, target_text)
+            if (
+                str(decision.get("kb_key") or "") == "age"
+                and "continue" in str(target_text or "").lower()
+            ) or decision.get("dismiss_keyboard"):
+                adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
+                time.sleep(0.45)
+                logger.info("[AGE] Keyboard dismissed before Continue")
             if y <= int(obs.device_height * 0.18) and option_xy:
                 x, y = option_xy
         elif action == "select_matrix_cell" and isinstance(coords, list) and len(coords) == 2:

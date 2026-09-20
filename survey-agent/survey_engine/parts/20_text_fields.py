@@ -576,8 +576,20 @@ def adult_age_visible_digits(obs: Observation) -> str:
     return crop
 
 
+def keyboard_visible_on_survey(obs: Observation) -> bool:
+    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    return any(token in blob for token in (
+        "english (us)", "english(us)", "q w e r t y", "asdf",
+    )) or bool(re.search(r"1\s*2\s*3\s*4\s*5\s*6\s*7\s*8\s*9\s*0", blob))
+
+
 def adult_age_in_field(obs: Observation, wanted: str) -> bool:
-    return adult_age_visible_digits(obs) == str(wanted)
+    digits = adult_age_visible_digits(obs)
+    if digits == str(wanted):
+        return True
+    return bool(_AGE_SESSION.get("typed") and digits not in {"4444", "444"} and not (
+        digits.isdigit() and len(digits) > 2
+    ))
 
 
 def adult_age_field_coords(obs: Observation) -> list[int]:
@@ -592,26 +604,30 @@ def adult_age_field_coords(obs: Observation) -> list[int]:
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
-    for bar in orange_cta_milli(obs, 0.38, 0.54):
-        if 400 <= int(bar[1]) <= 520:
+    y1, y2 = (0.38, 0.64) if keyboard_visible_on_survey(obs) else (0.38, 0.54)
+    for bar in orange_cta_milli(obs, y1, y2):
+        if 400 <= int(bar[1]) <= 640:
             return [500, int(bar[1])]
     hit = gender_continue_milli(obs)
-    if hit and 400 <= int(hit[1]) <= 520:
+    if hit and 400 <= int(hit[1]) <= 640:
         return [500, int(hit[1])]
-    return [500, 470]
+    return [500, 520] if keyboard_visible_on_survey(obs) else [500, 470]
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Read the box, fix 4444 → 44, only then tap Continue."""
+    """Type 44 once. If it is in the box or we just typed it, hide keyboard and Continue."""
     if not adult_age_question_visible(obs.ocr_text):
         _AGE_SESSION["typed"] = False
         return None
     wanted = adult_age_payload(obs)
     digits = adult_age_visible_digits(obs)
-    error = digits.isdigit() and (len(digits) > 2 or int(digits) > 99)
-    ready = digits == wanted
-    logger.info("[AGE REASON] box=%r wanted=%s error=%s → %s",
-                digits, wanted, error, "continue" if ready else "replace")
+    too_big = bool(re.search(r"4{3,6}", digits or "")) or (
+        digits.isdigit() and (len(digits) > 2 or int(digits) > 99)
+    )
+    ready = (digits == wanted or bool(_AGE_SESSION.get("typed"))) and not too_big
+    logger.info("[AGE REASON] box=%r typed=%s kb=%s → %s",
+                digits, _AGE_SESSION.get("typed"), keyboard_visible_on_survey(obs),
+                "continue" if ready else "replace")
     if not ready:
         coords = adult_age_field_coords(obs)
         return {
@@ -619,12 +635,13 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "target_text": "age input field", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
             "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-            "answer_reason": f"Box shows {digits or 'empty'}; replace with {wanted} then Continue.",
+            "answer_reason": f"Box shows {digits or 'empty'}; type {wanted} once then Continue.",
         }
     coords = adult_age_continue_coords(obs)
     return {
         "screen_state": "survey_question", "action": "click", "target_text": "Continue",
         "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
         "confidence_score": 0.97, "postcondition": "screen changed",
-        "answer_reason": f"Age {wanted} is in the box; tap orange Continue.",
+        "answer_reason": f"Age {wanted} is entered; hide keyboard and tap Continue.",
+        "dismiss_keyboard": True,
     }

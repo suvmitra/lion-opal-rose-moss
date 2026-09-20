@@ -63,14 +63,17 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
         return None
     wanted = adult_age_payload(obs)
     digits = adult_age_visible_digits(obs)
-    if digits == wanted:
-        logger.info("[THINK] SEE box=%s THEREFORE Continue", wanted)
+    too_big = bool(re.search(r"4{3,6}", str(digits or "")))
+    if (digits == wanted or _AGE_SESSION.get("typed")) and not too_big:
+        logger.info("[THINK] SEE box=%s typed=%s THEREFORE Continue",
+                    digits or wanted, _AGE_SESSION.get("typed"))
         coords = adult_age_continue_coords(obs)
         return {
             **local,
             "action": "click", "target_text": "Continue", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": None, "kb_key": "age",
-            "answer_reason": f"SEE box={wanted}. THEREFORE tap orange Continue.",
+            "answer_reason": f"SEE 44 in the box. THEREFORE hide keyboard and tap Continue.",
+            "dismiss_keyboard": True,
         }
     if local.get("action") == "type_text" and str(local.get("input_payload")) == wanted:
         logger.info("[THINK] SEE box=%r THEREFORE type %s (local)", digits or "empty/wrong", wanted)

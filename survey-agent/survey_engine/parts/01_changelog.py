@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.106": [
+        "After 44 is typed, hide the keyboard and tap Continue. Never type a second 44.",
+        "Keyboard visible + typed session = Continue, even if crop OCR still looks empty.",
+    ],
     "24.0.105": [
         "Age tap is the white box ~55 milli above Continue (y≈418), not the 'no more than 99' error at y=380.",
         "Crop OCR ignores banner 99. Empty box + error still types 44. Continue once the box is exactly 44.",
