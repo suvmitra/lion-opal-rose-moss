@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.103": [
+        "Age box is OCR'd from the screenshot crop: 4444 / 'no more than 99' is replaced with 44 before Continue.",
+        "typed=True no longer skips a bad value. Continue uses the orange bar at y<=520, not the gray slab.",
+    ],
     "24.0.102": [
         "Age is typed once (44), never 4444. Then hide keyboard and tap orange Continue.",
         "Red 'whole number' banner is not treated as an empty field after 44 is visible.",

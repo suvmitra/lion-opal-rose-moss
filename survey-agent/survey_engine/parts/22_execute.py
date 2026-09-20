@@ -305,16 +305,14 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             logger.info("[TEXT FIELD] Focusing WebView field at native=(%s,%s)", x, y)
             if str(decision.get("kb_key") or "") == "age":
                 tap_native(x, y)
-                time.sleep(0.35)
-                adb(["shell", "input", "keyevent", "KEYCODE_ESCAPE"], timeout=10)
+                time.sleep(0.4)
                 adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
-                for _ in range(12):
+                for _ in range(24):
                     adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
                 type_digits(str(payload))
-                time.sleep(0.25)
-                adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
+                time.sleep(0.35)
                 _AGE_SESSION["typed"] = True
-                logger.info("[AGE] Typed %r once at native=(%s,%s); keyboard dismissed", payload, x, y)
+                logger.info("[AGE] Replaced field with %r at native=(%s,%s)", payload, x, y)
             else:
                 tap_native(x, y)
                 time.sleep(0.55)
@@ -416,9 +414,6 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 coords, (obs.image_width, obs.image_height), (obs.device_width, obs.device_height)
             )
             logger.info("[AUTH TAP] native=(%s,%s) from coords=%s text=%r", x, y, coords, target_text)
-            if str(decision.get("kb_key") or "") == "age" or decision.get("dismiss_keyboard"):
-                adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
-                time.sleep(0.3)
             if y <= int(obs.device_height * 0.18) and option_xy:
                 x, y = option_xy
         elif action == "select_matrix_cell" and isinstance(coords, list) and len(coords) == 2:
@@ -487,7 +482,9 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             if y >= nav_y:
                 logger.warning("[SAFE TAP] Refusing Android nav-bar tap native=(%s,%s) text=%r", x, y, target_text)
                 return ActionResult(False, False, "Refusing system-nav tap.")
-            if action == "select_option" or "start" in tlow or "agree" in tlow or decision.get("i_agree_continue"):
+            if action == "select_option" or "start" in tlow or "agree" in tlow or decision.get("i_agree_continue") or (
+                str(decision.get("kb_key") or "") == "age" and "continue" in tlow
+            ):
                 webview_click(x, y)
                 if decision.get("i_agree_continue"):
                     tap_native(x, y)

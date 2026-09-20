@@ -515,7 +515,7 @@ def drag_drop_decision(obs: Observation) -> Optional[dict[str, Any]]:
 
 
 _AGE_FIELD_MISS: dict[str, int] = {"n": 0}
-_AGE_SESSION: dict[str, Any] = {"typed": False, "sig": ""}
+_AGE_SESSION: dict[str, Any] = {"typed": False}
 
 
 def adult_age_question_visible(ocr_text: str) -> bool:
@@ -537,32 +537,56 @@ def adult_age_payload(obs: Observation) -> str:
     return text.split()[0]
 
 
+def age_box_crop_ocr(obs: Observation) -> str:
+    """OCR only the input band above Continue so 4444 is not lost in page OCR."""
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return ""
+    try:
+        with Image.open(path) as image:
+            width, height = image.size
+            y1 = int(height * 0.32)
+            y2 = int(height * int(adult_age_continue_coords(obs)[1]) / 1000) - 12
+            if y2 < y1 + 24:
+                y2 = y1 + int(height * 0.16)
+            crop = image.crop((int(width * 0.05), y1, int(width * 0.95), y2)).convert("L")
+            crop = crop.point(lambda pixel: 255 if pixel > 170 else 0)
+            raw = pytesseract.image_to_string(
+                crop, config="--psm 7 -c tessedit_char_whitelist=0123456789"
+            )
+            digits = re.sub(r"\D", "", raw or "")
+            logger.info("[AGE OCR] crop=%r digits=%r", (raw or "").strip()[:24], digits)
+            return digits
+    except Exception as exc:
+        logger.debug("Age crop OCR unavailable: %s", exc)
+        return ""
+
+
 def adult_age_visible_digits(obs: Observation) -> str:
-    """Read the number in the age box. Ignore 12% progress / clock / battery."""
-    runs = re.findall(r"(?<!\d)(\d{2,6})(?!\d)", str(obs.ocr_text or ""))
+    """Reason from screenshot: the number actually sitting in the age box."""
+    blob = str(obs.ocr_text or "")
+    crop = age_box_crop_ocr(obs)
+    long_fours = re.findall(r"4{3,6}", blob + " " + crop)
+    if long_fours or "no more than 99" in blob.lower():
+        return max(long_fours, default=crop or "4444")
+    if crop in {"44", "4"} or (crop.isdigit() and 1 <= int(crop) <= 99):
+        return crop
+    runs = re.findall(r"(?<!\d)(\d{2,6})(?!\d)", blob)
+    if "44" in runs:
+        return "44"
     fours = [item for item in runs if set(item) <= set("4") and len(item) >= 2]
-    if fours:
-        return max(fours, key=len)
-    wanted = adult_age_payload(obs)
-    if wanted in runs:
-        return wanted
-    return ""
+    return max(fours, key=len) if fours else crop
 
 
 def adult_age_in_field(obs: Observation, wanted: str) -> bool:
-    digits = adult_age_visible_digits(obs)
-    if digits == str(wanted):
-        return True
-    if _AGE_SESSION.get("typed") and digits.startswith(str(wanted)):
-        return True
-    return bool(_AGE_SESSION.get("typed") and not survey_validation_error(obs))
+    return adult_age_visible_digits(obs) == str(wanted)
 
 
 def adult_age_field_coords(obs: Observation) -> list[int]:
     """Tap the rounded box *above* the orange Continue bar — never the gray slab."""
     cont = adult_age_continue_coords(obs)
-    cy = int((cont or [500, 455])[1])
-    field_y = max(300, cy - 90)
+    cy = int((cont or [500, 470])[1])
+    field_y = max(300, min(500, cy - 90))
     found = empty_rounded_input_coords(obs)
     if found and (cy - 170) <= int(found[1]) <= (cy - 30):
         coords = [500, int(found[1])]
@@ -573,40 +597,41 @@ def adult_age_field_coords(obs: Observation) -> list[int]:
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
+    for bar in orange_cta_milli(obs, 0.38, 0.54):
+        if 400 <= int(bar[1]) <= 520:
+            return [500, int(bar[1])]
     hit = gender_continue_milli(obs)
-    if hit:
-        return hit
-    for bar in orange_cta_milli(obs, 0.34, 0.62):
-        if 360 <= int(bar[1]) <= 580:
-            return [int(bar[0]), int(bar[1])]
-    return [500, 455]
+    if hit and 400 <= int(hit[1]) <= 520:
+        return [500, int(hit[1])]
+    return [500, 470]
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Type 44 once, then Continue. Do not append 44 a second time."""
+    """Read the box, fix 4444 → 44, only then tap Continue."""
     if not adult_age_question_visible(obs.ocr_text):
         _AGE_SESSION["typed"] = False
         return None
     wanted = adult_age_payload(obs)
     digits = adult_age_visible_digits(obs)
-    ready = digits == wanted or bool(_AGE_SESSION.get("typed"))
+    error = "no more than 99" in str(obs.ocr_text or "").lower() or (
+        digits.isdigit() and len(digits) > 2
+    )
+    ready = digits == wanted and not error
+    logger.info("[AGE REASON] box=%r wanted=%s error=%s → %s",
+                digits, wanted, error, "continue" if ready else "replace")
     if not ready:
         coords = adult_age_field_coords(obs)
-        logger.info("[AGE] Type %s once at %s (seen=%r)", wanted, coords, digits)
         return {
             "screen_state": "survey_question", "action": "type_text",
             "target_text": "age input field", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
             "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-            "answer_reason": f"knowledge_base.json:age={wanted}. Type once, then Continue.",
+            "answer_reason": f"Box shows {digits or 'empty'}; replace with {wanted} then Continue.",
         }
     coords = adult_age_continue_coords(obs)
-    logger.info("[AGE] Ready digits=%r typed=%s; Continue at %s",
-                digits, _AGE_SESSION.get("typed"), coords)
     return {
         "screen_state": "survey_question", "action": "click", "target_text": "Continue",
         "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
         "confidence_score": 0.97, "postcondition": "screen changed",
-        "answer_reason": f"Age {wanted} is in the box; hide keyboard and tap Continue.",
-        "dismiss_keyboard": True,
+        "answer_reason": f"Age {wanted} is in the box; tap orange Continue.",
     }
