@@ -498,6 +498,7 @@ def vlm_stack_regression_self_check() -> bool:
 
 def county_dropdown_regression_self_check() -> bool:
     _COUNTY_OPEN_TRIES.clear()
+    _COUNTY_SESSION["picked"] = False
     kb = {"city": "Dublin", "area_code": "D22", "postal_code": "D22V048", "country": "Ireland"}
     closed = Observation(
         step=0, screenshot=None, image_width=1440, image_height=3088,

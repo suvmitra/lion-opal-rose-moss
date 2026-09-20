@@ -317,6 +317,8 @@ def occupation_group_decision(obs: Observation) -> Optional[dict[str, Any]]:
     }
 
 
+_COUNTY_SESSION: dict[str, Any] = {"picked": False}
+
 IRISH_COUNTIES = (
     "Carlow", "Cavan", "Clare", "Cork", "Donegal", "Dublin", "Galway",
     "Kerry", "Kildare", "Kilkenny", "Laois", "Leitrim", "Limerick",
@@ -330,7 +332,8 @@ def county_question_visible(ocr_text: str) -> bool:
     text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
     if any(token in text for token in (
         "following counties", "which county", "counties do you currently",
-        "what county", "county do you live",
+        "what county", "county do you live", "which region do you live",
+        "region do you live in",
     )):
         return True
     return county_dropdown_open(ocr_text)
@@ -407,11 +410,137 @@ def county_displayed_value(obs: Observation) -> Optional[str]:
     return county_from_ui_and_screenshot(obs)
 
 
+def county_picked_visual(obs: Observation) -> bool:
+    """Orange selected row in the county list (Dublin), not the 12% progress bar."""
+    for bar in orange_cta_milli(obs, 0.16, 0.72):
+        if 160 <= int(bar[1]) <= 720:
+            return True
+    return False
+
+
+def county_continue_coords(obs: Observation) -> Optional[list[int]]:
+    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    for bar in orange_cta_milli(obs, 0.74, 0.96):
+        if int(bar[1]) >= 740:
+            return [500, int(bar[1])]
+    if "continue" in blob:
+        return [500, 875]
+    return None
+
+
 def county_selection_complete(obs: Observation) -> bool:
+    if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
+        _COUNTY_SESSION["picked"] = True
+        return True
     if county_dropdown_open(obs.ocr_text):
         return False
     shown = county_displayed_value(obs)
     return bool(shown and shown.lower() == intended_county(obs).lower())
+
+
+def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    if not county_question_visible(obs.ocr_text):
+        _COUNTY_SESSION["picked"] = False
+        return None
+    wanted = intended_county(obs)
+    shown = county_displayed_value(obs)
+    if county_selection_complete(obs) and not county_dropdown_open(obs.ocr_text):
+        logger.info("[COUNTY] %s already selected; grounding Continue.", wanted)
+        return {
+            "screen_state": "survey_question",
+            "question_text": current_question_text(obs),
+            "answer_reason": f"County {wanted} is selected from knowledge_base city.",
+            "action": "click",
+            "target_element_id": None,
+            "target_text": "Continue »",
+            "target_coords": county_continue_coords(obs) or [500, 875],
+            "coordinate_authoritative": True,
+            "kb_key": "county",
+            "kb_write": True,
+            "input_payload": wanted,
+            "confidence_score": 0.97,
+            "postcondition": "screen changed",
+            "answer_provenance": "declared",
+            "source_basis": "knowledge_base.json:city",
+            "selection_complete": True,
+        }
+    if county_dropdown_open(obs.ocr_text):
+        _COUNTY_OPEN_TRIES["county"] = 0
+        if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
+            _COUNTY_SESSION["picked"] = True
+            cont = county_continue_coords(obs)
+            if cont:
+                logger.info("[COUNTY] %s is orange; Continue at %s", wanted, cont)
+                return {
+                    "screen_state": "survey_question",
+                    "question_text": current_question_text(obs),
+                    "answer_reason": f"{wanted} is selected; tap Continue.",
+                    "action": "click",
+                    "target_text": "Continue",
+                    "target_coords": cont,
+                    "coordinate_authoritative": True,
+                    "kb_key": "county",
+                    "input_payload": wanted,
+                    "confidence_score": 0.96,
+                    "postcondition": "screen changed",
+                    "selection_complete": True,
+                }
+            logger.info("[COUNTY] %s is selected; scroll down until Continue is visible.", wanted)
+            return {
+                "screen_state": "survey_question",
+                "question_text": current_question_text(obs),
+                "answer_reason": f"{wanted} is already selected; scroll down to Continue.",
+                "action": "scroll_down",
+                "list_scroll": True,
+                "confidence_score": 0.93,
+                "postcondition": "screen changed",
+                "kb_key": "county",
+                "selection_complete": True,
+            }
+        blob = str(obs.ocr_text or "")
+        coords = county_option_coords(obs, wanted)
+        if coords is None or not re.search(rf"\b{re.escape(wanted)}\b", blob, flags=re.I):
+            return county_list_scroll_action(obs, wanted)
+        logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, coords)
+        return {
+            "screen_state": "survey_question",
+            "question_text": current_question_text(obs),
+            "answer_reason": f"Select {wanted} from the county dropdown (knowledge_base.json:city).",
+            "action": "select_option",
+            "target_element_id": None,
+            "target_text": wanted,
+            "target_coords": coords,
+            "coordinate_authoritative": True,
+            "input_payload": wanted,
+            "kb_key": "county",
+            "kb_write": True,
+            "confidence_score": 0.98,
+            "postcondition": f"selected option is {wanted}",
+            "answer_provenance": "declared",
+            "source_basis": "knowledge_base.json:city",
+            "selection_complete": True,
+        }
+    coords = county_combo_coords(obs)
+    field = shown or "Select one..."
+    _COUNTY_OPEN_TRIES["county"] = _COUNTY_OPEN_TRIES.get("county", 0) + 1
+    logger.info("[COUNTY] Opening dropdown via %r coords=%s attempt=%s",
+                field, coords, _COUNTY_OPEN_TRIES["county"])
+    return {
+        "screen_state": "survey_question",
+        "question_text": current_question_text(obs),
+        "answer_reason": f"Open the county dropdown showing {field} and choose {wanted}.",
+        "action": "open_dropdown",
+        "target_element_id": None,
+        "target_text": field,
+        "target_coords": coords,
+        "coordinate_authoritative": True,
+        "input_payload": wanted,
+        "kb_key": "county",
+        "confidence_score": 0.95,
+        "postcondition": "dropdown is open",
+        "answer_provenance": "declared",
+        "source_basis": "knowledge_base.json:city",
+    }
 
 
 def county_combo_coords(obs: Observation) -> list[int]:
@@ -525,75 +654,3 @@ def county_list_scroll_action(obs: Observation, wanted: str) -> dict[str, Any]:
         "kb_key": "county",
     }
 
-
-def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    if not county_question_visible(obs.ocr_text):
-        return None
-    wanted = intended_county(obs)
-    shown = county_displayed_value(obs)
-    if county_selection_complete(obs):
-        logger.info("[COUNTY] %s already selected; grounding Continue.", wanted)
-        return {
-            "screen_state": "survey_question",
-            "question_text": current_question_text(obs),
-            "answer_reason": f"County {wanted} is selected from knowledge_base city.",
-            "action": "click",
-            "target_element_id": None,
-            "target_text": "Continue »",
-            "target_coords": [500, 610],
-            "coordinate_authoritative": True,
-            "kb_key": "county",
-            "kb_write": True,
-            "input_payload": wanted,
-            "confidence_score": 0.97,
-            "postcondition": "screen changed",
-            "answer_provenance": "declared",
-            "source_basis": "knowledge_base.json:city",
-            "selection_complete": True,
-        }
-    if county_dropdown_open(obs.ocr_text):
-        _COUNTY_OPEN_TRIES["county"] = 0
-        blob = str(obs.ocr_text or "")
-        coords = county_option_coords(obs, wanted)
-        if coords is None or not re.search(rf"\b{re.escape(wanted)}\b", blob, flags=re.I):
-            return county_list_scroll_action(obs, wanted)
-        logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, coords)
-        return {
-            "screen_state": "survey_question",
-            "question_text": current_question_text(obs),
-            "answer_reason": f"Select {wanted} from the county dropdown (knowledge_base.json:city).",
-            "action": "select_option",
-            "target_element_id": None,
-            "target_text": wanted,
-            "target_coords": coords,
-            "coordinate_authoritative": True,
-            "input_payload": wanted,
-            "kb_key": "county",
-            "kb_write": True,
-            "confidence_score": 0.98,
-            "postcondition": f"selected option is {wanted}",
-            "answer_provenance": "declared",
-            "source_basis": "knowledge_base.json:city",
-            "selection_complete": True,
-        }
-    coords = county_combo_coords(obs)
-    field = shown or "Select one..."
-    _COUNTY_OPEN_TRIES["county"] = _COUNTY_OPEN_TRIES.get("county", 0) + 1
-    logger.info("[COUNTY] Opening dropdown via %r coords=%s attempt=%s",
-                field, coords, _COUNTY_OPEN_TRIES["county"])
-    return {
-        "screen_state": "survey_question",
-        "question_text": current_question_text(obs),
-        "answer_reason": f"Open the county dropdown showing {field} and choose {wanted}.",
-        "action": "open_dropdown",
-        "target_element_id": None,
-        "target_text": field,
-        "target_coords": coords,
-        "coordinate_authoritative": True,
-        "input_payload": wanted,
-        "kb_key": "county",
-        "confidence_score": 0.95,
-        "postcondition": "dropdown is open",
-        "answer_provenance": "declared",
-        "source_basis": "knowledge_base.json:city",
-    }

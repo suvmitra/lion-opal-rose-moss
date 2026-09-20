@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.107": [
+        "Dublin already orange: stop hunting the list. Scroll down until Continue, then tap it.",
+        "Orange selected row is the answer; Galway-first OCR must not scroll back up.",
+    ],
     "24.0.106": [
         "After 44 is typed, hide the keyboard and tap Continue. Never type a second 44.",
         "Keyboard visible + typed session = Continue, even if crop OCR still looks empty.",
