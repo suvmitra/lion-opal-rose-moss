@@ -1,7 +1,6 @@
-# Survey automation · v24.0.98
+# Survey automation · v24.0.104
 
-Gender cards: tap Male (upper-left), then the orange Continue that appears mid-screen (~y=45%).
-Never re-tap Male, never scroll, never tap y=875.
+Screenshot-first: SEE the box (4444 vs 44), THEN type or Continue.
 
 Copy `survey_with_salad.py` and the whole `survey_engine\` folder.
 

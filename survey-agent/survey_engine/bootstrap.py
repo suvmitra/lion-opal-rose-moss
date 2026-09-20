@@ -36,6 +36,7 @@ PART_FILES: tuple[str, ...] = (
     "23_checks_c.py",
     "24_preflight.py",
     "25_runner.py",
+    "26_reason.py",
 )
 
 PARTS_DIR = Path(__file__).resolve().parent / "parts"

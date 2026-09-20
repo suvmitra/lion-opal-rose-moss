@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.104": [
+        "Screenshot-first THINK: SEE the box/error, THEREFORE act. VLM reads 4444 when Tesseract misses it.",
+        "Continue only after the model or crop OCR confirms the box is exactly 44.",
+    ],
     "24.0.103": [
         "Age box is OCR'd from the screenshot crop: 4444 / 'no more than 99' is replaced with 44 before Continue.",
         "typed=True no longer skips a bad value. Continue uses the orange bar at y<=520, not the gray slab.",
