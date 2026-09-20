@@ -1,7 +1,7 @@
 # ==============================================================================
 # File: survey_with_salad.py
 # Project: Vision-Led Agentic Mobile Survey Automation
-# Version: 24.0.110
+# Version: 24.0.111
 #
 # Entry point. Implementation is split under survey_engine/parts/ (max 800
 # lines each). bootstrap.load_engine binds every original function into this

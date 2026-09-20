@@ -621,16 +621,20 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
                 return fill
 
     if county_question_visible(obs.ocr_text) and action in {"open_dropdown", "select_option"}:
-        if county_selection_complete(obs):
-            logger.warning("[INSPECTOR] Combo already shows %s; Continue instead of %s.",
-                           intended_county(obs), action)
-            cont = county_dropdown_decision(obs)
-            return cont if cont and str(cont.get("action")) == "click" else {
-                "action": "click", "target_text": "Continue »", "target_coords": [500, 610],
-                "coordinate_authoritative": True, "confidence_score": 0.96,
-                "postcondition": "screen changed", "kb_key": "county",
-                "selection_complete": True,
-            }
+        fill = county_dropdown_decision(obs)
+        if fill and county_dropdown_open(obs.ocr_text):
+            logger.warning("[INSPECTOR] Open county list; keep %s %s.", fill.get("action"), fill.get("target_coords"))
+            return fill
+        if fill and county_selection_complete(obs):
+            logger.warning("[INSPECTOR] Combo already shows %s; Continue instead of %s.", intended_county(obs), action)
+            if str(fill.get("action")) == "click":
+                if int((fill.get("target_coords") or [0, 910])[-1]) < 850:
+                    fill["target_coords"] = [500, 910]
+                return fill
+            fill = {"action": "click", "target_text": "Continue »", "target_coords": [500, 910],
+                    "coordinate_authoritative": True, "confidence_score": 0.96,
+                    "postcondition": "screen changed", "kb_key": "county", "selection_complete": True}
+            return fill
 
     if survey_validation_error(obs) and action in {"click"} and is_progression_cta(target):
         if county_question_visible(obs.ocr_text) and county_selection_complete(obs):

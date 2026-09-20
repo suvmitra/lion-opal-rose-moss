@@ -411,9 +411,14 @@ def county_displayed_value(obs: Observation) -> Optional[str]:
 
 
 def county_picked_visual(obs: Observation) -> bool:
-    """Orange selected row in the county list (Dublin), not the 12% progress bar."""
-    for bar in orange_cta_milli(obs, 0.16, 0.72):
-        if 160 <= int(bar[1]) <= 720:
+    """True only when the orange row is the intended county (Dublin), not Kerry."""
+    wanted = intended_county(obs)
+    dcoords = county_option_coords(obs, wanted)
+    if not dcoords:
+        return False
+    dy = int(dcoords[1])
+    for bar in orange_cta_milli(obs, 0.16, 0.82):
+        if abs(int(bar[1]) - dy) <= 32:
             return True
     return False
 
@@ -491,9 +496,8 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
         _COUNTY_OPEN_TRIES["county"] = 0
         cont = county_continue_coords(obs)
         dcoords = county_option_coords(obs, wanted)
-        if dcoords and int(dcoords[1]) < 840:
+        if dcoords and int(dcoords[1]) < 840 and not county_picked_visual(obs):
             logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, dcoords)
-            _COUNTY_SESSION["picked"] = True
             return {
                 "screen_state": "survey_question",
                 "question_text": current_question_text(obs),
@@ -507,7 +511,7 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
                 "kb_write": True,
                 "confidence_score": 0.98,
                 "postcondition": f"selected option is {wanted}",
-                "selection_complete": True,
+                "selection_complete": False,
             }
         if cont and int(cont[1]) >= 860:
             logger.info("[COUNTY] Sticky Continue at %s (not a county row)", cont)

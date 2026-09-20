@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.111": [
+        "Open county list: tap Dublin, never rewrite to Continue at y=610 (that was Kerry).",
+        "Orange Kerry is not a completed answer. Scroll until the footer Continue (y>=860).",
+    ],
     "24.0.110": [
         "Continue from OCR text still grounds when there is no screenshot (MaxDiff self-check).",
         "Sticky orange footer (y~910) still wins over a county row when the screenshot exists.",
