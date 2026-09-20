@@ -515,6 +515,7 @@ def drag_drop_decision(obs: Observation) -> Optional[dict[str, Any]]:
 
 
 _AGE_FIELD_MISS: dict[str, int] = {"n": 0}
+_AGE_SESSION: dict[str, Any] = {"typed": False, "sig": ""}
 
 
 def adult_age_question_visible(ocr_text: str) -> bool:
@@ -536,28 +537,38 @@ def adult_age_payload(obs: Observation) -> str:
     return text.split()[0]
 
 
+def adult_age_visible_digits(obs: Observation) -> str:
+    """Read the number in the age box. Ignore 12% progress / clock / battery."""
+    runs = re.findall(r"(?<!\d)(\d{2,6})(?!\d)", str(obs.ocr_text or ""))
+    fours = [item for item in runs if set(item) <= set("4") and len(item) >= 2]
+    if fours:
+        return max(fours, key=len)
+    wanted = adult_age_payload(obs)
+    if wanted in runs:
+        return wanted
+    return ""
+
+
 def adult_age_in_field(obs: Observation, wanted: str) -> bool:
-    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    if "please specify a whole number" in blob or "please enter a whole number" in blob:
-        return False
-    if survey_validation_error(obs):
-        return False
-    return bool(wanted and re.search(rf"(?<!\d){re.escape(str(wanted))}(?!\d)", blob))
+    digits = adult_age_visible_digits(obs)
+    if digits == str(wanted):
+        return True
+    if _AGE_SESSION.get("typed") and digits.startswith(str(wanted)):
+        return True
+    return bool(_AGE_SESSION.get("typed") and not survey_validation_error(obs))
 
 
 def adult_age_field_coords(obs: Observation) -> list[int]:
     """Tap the rounded box *above* the orange Continue bar — never the gray slab."""
     cont = adult_age_continue_coords(obs)
     cy = int((cont or [500, 455])[1])
-    miss = int(_AGE_FIELD_MISS.get("n") or 0)
-    gap = (90, 115, 70, 140, 50)[miss % 5]
-    field_y = max(280, min(cy - 40, cy - gap))
+    field_y = max(300, cy - 90)
     found = empty_rounded_input_coords(obs)
     if found and (cy - 170) <= int(found[1]) <= (cy - 30):
-        coords = [max(220, int(found[0])), int(found[1])]
+        coords = [500, int(found[1])]
     else:
         coords = [500, field_y]
-    logger.info("[AGE] Field=%s continue=%s miss=%s found=%s", coords, cont, miss, found)
+    logger.info("[AGE] Field=%s continue=%s found=%s", coords, cont, found)
     return coords
 
 
@@ -572,27 +583,30 @@ def adult_age_continue_coords(obs: Observation) -> list[int]:
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Object model: empty age box → type KB age; then tap the orange Continue bar."""
+    """Type 44 once, then Continue. Do not append 44 a second time."""
     if not adult_age_question_visible(obs.ocr_text):
+        _AGE_SESSION["typed"] = False
         return None
     wanted = adult_age_payload(obs)
-    if not adult_age_in_field(obs, wanted):
+    digits = adult_age_visible_digits(obs)
+    ready = digits == wanted or bool(_AGE_SESSION.get("typed"))
+    if not ready:
         coords = adult_age_field_coords(obs)
-        _AGE_FIELD_MISS["n"] = int(_AGE_FIELD_MISS.get("n") or 0) + 1
-        logger.info("[AGE] Type knowledge_base.json:age=%s at %s", wanted, coords)
+        logger.info("[AGE] Type %s once at %s (seen=%r)", wanted, coords, digits)
         return {
             "screen_state": "survey_question", "action": "type_text",
             "target_text": "age input field", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
             "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-            "answer_reason": f"knowledge_base.json:age={wanted}. Type it, then Continue.",
+            "answer_reason": f"knowledge_base.json:age={wanted}. Type once, then Continue.",
         }
-    _AGE_FIELD_MISS["n"] = 0
     coords = adult_age_continue_coords(obs)
-    logger.info("[AGE] %s is in the box; Continue at %s", wanted, coords)
+    logger.info("[AGE] Ready digits=%r typed=%s; Continue at %s",
+                digits, _AGE_SESSION.get("typed"), coords)
     return {
         "screen_state": "survey_question", "action": "click", "target_text": "Continue",
         "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
         "confidence_score": 0.97, "postcondition": "screen changed",
-        "answer_reason": f"Age {wanted} typed; tap the orange Continue bar.",
+        "answer_reason": f"Age {wanted} is in the box; hide keyboard and tap Continue.",
+        "dismiss_keyboard": True,
     }

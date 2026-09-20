@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.102": [
+        "Age is typed once (44), never 4444. Then hide keyboard and tap orange Continue.",
+        "Red 'whole number' banner is not treated as an empty field after 44 is visible.",
+    ],
     "24.0.101": [
         "Age box is the rounded field ABOVE the orange Continue bar, not the gray slab at y=603.",
         "Type 44 with digit keyevents into the WebView, then tap Continue. ui.xml/Aloha dump has no Qualtrics field.",

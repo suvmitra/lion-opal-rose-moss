@@ -304,18 +304,17 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                                         (obs.device_width, obs.device_height))
             logger.info("[TEXT FIELD] Focusing WebView field at native=(%s,%s)", x, y)
             if str(decision.get("kb_key") or "") == "age":
-                webview_click(x, y)
-                time.sleep(0.45)
-                webview_click(x, y)
-                time.sleep(0.45)
+                tap_native(x, y)
+                time.sleep(0.35)
+                adb(["shell", "input", "keyevent", "KEYCODE_ESCAPE"], timeout=10)
                 adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
-                for _ in range(8):
+                for _ in range(12):
                     adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
                 type_digits(str(payload))
-                time.sleep(0.15)
-                adb_input_multiline(str(payload))
-                time.sleep(0.5)
-                logger.info("[AGE] Typed digits %r at native=(%s,%s)", payload, x, y)
+                time.sleep(0.25)
+                adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
+                _AGE_SESSION["typed"] = True
+                logger.info("[AGE] Typed %r once at native=(%s,%s); keyboard dismissed", payload, x, y)
             else:
                 tap_native(x, y)
                 time.sleep(0.55)
@@ -417,6 +416,9 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 coords, (obs.image_width, obs.image_height), (obs.device_width, obs.device_height)
             )
             logger.info("[AUTH TAP] native=(%s,%s) from coords=%s text=%r", x, y, coords, target_text)
+            if str(decision.get("kb_key") or "") == "age" or decision.get("dismiss_keyboard"):
+                adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
+                time.sleep(0.3)
             if y <= int(obs.device_height * 0.18) and option_xy:
                 x, y = option_xy
         elif action == "select_matrix_cell" and isinstance(coords, list) and len(coords) == 2:

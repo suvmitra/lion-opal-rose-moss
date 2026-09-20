@@ -538,6 +538,12 @@ def age_text_entry_regression_self_check() -> bool:
         )
         and adult_age_screen_decision(observation)
         and adult_age_screen_decision(observation).get("input_payload") == "44"
+        and adult_age_screen_decision(Observation(
+            step=0, screenshot=None, image_width=1440, image_height=3088,
+            device_width=1440, device_height=3088, screen_hash="age-filled",
+            ocr_text="What is your age?\n44\nContinue", ui_nodes=[], kb={"age": 44},
+            persona={}, screen_phase="survey_question", survey_tiles=[],
+        )).get("action") == "click"
     )
     if passed:
         logger.info("[SELF-CHECK] Age text-entry KB and payload-repair checks passed.")
