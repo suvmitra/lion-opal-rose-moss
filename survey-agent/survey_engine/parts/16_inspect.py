@@ -552,6 +552,12 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
             logger.warning("[INSPECTOR] Gender unanswered; tap %r before Continue.", alt.get("target_text"))
             return alt
 
+    fill = adult_age_screen_decision(obs)
+    if fill:
+        logger.info("[INSPECTOR] Age %s %s", fill.get("action"),
+                    fill.get("input_payload") or fill.get("target_coords"))
+        return fill
+
     if county_question_visible(obs.ocr_text):
         fill = county_dropdown_decision(obs)
         if fill:
@@ -736,6 +742,12 @@ def prefer_progression_over_repeat(
                 )
             return survey_next_decision(obs)
     if action in {"type_text", "type_comment"}:
+        if adult_age_question_visible(obs.ocr_text) and not adult_age_in_field(
+            obs, adult_age_payload(obs)
+        ):
+            return decision
+        if survey_validation_error(obs):
+            return decision
         key = question_fingerprint(obs)
         already = (
             _OPEN_TEXT_TYPED.get(key)

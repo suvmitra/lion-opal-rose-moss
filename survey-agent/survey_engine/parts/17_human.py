@@ -532,6 +532,12 @@ def age_text_entry_regression_self_check() -> bool:
         and routed["target_coords"][1] >= 240
         and 70 <= routed["target_coords"][0] * 1440 / 1000 <= 430
         and 850 <= routed["target_coords"][1] * 3088 / 1000 <= 1030
+        and adult_age_question_visible(ocr_text)
+        and not child_ages_question_visible(
+            "What is your age?\nPlease specify a whole number.\nContinue"
+        )
+        and adult_age_screen_decision(observation)
+        and adult_age_screen_decision(observation).get("input_payload") == "44"
     )
     if passed:
         logger.info("[SELF-CHECK] Age text-entry KB and payload-repair checks passed.")

@@ -216,6 +216,8 @@ def learned_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
         return None
     if gender_choice_screen(obs):
         return None
+    if adult_age_question_visible(obs.ocr_text):
+        return None
     learned = obs.kb.get("learned_screen_actions")
     if not isinstance(learned, dict):
         return None

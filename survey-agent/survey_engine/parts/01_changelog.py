@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.100": [
+        "What is your age? types knowledge_base age=44 into the empty box, then the orange Continue bar.",
+        "Whole-number validation is adult age, not child_age=8. RL/VLM cannot Continue on an empty field.",
+    ],
     "24.0.99": [
         "Card gender (Are you...?) taps Male then mid-screen Continue. Radio-list Are you? still fills Male before Continue.",
         "Startup Are-you inspector self-check is restored.",

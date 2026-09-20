@@ -44,6 +44,10 @@ def survey_next_decision(obs: Observation) -> dict[str, Any]:
         fill = gender_screen_decision(obs)
         if fill:
             return fill
+    if adult_age_question_visible(obs.ocr_text):
+        fill = adult_age_screen_decision(obs)
+        if fill:
+            return fill
     if county_question_visible(obs.ocr_text) and not county_selection_complete(obs):
         fill = county_dropdown_decision(obs)
         if fill and not is_progression_cta(str(fill.get("target_text") or "")):
@@ -497,6 +501,12 @@ def repair_decision_for_screen(
                 "postcondition": "screen stable for re-observation",
             }
 
+    if adult_age_question_visible(obs.ocr_text):
+        fill = adult_age_screen_decision(obs)
+        if fill:
+            logger.warning("[DECISION REPAIR] Adult age; %s payload=%s instead of %s.",
+                           fill.get("action"), fill.get("input_payload"), action)
+            return fill
     if child_ages_question_visible(obs.ocr_text):
         fill = child_age_text_decision(obs)
         if fill and str(fill.get("action") or "") != action:

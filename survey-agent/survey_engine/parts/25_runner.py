@@ -150,15 +150,19 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = i_agree_consent_decision(obs)
             decision_source = "router-i-agree"
-            logger.info("[I AGREE] Hard-route before RL/VLM coords=%s",
-                        None if not decision else decision.get("target_coords"))
+            logger.info("[I AGREE] Hard-route coords=%s", None if not decision else decision.get("target_coords"))
         elif gender_choice_screen(obs) and not gender_radio_list(obs):
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
             decision_source = "router-gender"
-            logger.info("[GENDER] Hard-route %s %s",
-                        None if not decision else decision.get("target_text"),
+            logger.info("[GENDER] Hard-route %s %s", None if not decision else decision.get("target_text"),
                         None if not decision else decision.get("target_coords"))
+        elif adult_age_question_visible(obs.ocr_text):
+            obs.screen_phase = "survey_question"
+            decision = adult_age_screen_decision(obs)
+            decision_source = "router-age"
+            logger.info("[AGE] Hard-route %s %s", None if not decision else decision.get("action"),
+                        None if not decision else decision.get("input_payload") or decision.get("target_coords"))
         else:
             gated, halt = stagnation_gate(obs, no_change_count)
             if halt:
@@ -632,8 +636,6 @@ def main() -> int:
             and decision.get("target_text")
             and not is_progression_cta(str(decision.get("target_text") or ""))
         ):
-            # Record immediately. Waiting for visual verify caused a second tap
-            # that unchecked Male on the gender radio screen.
             if not (
                 looks_like_single_choice(obs.ocr_text)
                 and "please select an answer" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())

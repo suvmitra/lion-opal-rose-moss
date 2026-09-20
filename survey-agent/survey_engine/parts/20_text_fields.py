@@ -509,3 +509,73 @@ def drag_drop_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "source_basis": "Visible drag-and-drop prompt",
         "inference_confidence": 0.9,
     }
+
+
+def adult_age_question_visible(ocr_text: str) -> bool:
+    blob = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    if any(token in blob for token in (
+        "state their ages", "their ages", "child's age", "age of your child",
+    )):
+        return False
+    return bool(re.search(r"what is your age|how old are you", blob))
+
+
+def adult_age_payload(obs: Observation) -> str:
+    raw = kb_or_persona_value(obs, "age")
+    if raw in (None, ""):
+        raw = 44
+    text = str(raw).strip()
+    if text.lstrip("-").replace(".", "", 1).isdigit():
+        return str(int(float(text)))
+    return text.split()[0]
+
+
+def adult_age_in_field(obs: Observation, wanted: str) -> bool:
+    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    if "please specify a whole number" in blob or "please enter a whole number" in blob:
+        return False
+    if survey_validation_error(obs):
+        return False
+    return bool(wanted and re.search(rf"(?<!\d){re.escape(str(wanted))}(?!\d)", blob))
+
+
+def adult_age_field_coords(obs: Observation) -> list[int]:
+    found = empty_rounded_input_coords(obs)
+    if found and 280 <= int(found[1]) <= 650:
+        return found
+    return found or [500, 440]
+
+
+def adult_age_continue_coords(obs: Observation) -> list[int]:
+    hit = gender_continue_milli(obs)
+    if hit:
+        return hit
+    for bar in orange_cta_milli(obs, 0.34, 0.62):
+        if 360 <= int(bar[1]) <= 580:
+            return [int(bar[0]), int(bar[1])]
+    return [500, 455]
+
+
+def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    """Object model: empty age box → type KB age; then tap the orange Continue bar."""
+    if not adult_age_question_visible(obs.ocr_text):
+        return None
+    wanted = adult_age_payload(obs)
+    if not adult_age_in_field(obs, wanted):
+        coords = adult_age_field_coords(obs)
+        logger.info("[AGE] Type knowledge_base.json:age=%s at %s", wanted, coords)
+        return {
+            "screen_state": "survey_question", "action": "type_text",
+            "target_text": "age input field", "target_coords": coords,
+            "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
+            "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
+            "answer_reason": f"knowledge_base.json:age={wanted}. Type it, then Continue.",
+        }
+    coords = adult_age_continue_coords(obs)
+    logger.info("[AGE] %s is in the box; Continue at %s", wanted, coords)
+    return {
+        "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+        "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
+        "confidence_score": 0.97, "postcondition": "screen changed",
+        "answer_reason": f"Age {wanted} typed; tap the orange Continue bar.",
+    }

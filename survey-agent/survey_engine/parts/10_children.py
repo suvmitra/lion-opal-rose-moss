@@ -14,12 +14,14 @@ def child_ages_question_visible(ocr_text: str) -> bool:
     blob = re.sub(r"\s+", " ", str(ocr_text or "").lower())
     if children_count_question_visible(ocr_text):
         return False
-    return any(token in blob for token in (
+    if re.search(r"what is your age|how old are you", blob):
+        return False
+    if any(token in blob for token in (
         "state their ages", "their ages", "child's age", "childs age",
         "children's ages", "ages of your", "age of your child",
-        "please specify a whole number", "please enter a whole number",
-        "enter a whole number",
-    ))
+    )):
+        return True
+    return False
 
 
 def numeric_radio_labels(obs: Observation) -> list[str]:
