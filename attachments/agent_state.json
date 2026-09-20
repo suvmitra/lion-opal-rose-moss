@@ -1,0 +1,9 @@
+{
+  "version": "24.0.88",
+  "started_at": "2026-09-20T10:21:27",
+  "steps": 5,
+  "completed": false,
+  "last_screen_hash": "b5bf4dca42c34385",
+  "screen_phase": "survey_landing",
+  "stopped_reason": "bounded_stagnation_limit"
+}

@@ -1,0 +1,2947 @@
+{
+  "knowledge_base_version": "24.0.7",
+  "city": "Dublin",
+  "country": "Ireland",
+  "postal_code": "D22V048",
+  "area_code": "D22",
+  "employment_status": "Employed Full-Time",
+  "industry": "Information Technology",
+  "education": "Master's Degree",
+  "age_range": "40-45",
+  "has_children": "Yes",
+  "number_of_children": "1",
+  "child_gender": "Boy",
+  "child_age": "1",
+  "parent_of_3_to_5_year_old": "No",
+  "parent_of_6_to_10_year_old": "Yes",
+  "smoking_status": "No, I don't smoke",
+  "full_name": "Suvabrata Mitra",
+  "age": "44",
+  "gender": "Male",
+  "marital_status": "Married",
+  "nationality_residency": "Indian / Resident in Ireland",
+  "current_title": "Lead Data Scientist / Senior Manager",
+  "company": "Cognizant Technology Solutions",
+  "total_experience_years": "19+ years",
+  "seniority_level": "Senior Lead / Management",
+  "company_size": "10,000+ employees",
+  "housing": "Renting Apartment (Dublin)",
+  "tech_adoption": "Early Adopter / Tech Enthusiast",
+  "primary_transport": "Public Transit / Commuter",
+  "flight_types": "Both domestic and international",
+  "profile_sources": {
+    "linkedin": "https://www.linkedin.com/in/suvabratalive/",
+    "github": "https://github.com/mitrasuvabrata-eng",
+    "resume": "Suvabrata Mitra_AIML Lead Data Scientist.pdf",
+    "linkedin_note": "User-provided profile URL; only verified or locally supplied profile facts may be treated as factual."
+  },
+  "answer_policy": {
+    "allow_reasonable_personal_inference": true,
+    "persist_inferred_answers_for_consistency": true,
+    "prefer_substantive_answer_over_escape_link": true,
+    "label_inferred_answers": true,
+    "restricted_inference_categories": [
+      "medical",
+      "legal",
+      "financial",
+      "credentials",
+      "security"
+    ]
+  },
+  "personal_question_fallbacks": {
+    "flight_types": {
+      "kb_key": "flight_types",
+      "question_keywords": [
+        "when you fly",
+        "types of flights"
+      ],
+      "answer": "Both domestic and international",
+      "provenance": "inferred",
+      "confidence": 0.72,
+      "source_basis": "User-authorized inference from residence/nationality and international professional context; not a directly verified travel record."
+    },
+    "7_20_o9_r_8_1": {
+      "kb_key": "7_20_o9_r_8_1",
+      "question_keywords": [
+        "7 20 o9",
+        "7"
+      ],
+      "answer": "Fish",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Fish"
+    },
+    "8_33_m_z_36_4": {
+      "kb_key": "8_33_m_z_36_4",
+      "question_keywords": [
+        "8 33 m",
+        "8"
+      ],
+      "answer": "€86,000 or more",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: €86,000 or more"
+    },
+    "944m_qgo_ol_44_6_x": {
+      "kb_key": "944m_qgo_ol_44_6_x",
+      "question_keywords": [
+        "944m qgo ol",
+        "944m"
+      ],
+      "answer": "Public sector",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Public sector"
+    },
+    "9_45_mee_hl_44_x": {
+      "kb_key": "9_45_mee_hl_44_x",
+      "question_keywords": [
+        "9 45 mee",
+        "9"
+      ],
+      "answer": "I am",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: I am"
+    },
+    "loyalty_program_openness": {
+      "kb_key": "loyalty_program_openness",
+      "question_keywords": [
+        "10 38 bo",
+        "10"
+      ],
+      "answer": "Enterprise Mobility Rewards",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Enterprise Mobility Rewards"
+    },
+    "household_income": {
+      "kb_key": "household_income",
+      "question_keywords": [
+        "qf 48 x",
+        "qf"
+      ],
+      "answer": "O managerial/ professional/",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: O managerial/ professional/"
+    },
+    "r_58_x_survey_c_how": {
+      "kb_key": "r_58_x_survey_c_how",
+      "question_keywords": [
+        "r 58 x",
+        "r"
+      ],
+      "answer": "10",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: 10"
+    },
+    "child_age": {
+      "kb_key": "child_age",
+      "question_keywords": [
+        "please state their",
+        "please"
+      ],
+      "answer": "1",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: 1"
+    },
+    "4419_f_65_x_survey_c": {
+      "kb_key": "4419_f_65_x_survey_c",
+      "question_keywords": [
+        "4419 f 65",
+        "4419"
+      ],
+      "answer": "3+times per day",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: 3+times per day"
+    },
+    "4459_f_65_x_survey_c": {
+      "kb_key": "4459_f_65_x_survey_c",
+      "question_keywords": [
+        "4459 f 65",
+        "4459"
+      ],
+      "answer": "Twice a day",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Twice a day"
+    },
+    "649e_h_7_1_80_xx": {
+      "kb_key": "649e_h_7_1_80_xx",
+      "question_keywords": [
+        "649e h 7",
+        "649e"
+      ],
+      "answer": "Agree completely",
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Agree completely"
+    },
+    "m_88_e_x_survey_c": {
+      "kb_key": "m_88_e_x_survey_c",
+      "question_keywords": [
+        "m 88 e",
+        "m"
+      ],
+      "answer": [
+        "No preservatives"
+      ],
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: No preservatives"
+    },
+    "ame_88_x_survey_c_following": {
+      "kb_key": "ame_88_x_survey_c_following",
+      "question_keywords": [
+        "ame 88 x",
+        "ame"
+      ],
+      "answer": [
+        "Low in fat"
+      ],
+      "provenance": "declared",
+      "confidence": 1.0,
+      "source_basis": "Human terminal input: Low in fat"
+    }
+  },
+  "answer_metadata": {
+    "flight_types": {
+      "provenance": "inferred",
+      "confidence": 0.72,
+      "question": "When you fly, which types of flights do you take?",
+      "source_basis": "User-authorized inference from residence/nationality and international professional context; not a directly verified travel record.",
+      "seeded_in_version": "24.0.5"
+    },
+    "7_20_o9_r_8_1": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "7:20 O9@R ° 8 @ =.1| 28%8 x Survey Cc ~~ 50% household?",
+      "source_basis": "Human terminal input: Fish",
+      "updated_at_utc": "2026-09-18T18:18:12+00:00"
+    },
+    "8_33_m_z_36_4": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "8:33 m- @ Z| 36% 4 Survey C [4 5% What was your household's total annual income last year (before taxes)?",
+      "source_basis": "Human terminal input: €86,000 or more",
+      "updated_at_utc": "2026-09-18T19:31:14+00:00"
+    },
+    "944m_qgo_ol_44_6_x": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "944m@QGo- Ol) 44%6 x Survey C — 10% Do you work in the...?",
+      "source_basis": "Human terminal input: Public sector",
+      "updated_at_utc": "2026-09-18T20:42:16+00:00"
+    },
+    "9_45_mee_hl_44_x": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "9:45 mee: @ Hl 44% x Survey C | 11% Many companies offer customers a loyalty program. A loyalty program is a program that offers you benefits for",
+      "source_basis": "Human terminal input: I am",
+      "updated_at_utc": "2026-09-18T20:43:55+00:00"
+    },
+    "loyalty_program_openness": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "10:38 & @ © - BO =.) 51%B x Survey Cc | 20% Below are three potential names for the new loyalty program. Which name do you most prefer?",
+      "source_basis": "Human terminal input: Enterprise Mobility Rewards",
+      "updated_at_utc": "2026-09-18T21:35:59+00:00"
+    },
+    "12_02_mad_37_8_x": {
+      "provenance": "inferred",
+      "confidence": 0.8,
+      "question": "12:02 Mad @ | 37%8 x Survey Ci Where are you living?",
+      "source_basis": "persona_data.py tech_adoption/early-adopter policy + visible options",
+      "updated_at_utc": "2026-09-19T10:59:54+00:00"
+    },
+    "age": {
+      "provenance": "inferred",
+      "confidence": 0.95,
+      "question": "How old are you?",
+      "source_basis": "KB and persona data",
+      "updated_at_utc": "2026-09-19T11:47:05+00:00"
+    },
+    "household_income": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "QF.) 48% x Survey C To which occupational group does the Chief Income Earner in your household belongs to?",
+      "source_basis": "Human terminal input: O managerial/ professional/",
+      "updated_at_utc": "2026-09-19T11:50:39+00:00"
+    },
+    "occupation_group": {
+      "provenance": "declared",
+      "confidence": 0.96,
+      "question": "11090@~> °« @ 7.1 44%6 x Survey C accommodation, consider yourself the chief income earner. Please select an answer.",
+      "source_basis": "knowledge_base.json:current_title/seniority_level",
+      "updated_at_utc": "2026-09-19T12:08:29+00:00"
+    },
+    "county": {
+      "provenance": "declared",
+      "confidence": 0.98,
+      "question": "R- @ Fr .| 58% x Survey C Which of the following best describes the area in which you live?",
+      "source_basis": "knowledge_base.json:city",
+      "updated_at_utc": "2026-09-19T14:33:33+00:00"
+    },
+    "r_58_x_survey_c_how": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "R- @ | 58% x Survey C How many dependent children (under 18) do you have?",
+      "source_basis": "Human terminal input: 10",
+      "updated_at_utc": "2026-09-19T14:34:46+00:00"
+    },
+    "number_of_children": {
+      "provenance": "declared",
+      "confidence": 0.97,
+      "question": "41569@ - @ | 62% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "knowledge_base.json:number_of_children",
+      "updated_at_utc": "2026-09-19T15:12:59+00:00"
+    },
+    "child_age": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "Please state their ages Please specify a whole number. Please enter a whole number 1 Continue Â»",
+      "source_basis": "Human terminal input: 1",
+      "updated_at_utc": "2026-09-19T16:20:21+00:00"
+    },
+    "4419_f_65_x_survey_c": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "4419@ -; @ F.)/ 65% x Survey C < Bagels >",
+      "source_basis": "Human terminal input: 3+times per day",
+      "updated_at_utc": "2026-09-19T15:41:29+00:00"
+    },
+    "4459_f_65_x_survey_c": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "4459@ - @ F.)/ 65% x Survey C < Pancakes >",
+      "source_basis": "Human terminal input: Twice a day",
+      "updated_at_utc": "2026-09-19T15:43:55+00:00"
+    },
+    "carousel_errors_below_please_follow_the": {
+      "provenance": "inferred",
+      "confidence": 0.93,
+      "question": "51205@- @ | 68% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:09:47+00:00"
+    },
+    "carousel_accessibility_statement_help": {
+      "provenance": "inferred",
+      "confidence": 0.93,
+      "question": "51209@- @ = .!| 68% xX Survey C Select one in each row < Bagels > About the same | don't buy this type of bread",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:10:20+00:00"
+    },
+    "bread_bought_baps": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "559M A> @ | 74% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:57:27+00:00"
+    },
+    "bread_bought_buns": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "553° Aw @ | 73% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:50:29+00:00"
+    },
+    "bread_bought_rolls": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "555° Aw @ | 73% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:52:31+00:00"
+    },
+    "bread_bought_pitta": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "557° Aw @ | 73% x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T16:55:02+00:00"
+    },
+    "bread_bought_disagree_with_each_statement": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "48am - @ = .1| 80% x Survey C Here are some statements others have made in relation to the purchase and consumption of bread. Please indicate to what extent you agree or",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T17:45:56+00:00"
+    },
+    "649e_h_7_1_80_xx": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "649e@h - @ 7.1! 80%@ xX Survey C < | buy high fibre bread > Agree completely Agree somewhat Neither agree nor disagree",
+      "source_basis": "Human terminal input: Agree completely",
+      "updated_at_utc": "2026-09-19T17:53:40+00:00"
+    },
+    "bread_bought_agree_somewhat": {
+      "provenance": "inferred",
+      "confidence": 0.94,
+      "question": "658 eam: @ 2. 81%8 x Survey C There were problems with some of the data you entered in the survey. You will find the questions with errors below; please follow the",
+      "source_basis": "Default mid-scale for each carousel row",
+      "updated_at_utc": "2026-09-19T17:57:09+00:00"
+    },
+    "m_88_e_x_survey_c": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "m@@ - @ | 88%e x Survey C Which of the following claims would be important to you when choosing a bread to buy?",
+      "source_basis": "Human terminal input: No preservatives",
+      "updated_at_utc": "2026-09-19T19:58:09+00:00"
+    },
+    "ame_88_x_survey_c_following": {
+      "provenance": "declared",
+      "confidence": 1.0,
+      "question": "ame @ =| 88% x Survey C Which of the following claims would be important to you when choosing a bread to buy?",
+      "source_basis": "Human terminal input: Low in fat",
+      "updated_at_utc": "2026-09-19T20:08:07+00:00"
+    },
+    "bread_brands_aware": {
+      "provenance": "inferred",
+      "confidence": 0.9,
+      "question": "Please state what brands of breads you are aware of?",
+      "source_basis": "Common knowledge for Dublin, Ireland resident",
+      "updated_at_utc": "2026-09-19T20:22:34+00:00"
+    }
+  },
+  "learned_screen_actions": {
+    "7a884affa50435ff1921c363": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "I do not have any pets",
+        "kb_write": false,
+        "postcondition": "Selected 'I do not have any pets' as the answer.",
+        "answer_provenance": "inferred",
+        "selection_complete": true,
+        "target_coords": [
+          571,
+          1184
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "827bc3c9c13a73bf84ec7f12",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-18T18:16:39+00:00"
+    },
+    "d6c1ae8f8be29c155c7aecd9": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Ok",
+        "kb_key": "kb_key_not_applicable",
+        "kb_write": false,
+        "postcondition": "Consent overlay closed.",
+        "answer_provenance": "declared",
+        "selection_complete": false,
+        "target_coords": [
+          558,
+          1162
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "0f206fe9a908a8f8f226e20f",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-18T18:17:30+00:00"
+    },
+    "f59bf3d4e48c45ab27dbcd25": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Ireland",
+        "kb_write": false,
+        "postcondition": "Selected 'Ireland' as the current residence country.",
+        "answer_provenance": "declared",
+        "selection_complete": false,
+        "target_coords": [
+          140,
+          509
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "38d1f90986dd7da97291eb81",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-18T18:19:05+00:00"
+    },
+    "38d1f90986dd7da97291eb81": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Ireland",
+        "kb_write": false,
+        "postcondition": "The answer 'Ireland' is selected for the current residence question.",
+        "answer_provenance": "declared",
+        "selection_complete": true,
+        "target_coords": [
+          140,
+          482
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "fcfea6539b60a1ee609e9d47",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-18T18:19:30+00:00"
+    },
+    "ba72437bf240aaf4ca6d8ed0": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Ireland",
+        "kb_key": "country",
+        "kb_write": false,
+        "postcondition": "Selected 'Ireland' as the current country of residence.",
+        "answer_provenance": "declared",
+        "selection_complete": true
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "e208f9a6f4025198df0b0540",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-18T18:20:17+00:00"
+    },
+    "ffa7169bd96cfb1367e6cf57": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "type_text",
+        "target_text": "44",
+        "input_payload": "44",
+        "kb_key": "age",
+        "kb_write": true,
+        "postcondition": "Age entered and ready to proceed.",
+        "answer_provenance": "inferred",
+        "target_coords": [
+          133,
+          288
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "567a5c1d6f59bbf3cb2f886d",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T11:47:37+00:00"
+    },
+    "07447350eb48b3f6a1d74da0": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Tesco/Tesco Express",
+        "kb_key": "retailers_regular_tesco",
+        "kb_write": true,
+        "postcondition": "Tesco/Tesco Express checkbox is selected.",
+        "answer_provenance": "inferred",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "e81ce71adbeed54b3f136ff4",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:32:24+00:00"
+    },
+    "a2cd4bfddb89074a42db603d": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "SuperValu",
+        "kb_key": "regular_retailers",
+        "kb_write": true,
+        "postcondition": "SuperValu checkbox selected",
+        "answer_provenance": "inferred",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "c5640022f7302bfb6bd6ef4e",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:33:04+00:00"
+    },
+    "c5640022f7302bfb6bd6ef4e": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Marks and Spencer",
+        "kb_write": false,
+        "postcondition": "Marks and Spencer checkbox selected",
+        "answer_provenance": "inferred",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "694cadd3cd147cceb4ff3436",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:33:27+00:00"
+    },
+    "694cadd3cd147cceb4ff3436": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Centra",
+        "kb_key": "regular_retailers",
+        "kb_write": true,
+        "postcondition": "Centra option is selected",
+        "answer_provenance": "inferred",
+        "selection_complete": false,
+        "target_coords": [
+          516,
+          356
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "f10b1eb49423cc4355ccc2d9",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:33:50+00:00"
+    },
+    "4839bda333cd76170bf4d6e1": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "scroll_down",
+        "kb_write": false,
+        "postcondition": "Scrolled down to view Continue button or remaining options",
+        "answer_provenance": "inferred",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "8202997bad5e288048f299f7",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:34:40+00:00"
+    },
+    "8202997bad5e288048f299f7": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Tesco/Tesco Express",
+        "kb_key": "regular_retailers_tesco",
+        "kb_write": true,
+        "postcondition": "Tesco selected",
+        "answer_provenance": "inferred",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "1a7796380463e274b18e86a4",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:35:05+00:00"
+    },
+    "1a7796380463e274b18e86a4": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "scroll_down",
+        "kb_write": false,
+        "postcondition": "Scrolled down to view more options or continue",
+        "answer_provenance": "inferred",
+        "gesture_start": [
+          500,
+          800
+        ],
+        "gesture_end": [
+          500,
+          300
+        ],
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "fa9e07fba999016acf2b1839",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:35:33+00:00"
+    },
+    "fa9e07fba999016acf2b1839": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Costcutter",
+        "kb_key": "regular_retailers",
+        "kb_write": true,
+        "postcondition": "Costcutter is checked",
+        "answer_provenance": "inferred",
+        "selection_complete": false,
+        "target_coords": [
+          267,
+          267
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "9b28c4c631572edcfbca3145",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:36:00+00:00"
+    },
+    "9b28c4c631572edcfbca3145": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "scroll_down",
+        "kb_write": false,
+        "postcondition": "Scrolled down to view more retailers.",
+        "answer_provenance": "inferred",
+        "gesture_start": [
+          500,
+          700
+        ],
+        "gesture_end": [
+          500,
+          300
+        ],
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "ec162c0a3f7ad87e27f82c0f",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:36:29+00:00"
+    },
+    "ec162c0a3f7ad87e27f82c0f": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Circle K",
+        "kb_key": "retailers_regular_shopping",
+        "kb_write": true,
+        "postcondition": "Circle K selected",
+        "answer_provenance": "inferred",
+        "selection_complete": false,
+        "target_coords": [
+          258,
+          308
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "42876e58eb7cd05315d6e9eb",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:37:12+00:00"
+    },
+    "37471d62de746adc03fd7aa5": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "kb_write": false,
+        "postcondition": "Advances to the next survey question.",
+        "answer_provenance": "inferred",
+        "selection_complete": true,
+        "target_coords": [
+          500,
+          822
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "737c6c87b49171e91786919c",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:37:48+00:00"
+    },
+    "737c6c87b49171e91786919c": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Tesco/Tesco Express",
+        "kb_key": "grocery_store_spent_most",
+        "kb_write": true,
+        "postcondition": "Tesco/Tesco Express is selected.",
+        "answer_provenance": "inferred",
+        "selection_complete": true,
+        "target_coords": [
+          500,
+          665
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "3ca153ac455893da65038cc1",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:38:20+00:00"
+    },
+    "872943fc05b34831d35b87f9": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "2-4 times per week",
+        "kb_key": "bread_consumption_frequency",
+        "kb_write": true,
+        "postcondition": "Bread consumption row answered",
+        "answer_provenance": "inferred",
+        "row_text": "ANY TYPE OF BREAD/BAPS/BUNS/ROLLS",
+        "column_text": "2-4 times per week",
+        "selection_complete": false,
+        "target_coords": [
+          500,
+          835
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "d232d271d057ccbee1cbd67c",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:39:06+00:00"
+    },
+    "db8c7d87a74df2d4aca857df": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Never",
+        "kb_write": false,
+        "postcondition": "Row answered",
+        "answer_provenance": "inferred",
+        "row_text": "Burger Buns",
+        "column_text": "Never",
+        "selection_complete": false,
+        "target_coords": [
+          500,
+          680
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "ffecfcd652f98beca5f728d8",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:42:24+00:00"
+    },
+    "ffecfcd652f98beca5f728d8": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "2-4 times per week",
+        "kb_key": "rolls_consumption_frequency",
+        "kb_write": true,
+        "postcondition": "The consumption frequency for Rolls is selected.",
+        "answer_provenance": "inferred",
+        "row_text": "Rolls",
+        "column_text": "2-4 times per week",
+        "selection_complete": true,
+        "target_coords": [
+          500,
+          640
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "5dae6089ac99d680f19495ac",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:42:50+00:00"
+    },
+    "f78557ed06dde24b72ca4514": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "3+times per day",
+        "kb_key": "4419_f_65_x_survey_c",
+        "kb_write": true,
+        "postcondition": "The frequency option '3+times per day' is selected for Sliced Bread.",
+        "answer_provenance": "verified",
+        "selection_complete": true,
+        "target_coords": [
+          303,
+          313
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "6236e4c6876ead20b958f199",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:44:41+00:00"
+    },
+    "6236e4c6876ead20b958f199": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "kb_write": false,
+        "postcondition": "Advances to the next survey question.",
+        "answer_provenance": "verified",
+        "selection_complete": true
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "f885126271384d29c4d4a855",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T15:45:04+00:00"
+    },
+    "edbf36ef67c9455eb0604e4f": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "select_matrix_cell",
+        "kb_key": "bread_factor_price",
+        "kb_write": true,
+        "postcondition": "The Price row is answered, leaving other rows for subsequent steps.",
+        "answer_provenance": "inferred",
+        "row_text": "Price",
+        "column_text": "Most Important",
+        "selection_complete": false,
+        "target_coords": [
+          187,
+          510
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "c2b6e7f28d3b487d3067751a",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T17:59:56+00:00"
+    },
+    "c2b6e7f28d3b487d3067751a": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Brand",
+        "kb_key": "bread_factor_brand",
+        "kb_write": true,
+        "postcondition": "Brand row is selected",
+        "answer_provenance": "inferred",
+        "row_text": "Brand",
+        "column_text": "Most Important",
+        "selection_complete": false,
+        "target_coords": [
+          187,
+          577
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "341ba8d45674c6ec71c14396",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T18:00:18+00:00"
+    },
+    "f0988a31b927810cef1b1087": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "type_text",
+        "input_payload": "Brennans, Johnston Mooney & O'Brien",
+        "kb_key": "bread_brands_aware",
+        "kb_write": true,
+        "postcondition": "Bread brands entered into text box",
+        "answer_provenance": "inferred",
+        "selection_complete": true
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "f516d44f1a7f3c65a110975e",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T20:23:06+00:00"
+    },
+    "d204396d330be5e23646ab9c": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Brennans",
+        "kb_key": "bread_brands_aware",
+        "kb_write": false,
+        "postcondition": "Brennans checkbox is selected",
+        "answer_provenance": "verified",
+        "selection_complete": false,
+        "target_coords": [
+          216,
+          736
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "40651eb56eda58bae161039e",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T21:03:19+00:00"
+    },
+    "40651eb56eda58bae161039e": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Johnson, Mooney and O'Brien",
+        "kb_key": "bread_brands_aware",
+        "kb_write": false,
+        "postcondition": "Johnston Mooney & O'Brien is checked",
+        "answer_provenance": "verified",
+        "selection_complete": false
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "11927b9882039f8fcfae7fb5",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T21:03:38+00:00"
+    },
+    "11927b9882039f8fcfae7fb5": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "scroll_down",
+        "kb_key": "bread_brands_aware",
+        "kb_write": false,
+        "postcondition": "Scrolled down to reveal the Continue button.",
+        "answer_provenance": "verified",
+        "gesture_start": [
+          500,
+          700
+        ],
+        "gesture_end": [
+          500,
+          300
+        ],
+        "selection_complete": true
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "64d008fc63e36f362db9e4f0",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T21:03:57+00:00"
+    },
+    "64d008fc63e36f362db9e4f0": {
+      "phase": "survey_question",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "kb_write": false,
+        "postcondition": "Click Continue to proceed to the next survey screen.",
+        "answer_provenance": "verified",
+        "selection_complete": true,
+        "target_coords": [
+          721,
+          2546
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "2678d66483484c91070e190d",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T21:04:32+00:00"
+    },
+    "e8aea187f97cb5ef7cfffbd0": {
+      "phase": "survey_question",
+      "widget": "open_text",
+      "stem": "thinking about the brands bread shown below the",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "selection_complete": true,
+        "target_coords": [
+          499,
+          694
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "a29787c9ef510852585117ed",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T22:15:02+00:00"
+    },
+    "e10343a09d7118ec280c1aad": {
+      "phase": "navigation",
+      "widget": "continue",
+      "stem": "emeafocusvision com accessibility statement forsta worldwide inc committed",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "7f2fbfb34c406dffa91601a5",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-19T22:15:52+00:00"
+    },
+    "9c621f2521b92c54231c6148": {
+      "phase": "survey_landing",
+      "widget": "unknown",
+      "stem": "you qualified for click below get started and",
+      "decision": {
+        "action": "click",
+        "target_text": "Participate",
+        "kb_write": false,
+        "postcondition": "screen changed",
+        "answer_provenance": "verified",
+        "target_coords": [
+          499,
+          899
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "5d4e4989bfc42e7996d6ebd8",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-20T06:47:50+00:00"
+    },
+    "e1dc1e101d9407161cc50a58": {
+      "phase": "navigation",
+      "widget": "unknown",
+      "stem": "some exciting opportunities available details average length minutes",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "input_payload": "selected",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "14f2e081d1c3cfa878f4f360",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-20T06:48:07+00:00"
+    },
+    "ba1b40eade9511f4a251d27a": {
+      "phase": "navigation",
+      "widget": "unknown",
+      "stem": "some exciting opportunities available details average length minutes",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "input_payload": "selected",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "successes": 1,
+      "failures": 0,
+      "confidence": 0.8,
+      "next_signature": "fa12f73b6de50893f9e16442",
+      "transition_successes": 1,
+      "updated_at_utc": "2026-09-20T06:48:23+00:00"
+    }
+  },
+  "7_20_o9_r_8_1": "Fish",
+  "8_33_m_z_36_4": "€86,000 or more",
+  "944m_qgo_ol_44_6_x": "Public sector",
+  "9_45_mee_hl_44_x": "I am",
+  "loyalty_program_openness": "Enterprise Mobility Rewards",
+  "12_02_mad_37_8_x": "Close Button",
+  "household_income": "O managerial/ professional/",
+  "occupation_group": "Intermediate managerial/ professional/ administrative (e.g. Board director small organisation, middle manager, principle officer in civil service)",
+  "county": "Dublin",
+  "r_58_x_survey_c_how": "10",
+  "survey_lessons": {
+    "child_ages_text": {
+      "stems": [
+        "state their ages",
+        "enter a whole number",
+        "specify a whole number"
+      ],
+      "kb_key": "child_age",
+      "router": "child_age_text_decision"
+    },
+    "dependent_children_count": {
+      "stems": [
+        "how many dependent children",
+        "children (under 18)"
+      ],
+      "kb_key": "number_of_children",
+      "router": "dependent_children_decision"
+    },
+    "d1eb572439dc": {
+      "stems": [
+        "state their ages",
+        "enter a whole number",
+        "specify a whole number",
+        "survey there were problems with some"
+      ],
+      "successes": 3,
+      "failures": 1,
+      "kb_key": "child_age",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "kb_key": "child_age",
+        "input_payload": "8",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:31:59+00:00"
+    },
+    "57fa0b04934c": {
+      "stems": [
+        "state their ages",
+        "enter a whole number",
+        "specify a whole number",
+        "survey instructions attached each question please"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "child_age",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "kb_key": "child_age",
+        "input_payload": "8",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:29:37+00:00"
+    },
+    "1bf0067adbb9": {
+      "stems": [
+        "4346 survey which following retailers shop"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "retailers_regular_tesco",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Tesco/Tesco Express",
+        "kb_key": "retailers_regular_tesco",
+        "postcondition": "Tesco/Tesco Express checkbox is selected."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:32:24+00:00"
+    },
+    "42762af6952a": {
+      "stems": [
+        "4356 survey which following retailers shop"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:32:42+00:00"
+    },
+    "921d36d43e06": {
+      "stems": [
+        "4356 survey"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "regular_retailers",
+      "decision": {
+        "action": "click",
+        "target_text": "Marks and Spencer",
+        "postcondition": "Marks and Spencer checkbox selected"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:33:27+00:00"
+    },
+    "811f2a14b985": {
+      "stems": [
+        "survey"
+      ],
+      "successes": 7,
+      "failures": 1,
+      "kb_key": "bread_brands_aware",
+      "decision": {
+        "action": "scroll_down",
+        "kb_key": "bread_brands_aware",
+        "postcondition": "Scrolled down to reveal the Continue button."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:03:57+00:00"
+    },
+    "b8224aaf0421": {
+      "stems": [
+        "survey costcutter"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "regular_retailers",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "Scrolled down to view more retailers."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:36:30+00:00"
+    },
+    "5362ca63d908": {
+      "stems": [
+        "survey daybreak circle donnybrook fair other"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "retailers_regular_shopping",
+      "decision": {
+        "action": "toggle_checkbox",
+        "target_text": "Circle K",
+        "kb_key": "retailers_regular_shopping",
+        "postcondition": "Circle K selected"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:37:12+00:00"
+    },
+    "9703ea7c389c": {
+      "stems": [
+        "4409 survey daybreak circle donnybrook fair"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "Advances to the next survey question."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:37:48+00:00"
+    },
+    "d5fe22da7b6f": {
+      "stems": [
+        "4406 survey which these stores would"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "grocery_store_spent_most",
+      "decision": {
+        "action": "click",
+        "target_text": "Tesco/Tesco Express",
+        "kb_key": "grocery_store_spent_most",
+        "postcondition": "Tesco/Tesco Express is selected."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:38:20+00:00"
+    },
+    "1f0bb2332122": {
+      "stems": [
+        "4416 survey firstly want your views"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:38:41+00:00"
+    },
+    "d2efd18a7aed": {
+      "stems": [
+        "4416 survey often consume following currently"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_consumption_frequency",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "2-4 times per week",
+        "kb_key": "bread_consumption_frequency",
+        "postcondition": "Bread consumption row answered"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:39:06+00:00"
+    },
+    "f2b1d3464f2a": {
+      "stems": [
+        "4419 survey bagels"
+      ],
+      "successes": 2,
+      "failures": 1,
+      "kb_key": "4419_f_65_x_survey_c",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:41:59+00:00"
+    },
+    "f08f72a00e0a": {
+      "stems": [
+        "44490 survey accessibility statement help"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Never",
+        "postcondition": "Row answered"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:42:24+00:00"
+    },
+    "8e05ac407af2": {
+      "stems": [
+        "4459 survey rolls"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "rolls_consumption_frequency",
+      "decision": {
+        "action": "click",
+        "target_text": "2-4 times per week",
+        "kb_key": "rolls_consumption_frequency",
+        "postcondition": "The consumption frequency for Rolls is selected."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:42:50+00:00"
+    },
+    "b7de8d08ca13": {
+      "stems": [
+        "4459 survey pancakes"
+      ],
+      "successes": 1,
+      "failures": 1,
+      "kb_key": "4459_f_65_x_survey_c",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Twice a day",
+        "kb_key": "4459_f_65_x_survey_c",
+        "input_payload": "Twice a day",
+        "postcondition": "selected option is Twice a day"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:44:12+00:00"
+    },
+    "3d743991e37a": {
+      "stems": [
+        "44790 survey mfollsand other bread formats"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "4419_f_65_x_survey_c",
+      "decision": {
+        "action": "click",
+        "target_text": "3+times per day",
+        "kb_key": "4419_f_65_x_survey_c",
+        "postcondition": "The frequency option '3+times per day' is selected for Sliced Bread."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:44:41+00:00"
+    },
+    "10f2ee7c3a70": {
+      "stems": [
+        "4479 survey often consume following currently"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "Advances to the next survey question."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:45:04+00:00"
+    },
+    "fae568385621": {
+      "stems": [
+        "4479 survey thinking about your bread"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_consumption",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "About the same amount",
+        "kb_key": "bread_consumption",
+        "postcondition": "The matrix row is answered."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:45:27+00:00"
+    },
+    "e208e40bd4bb": {
+      "stems": [
+        "survey molisand other bread formats statement"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:45:47+00:00"
+    },
+    "821ed68c8382": {
+      "stems": [
+        "45006 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_consumption_sliced_bread",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Much more often",
+        "kb_key": "bread_consumption_sliced_bread",
+        "postcondition": "Option selected for the matrix row"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:48:13+00:00"
+    },
+    "d4ea43f40867": {
+      "stems": [
+        "45106 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:48:30+00:00"
+    },
+    "c85e5df2fd59": {
+      "stems": [
+        "451q0 survey change types bread bought"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_bagels_frequency",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "About the same",
+        "kb_key": "bread_bagels_frequency",
+        "postcondition": "Bagels row answered"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T15:48:50+00:00"
+    },
+    "e973b450b781": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "502065 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:00:26+00:00"
+    },
+    "bread_carousel": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought"
+      ],
+      "router": "carousel_row_decision"
+    },
+    "f028e2d3179a": {
+      "stems": [
+        "select one in each row",
+        "survey select each bagels about same"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "carousel_accessibility_statement_help",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_accessibility_statement_help",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:06:27+00:00"
+    },
+    "7c01c59b35ee": {
+      "stems": [
+        "select one in each row",
+        "survey select each baps about same"
+      ],
+      "successes": 4,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:11:28+00:00"
+    },
+    "091dd102395a": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "504065 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:02:12+00:00"
+    },
+    "68e63241e394": {
+      "stems": [
+        "select one in each row",
+        "0509 survey select each bagels about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_accessibility_statement_help",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_accessibility_statement_help",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:02:37+00:00"
+    },
+    "0f10d4c80d99": {
+      "stems": [
+        "select one in each row",
+        "0509 survey select each baps about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:03:19+00:00"
+    },
+    "ee44f89e4f78": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "506065 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:04:00+00:00"
+    },
+    "260ab14b9fa5": {
+      "stems": [
+        "select one in each row",
+        "06095 survey select each bagels about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_accessibility_statement_help",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_accessibility_statement_help",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:04:25+00:00"
+    },
+    "37d87ec0c84c": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "508065 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:06:02+00:00"
+    },
+    "1947dc50705b": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "51006 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:08:03+00:00"
+    },
+    "c9e7c7971fc9": {
+      "stems": [
+        "select one in each row",
+        "51009 survey select each bagels about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_accessibility_statement_help",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_accessibility_statement_help",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:08:27+00:00"
+    },
+    "13f46b178bd1": {
+      "stems": [
+        "select one in each row",
+        "511909 survey select each baps about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:09:20+00:00"
+    },
+    "8d06fa226dc3": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "51205 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_errors_below_please_follow_the",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_errors_below_please_follow_the",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:10:04+00:00"
+    },
+    "82216e7e0e03": {
+      "stems": [
+        "select one in each row",
+        "51209 survey select each bagels about"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "carousel_accessibility_statement_help",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "carousel_accessibility_statement_help",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:10:31+00:00"
+    },
+    "1d582df9f94d": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "survey there were problems with some"
+      ],
+      "successes": 4,
+      "failures": 4,
+      "kb_key": "bread_bought_pitta",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "bread_bought_pitta",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:55:16+00:00"
+    },
+    "49635da931ba": {
+      "stems": [
+        "select one in each row",
+        "survey select each burger buns about"
+      ],
+      "successes": 3,
+      "failures": 1,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:50:11+00:00"
+    },
+    "e7dd26fb2835": {
+      "stems": [
+        "select one in each row",
+        "survey select each rolls about same"
+      ],
+      "successes": 1,
+      "failures": 3,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:52:12+00:00"
+    },
+    "a6fb30fbecd4": {
+      "stems": [
+        "select one in each row",
+        "survey select each pancakes about same"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Next row",
+        "input_payload": "Rolls",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:53:15+00:00"
+    },
+    "c119f893464c": {
+      "stems": [
+        "select one in each row",
+        "survey select each pitta bread about"
+      ],
+      "successes": 1,
+      "failures": 3,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:54:44+00:00"
+    },
+    "addbb1615fae": {
+      "stems": [
+        "select one in each row",
+        "558f fill survey select each sliced"
+      ],
+      "successes": 1,
+      "failures": 3,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:57:04+00:00"
+    },
+    "09795e927253": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "559m survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_bought_baps",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "bread_bought_baps",
+        "input_payload": "About the same",
+        "postcondition": "selected option is About the same"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T16:57:45+00:00"
+    },
+    "b2c9f8dae9a6": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "600m survey there were problems with"
+      ],
+      "successes": 0,
+      "failures": 2,
+      "kb_key": null,
+      "decision": {},
+      "last_issue": "screen changed",
+      "updated_at_utc": "2026-09-19T16:59:25+00:00"
+    },
+    "1bffd9ee98dd": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "623m survey there were problems with"
+      ],
+      "successes": 0,
+      "failures": 4,
+      "kb_key": null,
+      "decision": {},
+      "last_issue": "screen changed",
+      "updated_at_utc": "2026-09-19T17:23:54+00:00"
+    },
+    "91c0d8d6831d": {
+      "stems": [
+        "select one in each row",
+        "types of bread bought",
+        "sven survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:45:20+00:00"
+    },
+    "b506e7b282af": {
+      "stems": [
+        "select one in each row",
+        "48am survey here some statements others"
+      ],
+      "successes": 0,
+      "failures": 1,
+      "kb_key": "bread_bought_disagree_with_each_statement",
+      "decision": {},
+      "last_issue": "selected option is About the same",
+      "updated_at_utc": "2026-09-19T17:46:12+00:00"
+    },
+    "2bb0e14475b3": {
+      "stems": [
+        "649e survey high fibre bread agree"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "649e_h_7_1_80_xx",
+      "decision": {
+        "action": "type_text",
+        "target_text": "649e_h_7_1_80_xx input field",
+        "kb_key": "649e_h_7_1_80_xx",
+        "input_payload": "Agree completely",
+        "postcondition": "field contains Agree completely"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:54:17+00:00"
+    },
+    "72bacaf30c34": {
+      "stems": [
+        "6579008 survey only bread which freshly"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:54:34+00:00"
+    },
+    "10e5be290776": {
+      "stems": [
+        "select one in each row",
+        "survey there were problems with some"
+      ],
+      "successes": 0,
+      "failures": 2,
+      "kb_key": "bread_bought_agree_somewhat",
+      "decision": {},
+      "last_issue": "selected option is About the same",
+      "updated_at_utc": "2026-09-19T17:57:25+00:00"
+    },
+    "8d1d619bdcaa": {
+      "stems": [
+        "survey always bread from statement"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:56:05+00:00"
+    },
+    "d02c660a2d42": {
+      "stems": [
+        "select one in each row",
+        "000q survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:58:12+00:00"
+    },
+    "c13ef2895e28": {
+      "stems": [
+        "701900 survey this section survey like"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "Scrolled down to reveal more instructions and continue control."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:58:50+00:00"
+    },
+    "7938893f061f": {
+      "stems": [
+        "701900 survey options then will select"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "scrolled down to view survey content"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:59:16+00:00"
+    },
+    "5c4f62334374": {
+      "stems": [
+        "survey ytcase vicw cutmparisurt each other"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T17:59:35+00:00"
+    },
+    "f771bd2acb7c": {
+      "stems": [
+        "survey what factors were most important"
+      ],
+      "successes": 57,
+      "failures": 7,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:51:55+00:00"
+    },
+    "7161dc50efce": {
+      "stems": [
+        "0608 survey what factors were most"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Least Important",
+        "kb_key": "bread_factor_least",
+        "postcondition": "maxdiff least selected"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T18:12:23+00:00"
+    },
+    "5ecdaf073c1f": {
+      "stems": [
+        "survey least important deciding what bread"
+      ],
+      "successes": 7,
+      "failures": 0,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:18:20+00:00"
+    },
+    "2683369b60ec": {
+      "stems": [
+        "survey deciding what bread screen most"
+      ],
+      "successes": 3,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:26:33+00:00"
+    },
+    "006f968e605a": {
+      "stems": [
+        "survey most replace with least important"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:04:02+00:00"
+    },
+    "eb988af92159": {
+      "stems": [
+        "survey fivifurtant wnicn were least important"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:14:58+00:00"
+    },
+    "a20e89d8e128": {
+      "stems": [
+        "full survey what factors were most"
+      ],
+      "successes": 1,
+      "failures": 3,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:23:47+00:00"
+    },
+    "521728a0291e": {
+      "stems": [
+        "survey trvvig nzinufnuin deciding what bread"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:36:55+00:00"
+    },
+    "9165ed964bd6": {
+      "stems": [
+        "survey important which were least important"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:39:24+00:00"
+    },
+    "3c7a0ab4bdf2": {
+      "stems": [
+        "844m survey what factors were most"
+      ],
+      "successes": 3,
+      "failures": 0,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:44:07+00:00"
+    },
+    "2b412f15d702": {
+      "stems": [
+        "survey rimivpurtant dana writtith were least"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:47:07+00:00"
+    },
+    "02985f280828": {
+      "stems": [
+        "850a survey what factors were most"
+      ],
+      "successes": 3,
+      "failures": 0,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:48:45+00:00"
+    },
+    "5adcaad144e8": {
+      "stems": [
+        "851a survey screen most replace with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:49:34+00:00"
+    },
+    "bb6d7dd26929": {
+      "stems": [
+        "852a survey what factors were most"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_factor_most",
+      "decision": {
+        "action": "select_matrix_cell",
+        "target_text": "Most Important",
+        "kb_key": "bread_factor_most",
+        "postcondition": "maxdiff most selected"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:50:15+00:00"
+    },
+    "a3eb5b98bb6c": {
+      "stems": [
+        "854am survey important which were least"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:52:27+00:00"
+    },
+    "eb677c77a63f": {
+      "stems": [
+        "855m survey what factors were most"
+      ],
+      "successes": 3,
+      "failures": 0,
+      "kb_key": "bread_factor_least",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:54:14+00:00"
+    },
+    "7ef3ffb8cc24": {
+      "stems": [
+        "857m survey what factors were most"
+      ],
+      "successes": 1,
+      "failures": 3,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T19:57:19+00:00"
+    },
+    "f9b924d0856b": {
+      "stems": [
+        "survey which following claims would important"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "ame_88_x_survey_c_following",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Low in fat",
+        "kb_key": "ame_88_x_survey_c_following",
+        "input_payload": "Low in fat",
+        "postcondition": "selected option is Low in fat"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:08:24+00:00"
+    },
+    "a6c7128a113f": {
+      "stems": [
+        "survey immune boosting easy digest performance"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:21:47+00:00"
+    },
+    "cb7c31d67760": {
+      "stems": [
+        "survey which following claims would most"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_claims",
+      "decision": {
+        "action": "select_option",
+        "target_text": "No preservatives",
+        "kb_key": "bread_claims",
+        "postcondition": "selected option is No preservatives"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:22:04+00:00"
+    },
+    "315b8aa48922": {
+      "stems": [
+        "survey thinking about bread your children"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "m_75_11_91_b_xx",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Yes, mostly the same bread",
+        "kb_key": "m_75_11_91_b_xx",
+        "input_payload": "Yes, mostly the same bread",
+        "postcondition": "selected option is Yes, mostly the same bread"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:22:17+00:00"
+    },
+    "76a397ab9489": {
+      "stems": [
+        "survey please state what brands breads"
+      ],
+      "successes": 3,
+      "failures": 1,
+      "kb_key": "open_text_comment",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:38:11+00:00"
+    },
+    "5539a3c4a563": {
+      "stems": [
+        "survey brennans johnston mooney obrien other"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:38:24+00:00"
+    },
+    "ce2021e3bc6e": {
+      "stems": [
+        "survey there were problems with some"
+      ],
+      "successes": 8,
+      "failures": 24,
+      "kb_key": "hovis_unavailable_action",
+      "decision": {
+        "action": "select_then_continue",
+        "target_text": "Buy another brand of bread",
+        "kb_key": "hovis_unavailable_action",
+        "input_payload": "Buy another brand of bread",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T22:14:43+00:00"
+    },
+    "5a260b83d1e9": {
+      "stems": [
+        "survey other brand bread think please"
+      ],
+      "successes": 4,
+      "failures": 0,
+      "kb_key": "open_text_comment",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:01:54+00:00"
+    },
+    "188962ae62aa": {
+      "stems": [
+        "9546 survey there were problems with"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "open_text_comment",
+      "decision": {
+        "action": "type_text",
+        "target_text": "comment box",
+        "kb_key": "open_text_comment",
+        "input_payload": "This is a clear and useful written answer that meets the minimum word requirement for the question.",
+        "postcondition": "field contains at least 5 words"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T20:51:52+00:00"
+    },
+    "c04f9a7d8c35": {
+      "stems": [
+        "emeafocusvision accessibility statement forsta worldwide committed"
+      ],
+      "successes": 2,
+      "failures": 2,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T22:15:52+00:00"
+    },
+    "059e27a56a76": {
+      "stems": [
+        "survey which following brands bread aware"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "bread_claims",
+      "decision": {
+        "action": "scroll_down",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:03:01+00:00"
+    },
+    "21a936f16bce": {
+      "stems": [
+        "survey kingsmill mccloskeys gallaghers mccambridges others"
+      ],
+      "successes": 1,
+      "failures": 1,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "Click Continue to proceed to the next survey screen."
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:04:32+00:00"
+    },
+    "b08f3fde4294": {
+      "stems": [
+        "survey which following brands bread have"
+      ],
+      "successes": 6,
+      "failures": 0,
+      "kb_key": "bread_claims",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "kb_key": "bread_claims",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:30:36+00:00"
+    },
+    "0ce4f4bd49ea": {
+      "stems": [
+        "24m65 survey there were problems with"
+      ],
+      "successes": 0,
+      "failures": 1,
+      "kb_key": "bread_brands_bought",
+      "decision": {},
+      "last_issue": "selected option is Johnson, Mooney and O'Brien",
+      "updated_at_utc": "2026-09-19T21:22:27+00:00"
+    },
+    "20a7d40772e9": {
+      "stems": [
+        "survey which following brands bread most"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "o_21_98_x_survey_c",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Hovis",
+        "kb_key": "o_21_98_x_survey_c",
+        "input_payload": "Hovis",
+        "postcondition": "selected option is Hovis"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:30:51+00:00"
+    },
+    "90bdbb5f0160": {
+      "stems": [
+        "survey which following brands would your"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "go_q_98_8_x_survey",
+      "decision": {
+        "action": "select_option",
+        "target_text": "Hovis",
+        "kb_key": "go_q_98_8_x_survey",
+        "input_payload": "Hovis",
+        "postcondition": "selected option is Hovis"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:31:06+00:00"
+    },
+    "96242b0b071a": {
+      "stems": [
+        "survey thinking about following bread brands"
+      ],
+      "successes": 2,
+      "failures": 0,
+      "kb_key": "bread_brand_brennans",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:32:11+00:00"
+    },
+    "cdf5f386245b": {
+      "stems": [
+        "survey johnson mooney brien about same"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "bread_brand_frequency",
+      "decision": {
+        "action": "click",
+        "target_text": "About the same",
+        "kb_key": "bread_brand_frequency",
+        "postcondition": "Option selected"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:31:40+00:00"
+    },
+    "0a8cb50f039d": {
+      "stems": [
+        "survey hovis brand"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": "brand_frequency_hovis",
+      "decision": {
+        "action": "select_option",
+        "target_text": "About the same",
+        "kb_key": "brand_frequency_hovis",
+        "postcondition": "Selected option for Hovis frequency"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:31:59+00:00"
+    },
+    "c7d0b307a97d": {
+      "stems": [
+        "survey hovis available store when were"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue »",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T21:32:22+00:00"
+    },
+    "c655d82ba626": {
+      "stems": [
+        "select one in each row",
+        "survey thinking about brands bread shown"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-19T22:15:02+00:00"
+    },
+    "f4c0e80be04e": {
+      "stems": [
+        "balance best games games haven started"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Featured Survey 7 min ?",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-20T06:41:02+00:00"
+    },
+    "378122195c98": {
+      "stems": [
+        "qualified this survey click below started"
+      ],
+      "successes": 1,
+      "failures": 0,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Participate",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "",
+      "updated_at_utc": "2026-09-20T06:47:50+00:00"
+    },
+    "e1e54e118418": {
+      "stems": [
+        "survey have some exciting survey opportunities"
+      ],
+      "successes": 2,
+      "failures": 8,
+      "kb_key": null,
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "input_payload": "selected",
+        "postcondition": "screen changed"
+      },
+      "last_issue": "screen changed",
+      "updated_at_utc": "2026-09-20T07:22:08+00:00"
+    }
+  },
+  "4419_f_65_x_survey_c": "3+times per day",
+  "4459_f_65_x_survey_c": "Twice a day",
+  "carousel_errors_below_please_follow_the": "About the same",
+  "carousel_accessibility_statement_help": "About the same",
+  "bread_bought_baps": "About the same",
+  "bread_bought_buns": "About the same",
+  "bread_bought_rolls": "About the same",
+  "bread_bought_pitta": "About the same",
+  "bread_bought_disagree_with_each_statement": "About the same",
+  "649e_h_7_1_80_xx": "Agree completely",
+  "bread_bought_agree_somewhat": "About the same",
+  "m_88_e_x_survey_c": [
+    "No preservatives"
+  ],
+  "ame_88_x_survey_c_following": [
+    "Low in fat"
+  ],
+  "bread_brands_aware": "Brennans, Johnston Mooney & O'Brien",
+  "rl_policy": {
+    "select_one|brennans was not available store you were shoppi": {
+      "q": 0.975,
+      "n": 7,
+      "action_id": "select_then_continue|buy another brand of bread",
+      "decision": {
+        "action": "select_then_continue",
+        "target_text": "Buy another brand of bread",
+        "input_payload": "Buy another brand of bread",
+        "kb_key": "hovis_unavailable_action",
+        "postcondition": "screen changed",
+        "target_coords": [
+          140,
+          493
+        ]
+      },
+      "reward": 1.0,
+      "widget": "select_one",
+      "updated": "2026-09-20T07:21:21+00:00"
+    },
+    "select_one|*": {
+      "q": 0.523,
+      "n": 21,
+      "action_id": "select_then_continue|buy another brand of bread",
+      "decision": {
+        "action": "select_then_continue",
+        "target_text": "Buy another brand of bread",
+        "input_payload": "Buy another brand of bread",
+        "kb_key": "hovis_unavailable_action",
+        "postcondition": "screen changed",
+        "target_coords": [
+          140,
+          493
+        ]
+      },
+      "reward": 1.0,
+      "widget": "select_one",
+      "updated": "2026-09-20T07:21:21+00:00"
+    },
+    "select_one|ilable store you were shopping you answer one": {
+      "q": 0.029,
+      "n": 13,
+      "action_id": "select_then_continue|buy another brand of bread",
+      "decision": {
+        "action": "select_then_continue",
+        "target_text": "Buy another brand of bread",
+        "input_payload": "Buy another brand of bread",
+        "kb_key": "hovis_unavailable_action",
+        "postcondition": "screen changed",
+        "target_coords": [
+          140,
+          583
+        ]
+      },
+      "reward": 1.0,
+      "widget": "select_one",
+      "updated": "2026-09-19T22:14:43+00:00"
+    },
+    "open_text|thinking about the brands bread shown below the": {
+      "q": 0.745,
+      "n": 1,
+      "action_id": "click|continue â»",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "target_coords": [
+          499,
+          694
+        ]
+      },
+      "reward": 1.2,
+      "widget": "open_text",
+      "updated": "2026-09-19T22:15:02+00:00"
+    },
+    "open_text|*": {
+      "q": 0.825,
+      "n": 2,
+      "action_id": "click|continue â»",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "target_coords": [
+          499,
+          694
+        ]
+      },
+      "reward": 1.2,
+      "widget": "open_text",
+      "updated": "2026-09-19T22:15:02+00:00"
+    },
+    "continue|emeafocusvision com accessibility statement fors": {
+      "q": 0.37,
+      "n": 3,
+      "action_id": "click|continue â»",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "reward": 1.2,
+      "widget": "continue",
+      "updated": "2026-09-19T22:15:52+00:00"
+    },
+    "continue|*": {
+      "q": 0.162,
+      "n": 4,
+      "action_id": "click|continue â»",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "reward": -0.5,
+      "widget": "continue",
+      "updated": "2026-09-19T22:15:52+00:00"
+    },
+    "dashboard|balance best games games you haven started any": {
+      "q": 0.675,
+      "n": 1,
+      "action_id": "click|featured survey 7 min ?",
+      "decision": {
+        "action": "click",
+        "target_text": "Featured Survey 7 min ?",
+        "postcondition": "screen changed",
+        "target_coords": [
+          284,
+          608
+        ]
+      },
+      "reward": 1.0,
+      "widget": "dashboard",
+      "updated": "2026-09-20T06:41:02+00:00"
+    },
+    "dashboard|*": {
+      "q": 0.732,
+      "n": 2,
+      "action_id": "click|featured survey 7 min ?",
+      "decision": {
+        "action": "click",
+        "target_text": "Featured Survey 7 min ?",
+        "postcondition": "screen changed",
+        "target_coords": [
+          284,
+          608
+        ]
+      },
+      "reward": 1.0,
+      "widget": "dashboard",
+      "updated": "2026-09-20T06:41:02+00:00"
+    },
+    "unknown|you qualified for click below get started and": {
+      "q": 0.141,
+      "n": 5,
+      "action_id": "click|participate",
+      "decision": {
+        "action": "click",
+        "target_text": "Participate",
+        "postcondition": "screen changed",
+        "target_coords": [
+          499,
+          899
+        ]
+      },
+      "reward": 1.0,
+      "widget": "unknown",
+      "updated": "2026-09-20T06:47:50+00:00"
+    },
+    "unknown|*": {
+      "q": -0.117,
+      "n": 16,
+      "action_id": "click|selected",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "input_payload": "selected",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "reward": -0.5,
+      "widget": "unknown",
+      "updated": "2026-09-20T07:22:08+00:00"
+    },
+    "unknown|some exciting opportunities available details av": {
+      "q": -0.456,
+      "n": 10,
+      "action_id": "click|selected",
+      "decision": {
+        "action": "click",
+        "target_text": "Continue Â»",
+        "input_payload": "selected",
+        "postcondition": "screen changed",
+        "target_coords": [
+          500,
+          780
+        ]
+      },
+      "reward": -0.5,
+      "widget": "unknown",
+      "updated": "2026-09-20T07:22:08+00:00"
+    }
+  }
+}

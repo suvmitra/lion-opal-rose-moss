@@ -1,0 +1,64 @@
+{
+  "knowledge_base_version": "24.0.7",
+  "city": "Dublin",
+  "country": "Ireland",
+  "postal_code": "D22V048",
+  "area_code": "D22",
+  "employment_status": "Employed Full-Time",
+  "industry": "Information Technology",
+  "education": "Master's Degree",
+  "age_range": "40-45",
+  "has_children": "Yes",
+  "number_of_children": 1,
+  "child_gender": "Boy",
+  "child_age": 8,
+  "parent_of_3_to_5_year_old": "No",
+  "parent_of_6_to_10_year_old": "Yes",
+  "smoking_status": "No, I don't smoke",
+  "full_name": "Suvabrata Mitra",
+  "age": 44,
+  "gender": "Male",
+  "marital_status": "Married",
+  "nationality_residency": "Indian / Resident in Ireland",
+  "current_title": "Lead Data Scientist / Senior Manager",
+  "company": "Cognizant Technology Solutions",
+  "total_experience_years": "19+ years",
+  "seniority_level": "Senior Lead / Management",
+  "company_size": "10,000+ employees",
+  "housing": "Renting Apartment (Dublin)",
+  "tech_adoption": "Early Adopter / Tech Enthusiast",
+  "primary_transport": "Public Transit / Commuter",
+  "flight_types": "Both domestic and international",
+  "profile_sources": {
+    "linkedin": "https://www.linkedin.com/in/suvabratalive/",
+    "github": "https://github.com/mitrasuvabrata-eng",
+    "resume": "Suvabrata Mitra_AIML Lead Data Scientist.pdf",
+    "linkedin_note": "User-provided profile URL; only verified or locally supplied profile facts may be treated as factual."
+  },
+  "answer_policy": {
+    "allow_reasonable_personal_inference": true,
+    "persist_inferred_answers_for_consistency": true,
+    "prefer_substantive_answer_over_escape_link": true,
+    "label_inferred_answers": true,
+    "restricted_inference_categories": ["medical", "legal", "financial", "credentials", "security"]
+  },
+  "personal_question_fallbacks": {
+    "flight_types": {
+      "kb_key": "flight_types",
+      "question_keywords": ["when you fly", "types of flights"],
+      "answer": "Both domestic and international",
+      "provenance": "inferred",
+      "confidence": 0.72,
+      "source_basis": "User-authorized inference from residence/nationality and international professional context; not a directly verified travel record."
+    }
+  },
+  "answer_metadata": {
+    "flight_types": {
+      "provenance": "inferred",
+      "confidence": 0.72,
+      "question": "When you fly, which types of flights do you take?",
+      "source_basis": "User-authorized inference from residence/nationality and international professional context; not a directly verified travel record.",
+      "seeded_in_version": "24.0.5"
+    }
+  }
+}

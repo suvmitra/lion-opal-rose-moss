@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Key-In Desk",
+      "hasCanvas": false,
+      "bodyTextLen": 1231,
+      "bodyTextHash": "044d60bb9ab487fe667ea5285d721d56358a41c97ad0b4903740fcd74d6f80d8",
+      "bodyTextPrefix": "SURVEY RUNNER · V24.0.17 Key-In Desk When the model goes silent ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Key-In Desk",
+      "hasCanvas": false,
+      "bodyTextLen": 1231,
+      "bodyTextHash": "df07f7cc71f2d5c5b614dd1a0712679535cf10b7193295ae05d2bd8e91d2b927",
+      "bodyTextPrefix": "SURVEY RUNNER · V24.0.17 Key-In Desk When the model goes silent ",
+      "horizontalOverflow": true,
+      "consoleErrors": [],
+      "pageErrors": [
+        "Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:\n\n- A server/client branch `if (typeof window !== 'undefined')`.\n- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.\n- Date formatting in a user's locale which doesn't match the server.\n- External changing data without sending a snapshot of it along with the HTML.\n- Invalid HTML tag nesting.\n\nIt can also happen if the client has a browser extension installed which messes with the HTML before React loaded.\n\nhttps://react.dev/link/hydration-mismatch\n\n  ...\n    <SafeFragment fallback={null}>\n      <CatchBoundary getResetKey={function getResetKey} errorComponent={function AppErrorComponent} ...>\n        <SafeFragment fallback={function fallback}>\n          <MatchInnerImpl match={{id:\"//\",ssr:true, ...}}>\n            <Lazy>\n              <Home>\n                <KeyInDesk>\n                  <main className=\"min-h-dvh ...\">\n                    <div className=\"mx-auto fl...\">\n                      <header>\n                      <section className=\"grid items...\">\n                        <PhoneSurvey>\n                        <OperatorPanel input=\"\" error=\"\" phase=\"waiting\" kb={{...}} log={[...]} inputRef={{current:null}} ...>\n                          <div className=\"flex flex-...\">\n                            <section>\n                            <section className=\"bg-surface...\">\n                              <div>\n                              <ol className=\"flex max-h...\">\n                                <li className=\"flex gap-3...\">\n                                  <span className=\"text-faint w-20 shrink-0 font-mono text-xs tabular-nums\">\n+                                   05:45:52 PM\n-                                   05:45:51 PM\n                                  ...\n                                ...\n                            ...\n"
+      ],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

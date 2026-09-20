@@ -1,0 +1,5 @@
+timestamp,step,action,target,payload,decision_source,confidence,learned_action_confidence,screen_phase,post_action_phase,postcondition,verified,success,changed,message
+2026-09-20T10:21:41,1,click,Start!,,router,0.97,,survey_landing,survey_landing,screen changed,False,True,False,"click executed at (622,981)."
+2026-09-20T10:21:49,2,click,Start!,,router,0.97,,survey_landing,survey_landing,screen changed,False,True,False,"click executed at (622,981)."
+2026-09-20T10:21:57,3,click,Start!,,router,0.97,,survey_landing,survey_landing,screen changed,False,True,False,"click executed at (622,981)."
+2026-09-20T10:22:05,4,click,Start!,,router,0.97,,survey_landing,survey_landing,screen changed,False,True,False,"click executed at (622,981)."
