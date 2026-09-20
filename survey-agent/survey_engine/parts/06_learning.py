@@ -497,7 +497,12 @@ def _continue_decision(obs: Observation, reason: str, payload: Optional[str] = N
         found = maxdiff_continue_coords(obs) or continue_button_on_screen(obs)
     except Exception:
         found = None
-    coords = found[0] if found else [500, 780]
+    coords = found[0] if found else [500, 910]
+    bars = orange_cta_milli(obs, 0.84, 0.98)
+    if bars:
+        lowest = [500, max(int(b[1]) for b in bars)]
+        if not found or int(coords[1]) < 860:
+            coords = lowest
     label = found[1] if found and len(found) > 1 else "Continue »"
     return {
         "screen_state": "survey_question",
@@ -639,6 +644,8 @@ def rl_policy_decision(obs: Observation) -> Optional[dict[str, Any]]:
         return None
     q = float(entry.get("q") or 0)
     if q < RL_MIN_Q:
+        return None
+    if county_list_context(obs):
         return None
     template = entry.get("decision") if isinstance(entry.get("decision"), dict) else {}
     action = str(template.get("action") or "")

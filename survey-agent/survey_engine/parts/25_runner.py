@@ -209,7 +209,7 @@ def main() -> int:
             elif open_text_question_visible(obs.ocr_text):
                 obs.screen_phase = "survey_question"
                 decision = open_text_answer_decision(obs)
-            elif county_question_visible(obs.ocr_text):
+            elif county_list_context(obs):
                 obs.screen_phase = "survey_question"
                 decision = county_dropdown_decision(obs)
             elif children_count_question_visible(obs.ocr_text):

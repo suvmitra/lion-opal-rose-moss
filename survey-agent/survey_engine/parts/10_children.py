@@ -64,22 +64,25 @@ def numeric_radio_labels(obs: Observation) -> list[str]:
 
 
 def continue_button_on_screen(obs: Observation) -> Optional[tuple[list[int], str]]:
-    """Return milli-coords for Continue/Next only if it sits in the content band."""
+    """Lowest Continue/Next on screen, including the sticky footer (~y=0.90)."""
     height = max(1, int(obs.image_height or obs.device_height or 1))
     width = max(1, int(obs.image_width or obs.device_width or 1))
     labels = ("Continue »", "Continue", "Next »", "Next")
+    hits: list[tuple[list[int], str]] = []
     if obs.screenshot and Path(str(obs.screenshot)).exists():
         for label in labels:
             hit = ocr_text_center(Path(obs.screenshot), label)
             if not hit:
                 continue
             yf = hit[1] / height
-            if 0.48 <= yf <= 0.86:
-                coords = [
-                    int(max(80, min(920, hit[0] * 1000 / width))),
-                    int(max(500, min(860, hit[1] * 1000 / height))),
-                ]
-                return coords, label
+            if 0.48 <= yf <= 0.96:
+                hits.append((
+                    [
+                        int(max(80, min(920, hit[0] * 1000 / width))),
+                        int(max(500, min(940, hit[1] * 1000 / height))),
+                    ],
+                    label,
+                ))
     for node in obs.ui_nodes or []:
         text = node_text(node)
         if not text or not is_progression_cta(text):
@@ -88,17 +91,21 @@ def continue_button_on_screen(obs: Observation) -> Optional[tuple[list[int], str
             continue
         cx, cy = node_center(node)
         yf = cy / height
-        if yf > 0.86:
+        if yf > 0.96:
             continue
-        coords = [
-            int(max(80, min(920, cx * 1000 / width))),
-            int(max(500, min(860, cy * 1000 / height))),
-        ]
-        return coords, text
-    if not (obs.screenshot and Path(str(obs.screenshot)).exists()):
-        label = visible_progression_label(obs.ocr_text)
-        if label:
-            return [500, 820], label
+        hits.append((
+            [
+                int(max(80, min(920, cx * 1000 / width))),
+                int(max(500, min(940, cy * 1000 / height))),
+            ],
+            text,
+        ))
+    if hits:
+        hits.sort(key=lambda item: item[0][1])
+        return hits[-1]
+    bars = orange_cta_milli(obs, 0.84, 0.98)
+    if bars:
+        return [500, max(int(b[1]) for b in bars)], "Continue"
     return None
 
 

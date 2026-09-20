@@ -418,28 +418,50 @@ def county_picked_visual(obs: Observation) -> bool:
     return False
 
 
+def county_list_context(obs: Observation) -> bool:
+    """County list even when OCR is only the status bar."""
+    if county_question_visible(obs.ocr_text) or county_dropdown_open(obs.ocr_text):
+        return True
+    if _COUNTY_SESSION.get("picked"):
+        return True
+    if len(visible_counties_in_ocr_order(obs.ocr_text)) >= 2:
+        return True
+    bottom = orange_cta_milli(obs, 0.84, 0.98)
+    mid = orange_cta_milli(obs, 0.16, 0.84)
+    return bool(bottom and mid)
+
+
 def county_continue_coords(obs: Observation) -> Optional[list[int]]:
-    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    for bar in orange_cta_milli(obs, 0.74, 0.96):
-        if int(bar[1]) >= 740:
-            return [500, int(bar[1])]
-    if "continue" in blob:
-        return [500, 875]
-    return None
+    """Sticky footer Continue = lowest orange bar, never the selected county row."""
+    bars = orange_cta_milli(obs, 0.84, 0.98)
+    if bars:
+        return [500, max(860, max(int(b[1]) for b in bars))]
+    found = continue_button_on_screen(obs)
+    if found and int(found[0][1]) >= 860:
+        return found[0]
+    if "continue" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower()):
+        return [500, 910]
+    return [500, 910] if bars or orange_cta_milli(obs, 0.86, 0.98) else None
 
 
 def county_selection_complete(obs: Observation) -> bool:
+    wanted = intended_county(obs).lower()
+    if not county_dropdown_open(obs.ocr_text):
+        shown = county_displayed_value(obs)
+        if shown and shown.lower() != wanted:
+            _COUNTY_SESSION["picked"] = False
+            return False
+        if shown and shown.lower() == wanted:
+            _COUNTY_SESSION["picked"] = True
+            return True
     if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
         _COUNTY_SESSION["picked"] = True
         return True
-    if county_dropdown_open(obs.ocr_text):
-        return False
-    shown = county_displayed_value(obs)
-    return bool(shown and shown.lower() == intended_county(obs).lower())
+    return False
 
 
 def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    if not county_question_visible(obs.ocr_text):
+    if not county_list_context(obs):
         _COUNTY_SESSION["picked"] = False
         return None
     wanted = intended_county(obs)
@@ -464,41 +486,61 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "source_basis": "knowledge_base.json:city",
             "selection_complete": True,
         }
-    if county_dropdown_open(obs.ocr_text):
+    list_open = county_dropdown_open(obs.ocr_text) or bool(
+        orange_cta_milli(obs, 0.16, 0.84) and orange_cta_milli(obs, 0.84, 0.98)
+    )
+    if list_open:
         _COUNTY_OPEN_TRIES["county"] = 0
-        if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
+        cont = county_continue_coords(obs)
+        dcoords = county_option_coords(obs, wanted)
+        if dcoords and int(dcoords[1]) < 840:
+            logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, dcoords)
             _COUNTY_SESSION["picked"] = True
-            cont = county_continue_coords(obs)
-            if cont:
-                logger.info("[COUNTY] %s is orange; Continue at %s", wanted, cont)
-                return {
-                    "screen_state": "survey_question",
-                    "question_text": current_question_text(obs),
-                    "answer_reason": f"{wanted} is selected; tap Continue.",
-                    "action": "click",
-                    "target_text": "Continue",
-                    "target_coords": cont,
-                    "coordinate_authoritative": True,
-                    "kb_key": "county",
-                    "input_payload": wanted,
-                    "confidence_score": 0.96,
-                    "postcondition": "screen changed",
-                    "selection_complete": True,
-                }
-            logger.info("[COUNTY] %s is selected; scroll down until Continue is visible.", wanted)
             return {
                 "screen_state": "survey_question",
                 "question_text": current_question_text(obs),
-                "answer_reason": f"{wanted} is already selected; scroll down to Continue.",
+                "answer_reason": f"Select {wanted} from the county list.",
+                "action": "select_option",
+                "target_text": wanted,
+                "target_coords": dcoords,
+                "coordinate_authoritative": True,
+                "input_payload": wanted,
+                "kb_key": "county",
+                "kb_write": True,
+                "confidence_score": 0.98,
+                "postcondition": f"selected option is {wanted}",
+                "selection_complete": True,
+            }
+        if cont and int(cont[1]) >= 860:
+            logger.info("[COUNTY] Sticky Continue at %s (not a county row)", cont)
+            _COUNTY_SESSION["picked"] = True
+            return {
+                "screen_state": "survey_question",
+                "question_text": current_question_text(obs),
+                "answer_reason": f"{wanted} chosen; tap the footer Continue bar, not a county row.",
+                "action": "click",
+                "target_text": "Continue",
+                "target_coords": cont,
+                "coordinate_authoritative": True,
+                "kb_key": "county",
+                "input_payload": wanted,
+                "confidence_score": 0.97,
+                "postcondition": "screen changed",
+                "selection_complete": True,
+            }
+        if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
+            logger.info("[COUNTY] %s is selected; scroll down until Continue is visible.", wanted)
+            return {
+                "screen_state": "survey_question",
                 "action": "scroll_down",
                 "list_scroll": True,
                 "confidence_score": 0.93,
                 "postcondition": "screen changed",
                 "kb_key": "county",
-                "selection_complete": True,
+                "answer_reason": f"{wanted} is selected; scroll down to Continue.",
             }
         blob = str(obs.ocr_text or "")
-        coords = county_option_coords(obs, wanted)
+        coords = dcoords
         if coords is None or not re.search(rf"\b{re.escape(wanted)}\b", blob, flags=re.I):
             return county_list_scroll_action(obs, wanted)
         logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, coords)

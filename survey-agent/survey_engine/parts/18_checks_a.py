@@ -540,6 +540,7 @@ def county_dropdown_regression_self_check() -> bool:
         ocr_text="Donegal Dublin Galway Kerry Kildare Kilkenny Laois Leitrim Limerick Longford Louth Mayo Meath",
         ui_nodes=[], kb=kb, persona={}, screen_phase="survey_question", survey_tiles=[],
     )
+    _COUNTY_SESSION["picked"] = False
     d_past = county_dropdown_decision(past)
     d_near = county_dropdown_decision(near)
     banner = Observation(

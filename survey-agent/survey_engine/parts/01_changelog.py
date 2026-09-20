@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.108": [
+        "Continue is the LOWEST orange bar (~y=910), never the selected county row at y=780 (Wexford).",
+        "RL replay cannot click y=780 on a county list. Footer Continue is allowed at y>0.86.",
+    ],
     "24.0.107": [
         "Dublin already orange: stop hunting the list. Scroll down until Continue, then tap it.",
         "Orange selected row is the answer; Galway-first OCR must not scroll back up.",
