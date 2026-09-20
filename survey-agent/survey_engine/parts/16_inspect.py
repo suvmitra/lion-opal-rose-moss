@@ -1,6 +1,5 @@
 # 16_inspect.py — shared engine namespace (do not import directly)
 
-
 def apply_authorized_personal_fallback(
     decision: dict[str, Any], obs: Observation
 ) -> dict[str, Any]:
@@ -499,7 +498,6 @@ def configured_multi_option_decision(obs: Observation) -> Optional[dict[str, Any
         source_basis=f"knowledge_base.json:{kb_key}",
     )
 
-
 def gender_choice_screen(obs: Observation) -> bool:
     blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     labels = [str(item).lower() for item in option_labels_from_observation(obs)]
@@ -507,13 +505,16 @@ def gender_choice_screen(obs: Observation) -> bool:
     has_female = any("female" in item for item in labels) or bool(re.search(r"\bfemale\b", blob))
     return bool(has_male and has_female)
 
-
 def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, Any]:
-    """Inspector agent: check router/LLM output against the screenshot before execute."""
     if not decision:
         return decision
     action = str(decision.get("action") or "").lower()
     target = str(decision.get("target_text") or "")
+    if i_agree_consent_visible(obs.ocr_text):
+        fill = i_agree_consent_decision(obs)
+        if fill:
+            logger.warning("[INSPECTOR] Consent screen; %s not %r.", fill.get("target_text"), target)
+            return fill
     if start_gate_visible(obs.ocr_text) and "start" not in target.lower():
         fill = navigation_cta_decision(obs)
         if fill and "start" in str(fill.get("target_text") or "").lower():
@@ -539,7 +540,6 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
             logger.warning("[INSPECTOR] Rejected banner/chrome target %r; using %r",
                            target[:80], alt.get("target_text"))
             return alt
-
     if gender_choice_screen(obs):
         intended = str((obs.kb or {}).get("gender") or "Male")
         if action in {"select_option"} and kb_option_match(target or intended, intended):

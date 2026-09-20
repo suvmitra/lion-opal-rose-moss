@@ -447,11 +447,11 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 except (TypeError, ValueError):
                     milli_y = 0
             if "continue" in tlow and milli_y > 905:
-                logger.warning("[SAFE TAP] Continue milli y=%s is nav; clamp to 888.", milli_y)
-                y = int(height * 0.888)
-                milli_y = 888
-            nav_ratio = 0.93 if (
-                milli_y <= 890 and any(tok in tlow for tok in (
+                logger.warning("[SAFE TAP] Continue milli y=%s is nav; clamp to 890.", milli_y)
+                y = int(height * 0.890)
+                milli_y = 890
+            nav_ratio = 0.94 if (
+                milli_y <= 900 and any(tok in tlow for tok in (
                     "participate", "get started", "start survey", "start now",
                     "i agree", "continue",
                 ))
@@ -462,6 +462,8 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 return ActionResult(False, False, "Refusing system-nav tap.")
             if action == "select_option" or "start" in tlow or "agree" in tlow or decision.get("i_agree_continue"):
                 webview_click(x, y)
+                if decision.get("i_agree_continue"):
+                    tap_native(x, y)
             else:
                 tap_native(x, y)
         if decision.get("i_agree_pick"):
@@ -695,6 +697,15 @@ def recover_from_failure(obs: Observation, decision: dict[str, Any], attempt: in
         fill = navigation_cta_decision(obs)
         if fill:
             fill["press_ms"] = 160
+            return fill
+        return {"action": "wait"}
+
+    if i_agree_consent_visible(obs.ocr_text) and action == "click":
+        if i_agree_already_selected(obs) or decision.get("i_agree_continue"):
+            _I_AGREE_SESSION["continue_misses"] = int(_I_AGREE_SESSION.get("continue_misses") or 0) + 1
+        fill = i_agree_consent_decision(obs)
+        if fill:
+            logger.warning("[RECOVERY] Consent retarget %s %s", fill.get("target_text"), fill.get("target_coords"))
             return fill
         return {"action": "wait"}
 

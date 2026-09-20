@@ -191,7 +191,7 @@ def i_agree_consent_regression_self_check() -> bool:
         and 680 <= int((first.get("target_coords") or [0, 0])[-1]) <= 840
         and repaired and "agree" in str(repaired.get("target_text") or "").lower()
         and nxt and "continue" in str(nxt.get("target_text") or "").lower()
-        and int((nxt.get("target_coords") or [0, 999])[-1]) <= 890
+        and int((nxt.get("target_coords") or [0, 999])[-1]) <= 905
     )
     if passed:
         logger.info("[SELF-CHECK] I Agree then Continue (not nav-bar) checks passed.")

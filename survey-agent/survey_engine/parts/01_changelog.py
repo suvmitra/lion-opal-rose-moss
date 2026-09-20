@@ -5,6 +5,14 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.96": [
+        "Tap the screenshot word Continue (OCR box, inverted footer if white-on-orange).",
+        "Never use UI dump node 84 at y=920; that is the Android nav, not the orange bar.",
+    ],
+    "24.0.95": [
+        "I Agree already orange: tap full-width Continue at y~890, never Next [154,626] or nav 920.",
+        "Clamp 870 was the gray gap above Continue; cycle 890/882/898 and WebView+native tap.",
+    ],
     "24.0.94": [
         "Choreograph I-Agree screen: never let prefer_progression replace Gemini's tap.",
         "If I Agree is already orange, tap the LOWER orange Continue bar (~y=888), not dump-node 920.",

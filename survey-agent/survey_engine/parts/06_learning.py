@@ -501,6 +501,8 @@ def _continue_decision(obs: Observation, reason: str, payload: Optional[str] = N
 
 def generalized_unseen_router(obs: Observation) -> Optional[dict[str, Any]]:
     """Assumption-based action for widget families the specialized routers missed."""
+    if i_agree_consent_visible(obs.ocr_text):
+        return i_agree_consent_decision(obs)
     if obs.screen_phase == "dashboard":
         return None
     if ranking_question_visible(obs.ocr_text) or maxdiff_question_visible(obs.ocr_text):

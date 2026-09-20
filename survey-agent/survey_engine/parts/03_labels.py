@@ -220,6 +220,58 @@ def start_ocr_button_milli(obs: Observation) -> Optional[list[int]]:
     return None
 
 
+def visible_continue_milli(obs: Observation) -> Optional[list[int]]:
+    """Screenshot OCR of footer Continue. Never accessibility dump y=92%."""
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return None
+    hits: list[list[int]] = []
+
+    def consider(node: dict[str, Any]) -> None:
+        text = re.sub(r"[\s«»]+", " ", str(node_text(node) or "")).strip().lower().strip(" .")
+        if text not in {"continue", "continue »"} and not ("continue" in text and len(text) <= 14):
+            return
+        bounds = node.get("bounds") or []
+        if len(bounds) != 4:
+            return
+        cx = (int(bounds[0]) + int(bounds[2])) / 2
+        cy = (int(bounds[1]) + int(bounds[3])) / 2
+        y = int(cy * 1000 / max(1, obs.image_height))
+        x = int(cx * 1000 / max(1, obs.image_width))
+        if 830 <= y <= 915 and 150 <= x <= 850:
+            hits.append([x, y])
+
+    for psm in (6, 11):
+        for node in ocr_line_nodes(Path(path), psm=psm):
+            consider(node)
+    if not hits:
+        try:
+            with Image.open(path) as image:
+                w, h = image.size
+                y0 = int(h * 0.82)
+                crop = image.convert("RGB").crop((0, y0, w, int(h * 0.94))).point(lambda p: 255 - p)
+                data = pytesseract.image_to_data(
+                    crop, output_type=pytesseract.Output.DICT, config="--oem 3 --psm 6"
+                )
+            for i, raw in enumerate(data.get("text") or []):
+                if "continue" not in str(raw or "").strip().lower():
+                    continue
+                cx = int(data["left"][i]) + int(data["width"][i]) // 2
+                cy = y0 + int(data["top"][i]) + int(data["height"][i]) // 2
+                y = int(cy * 1000 / max(1, obs.image_height))
+                x = int(cx * 1000 / max(1, obs.image_width))
+                if 830 <= y <= 915:
+                    hits.append([x, y])
+        except Exception:
+            pass
+    if not hits:
+        return None
+    hits.sort(key=lambda p: p[1])
+    pick = hits[-1]
+    logger.info("[CONTINUE OCR] milli=%s hits=%s", pick, hits)
+    return pick
+
+
 def start_button_milli(obs: Observation) -> list[int]:
     """Green Start! pill center. Screenshot geometry: ~[500, 405] on 1440x3088."""
     variants: list[list[int]] = []

@@ -248,7 +248,10 @@ _I_AGREE_SESSION: dict[str, Any] = {"tapped": False}
 def i_agree_consent_visible(ocr_text: str) -> bool:
     blob = re.sub(r"[\s|]+", " ", str(ocr_text or "").lower())
     blob = blob.replace("l agree", "i agree").replace("1 agree", "i agree")
-    if "choreograph" in blob or "no survey" in blob:
+    if any(k in blob for k in (
+        "choreograph", "no survey", "will not directly target you",
+        "panel partners", "i decline",
+    )):
         return True
     return "agree" in blob and "decline" in blob
 
@@ -267,13 +270,13 @@ def orange_consent_bars(obs: Observation) -> list[list[int]]:
         mask[int(height * 0.93):, :] = 0
         row = (mask > 0).sum(axis=1)
         bars: list[list[int]] = []
-        in_bar, start, need = False, 0, int(width * 0.22)
+        in_bar, start, need = False, 0, int(width * 0.28)
         for y, count in enumerate(row):
             if count >= need and not in_bar:
                 in_bar, start = True, y
             elif count < need and in_bar:
                 in_bar = False
-                if y - start < int(height * 0.012):
+                if y - start < int(height * 0.010):
                     continue
                 mid = (start + y) // 2
                 xs = [x for x in range(0, width, 3) if mask[mid, x] > 0]
@@ -284,17 +287,38 @@ def orange_consent_bars(obs: Observation) -> list[list[int]]:
         return []
 
 def i_agree_already_selected(obs: Observation) -> bool:
-    return bool(_I_AGREE_SESSION.get("tapped") or any(700 <= int(b[1]) <= 820 for b in orange_consent_bars(obs)))
+    return bool(_I_AGREE_SESSION.get("tapped") or any(700 <= int(b[1]) <= 830 for b in orange_consent_bars(obs)))
 
 def i_agree_coords(obs: Observation) -> list[int]:
+    path = str(obs.screenshot or "")
+    if path and Path(path).exists():
+        center = ocr_text_center(Path(path), "I Agree") or ocr_text_center(Path(path), "Agree")
+        if center:
+            x = int(center[0] * 1000 / max(1, obs.image_width))
+            y = int(center[1] * 1000 / max(1, obs.image_height))
+            if 680 <= y <= 840:
+                logger.info("[I AGREE OCR] milli=[%s, %s]", x, y)
+                return [x, y]
     for bar in orange_consent_bars(obs):
-        if 700 <= int(bar[1]) <= 820:
+        if 700 <= int(bar[1]) <= 830:
             return [int(bar[0]), int(bar[1])]
     return [500, 776]
 
 def i_agree_continue_coords(obs: Observation) -> list[int]:
+    variants: list[list[int]] = []
+    ocr = visible_continue_milli(obs)
+    if ocr:
+        variants.append(ocr)
     lower = [b for b in orange_consent_bars(obs) if 840 <= int(b[1]) <= 910]
-    return [int(lower[-1][0]), min(int(lower[-1][1]), 900)] if lower else [500, 888]
+    if lower:
+        variants.append([int(lower[-1][0]), min(max(int(lower[-1][1]), 850), 900)])
+    for fallback in ([500, 890], [500, 882], [500, 898]):
+        if fallback not in variants:
+            variants.append(fallback)
+    miss = int(_I_AGREE_SESSION.get("continue_misses") or 0)
+    pick = variants[min(miss, len(variants) - 1)]
+    logger.info("[I AGREE] Continue milli=%s miss=%s variants=%s", pick, miss, variants)
+    return pick
 
 def i_agree_consent_decision(obs: Observation, incoming: Optional[dict[str, Any]] = None) -> Optional[dict[str, Any]]:
     if not i_agree_consent_visible(obs.ocr_text) and not orange_consent_bars(obs):
