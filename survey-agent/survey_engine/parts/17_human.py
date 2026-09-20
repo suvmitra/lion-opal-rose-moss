@@ -403,6 +403,10 @@ def gender_continue_regression_self_check() -> bool:
         stagnation_count=0,
     )
     next_decision = survey_next_decision(observation)
+    card_pick = gender_screen_decision(observation)
+    observation.ui_nodes[1]["checked"] = True
+    card_go = gender_screen_decision(observation)
+    observation.ui_nodes[1]["checked"] = False
     signature = semantic_screen_signature(observation)
     passed = bool(
         first
@@ -423,8 +427,13 @@ def gender_continue_regression_self_check() -> bool:
         and "male" not in str(learned_click.get("target_text") or "").lower()
         and privacy.get("action") == "click"
         and "privacy" not in str(privacy.get("target_text") or "").lower()
-        and next_decision.get("target_element_id") == 41
+        and "continue" in str(next_decision.get("target_text") or "").lower()
+        and int((next_decision.get("target_coords") or [0, 999])[-1]) <= 600
         and visible_progression_label(ocr_text)
+        and card_pick and card_pick.get("target_text") == "Male"
+        and int((card_pick.get("target_coords") or [0, 999])[-1]) <= 400
+        and card_go and "continue" in str(card_go.get("target_text") or "").lower()
+        and int((card_go.get("target_coords") or [0, 999])[-1]) <= 600
     )
     _MULTI_SELECT_PROGRESS.pop(signature, None)
     _LAST_SELECT_FINGERPRINT.pop(signature, None)

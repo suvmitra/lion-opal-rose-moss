@@ -200,3 +200,62 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "postcondition": "screen changed",
         "selection_complete": True,
     }
+
+
+def gender_continue_milli(obs: Observation) -> Optional[list[int]]:
+    """Mid-screen orange Continue (~y=45%). Never footer y=87% / dump y=92%."""
+    for bar in orange_cta_milli(obs, 0.34, 0.62):
+        if 360 <= int(bar[1]) <= 580:
+            return [int(bar[0]), int(bar[1])]
+    ocr = visible_continue_milli(obs)
+    if ocr and 360 <= int(ocr[1]) <= 580:
+        return ocr
+    return None
+
+
+def gender_male_milli(obs: Observation) -> list[int]:
+    path = str(obs.screenshot or "")
+    if path and Path(path).exists():
+        center = ocr_text_center(Path(path), "Male")
+        if center:
+            x = int(center[0] * 1000 / max(1, obs.image_width))
+            y = int(center[1] * 1000 / max(1, obs.image_height))
+            if 180 <= y <= 400 and 80 <= x <= 520:
+                return [x, y]
+    return [280, 280]
+
+
+def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    """Card gender UI: tap Male (upper-left card), then the orange Continue that appears."""
+    if not gender_choice_screen(obs):
+        return None
+    intended = str((obs.kb or {}).get("gender") or "Male")
+    path = str(obs.screenshot or "")
+    has_shot = bool(path and Path(path).exists())
+    cont = gender_continue_milli(obs)
+    male_on = any(
+        (n.get("checked") or n.get("selected")) and kb_option_match(node_text(n), intended)
+        for n in obs.ui_nodes
+    )
+    selected = bool(cont) if has_shot else male_on
+    if selected:
+        coords = cont or [500, 455]
+        if int(coords[1]) >= 650:
+            coords = [500, 455]
+        logger.info("[GENDER] %s selected; Continue at %s", intended, coords)
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+            "target_coords": coords, "coordinate_authoritative": True, "target_element_id": None,
+            "kb_key": "gender", "confidence_score": 0.97, "postcondition": "screen changed",
+            "selection_complete": True,
+            "answer_reason": f"{intended} is selected; tap the orange Continue bar (not y=875).",
+        }
+    coords = gender_male_milli(obs)
+    logger.info("[GENDER] Tap %s at %s; Continue appears after the card is orange.", intended, coords)
+    return {
+        "screen_state": "survey_question", "action": "select_option", "target_text": intended,
+        "target_coords": coords, "coordinate_authoritative": True, "input_payload": intended,
+        "kb_key": "gender", "confidence_score": 0.96,
+        "postcondition": f"The {intended} option is selected.", "selection_complete": False,
+        "answer_reason": f"Select {intended} on the card. Do not use learned y=709.",
+    }

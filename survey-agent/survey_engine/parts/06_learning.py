@@ -214,6 +214,8 @@ def learned_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Reuse a verified semantic-screen action only while its confidence is high."""
     if obs.screen_phase != "survey_question":
         return None
+    if gender_choice_screen(obs):
+        return None
     learned = obs.kb.get("learned_screen_actions")
     if not isinstance(learned, dict):
         return None

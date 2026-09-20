@@ -499,11 +499,11 @@ def configured_multi_option_decision(obs: Observation) -> Optional[dict[str, Any
     )
 
 def gender_choice_screen(obs: Observation) -> bool:
-    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    labels = [str(item).lower() for item in option_labels_from_observation(obs)]
-    has_male = any(item == "male" or item.startswith("male") for item in labels) or bool(re.search(r"\bmale\b", blob))
-    has_female = any("female" in item for item in labels) or bool(re.search(r"\bfemale\b", blob))
-    return bool(has_male and has_female)
+    blob = re.sub(r"[\s|]+", " ", str(obs.ocr_text or "").lower())
+    labels = " ".join(str(item).lower() for item in option_labels_from_observation(obs))
+    nodes = " ".join(node_text(n).lower() for n in obs.ui_nodes)
+    combined = f"{blob} {labels} {nodes}"
+    return bool(re.search(r"\bmale\b", combined) and "female" in combined)
 
 def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, Any]:
     if not decision:
@@ -540,34 +540,10 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
             logger.warning("[INSPECTOR] Rejected banner/chrome target %r; using %r",
                            target[:80], alt.get("target_text"))
             return alt
-    if gender_choice_screen(obs):
-        intended = str((obs.kb or {}).get("gender") or "Male")
-        already = answer_already_selected(obs) or intended.lower() in selected_option_labels(obs) or (
-            _LAST_SELECT_FINGERPRINT.get(question_fingerprint(obs), "") == intended.lower()
-        )
-        if already and action in {"click", "select_option"} and not is_progression_cta(target):
-            nxt = survey_next_decision(obs)
-            if nxt:
-                logger.info("[WH] %s is selected; tap Continue.", intended)
-                return nxt
-        if action == "select_option" and kb_option_match(target or intended, intended):
-            coords = body_option_coords(obs, intended)
-            if coords:
-                decision["target_coords"] = coords
-                decision["coordinate_authoritative"] = True
-                decision["target_element_id"] = None
-        if action == "click" and is_progression_cta(target) and (
-            survey_validation_error(obs) or required_answer_missing(obs)
-        ):
-            alt = exact_kb_option_decision(obs)
-            if alt:
-                logger.warning("[INSPECTOR] Gender unanswered; tap %r before Continue.", alt.get("target_text"))
-                return alt
-        if action in {"select_option", "click"} and target and not is_progression_cta(target) and not kb_option_match(target, intended):
-            alt = exact_kb_option_decision(obs)
-            if alt:
-                logger.warning("[INSPECTOR] Gender target %r is not KB %r.", target, intended)
-                return alt
+    fill = gender_screen_decision(obs)
+    if fill:
+        logger.info("[INSPECTOR] Gender %s at %s", fill.get("target_text"), fill.get("target_coords"))
+        return fill
 
     if county_question_visible(obs.ocr_text):
         fill = county_dropdown_decision(obs)

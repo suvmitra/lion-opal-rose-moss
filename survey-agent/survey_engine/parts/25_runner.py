@@ -152,6 +152,13 @@ def main() -> int:
             decision_source = "router-i-agree"
             logger.info("[I AGREE] Hard-route before RL/VLM coords=%s",
                         None if not decision else decision.get("target_coords"))
+        elif gender_choice_screen(obs):
+            obs.screen_phase = "survey_question"
+            decision = gender_screen_decision(obs)
+            decision_source = "router-gender"
+            logger.info("[GENDER] Hard-route %s %s",
+                        None if not decision else decision.get("target_text"),
+                        None if not decision else decision.get("target_coords"))
         else:
             gated, halt = stagnation_gate(obs, no_change_count)
             if halt:
@@ -632,9 +639,9 @@ def main() -> int:
                 and "please select an answer" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
             ):
                 record_multi_select_progress(obs, str(decision.get("target_text")))
-            _LAST_SELECT_FINGERPRINT[question_fingerprint(obs)] = str(
-                decision.get("target_text")
-            ).strip().lower()
+            label = str(decision.get("target_text") or "").strip().lower()
+            _LAST_SELECT_FINGERPRINT[question_fingerprint(obs)] = label
+            _LAST_SELECT_FINGERPRINT[semantic_screen_signature(obs)] = label
             rank_item = str(decision.get("rank_item") or decision.get("target_text") or "").strip()
             if ranking_question_visible(obs.ocr_text) and rank_item:
                 done = _RANK_PROGRESS.setdefault(question_fingerprint(obs), [])

@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.98": [
+        "Gender cards: tap Male at the upper-left card (~y=280), then orange Continue at ~y=455.",
+        "Never re-tap Male, never scroll, never tap y=875 gray. Learned coords [274,709] ignored.",
+    ],
     "24.0.97": [
         "Selected Male + visible Continue: tap Continue once. Do not re-tap Male (toggle off).",
         "Learned click is treated like select_option. Continue OCR includes mid-screen orange bars.",

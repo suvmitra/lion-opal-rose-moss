@@ -40,6 +40,20 @@ def salvage_option_from_decision(
 
 def survey_next_decision(obs: Observation) -> dict[str, Any]:
     """Ground Continue/Next. Never use Privacy Policy, Help, Back or Close."""
+    if gender_choice_screen(obs):
+        fill = gender_screen_decision(obs)
+        if fill and "continue" in str(fill.get("target_text") or "").lower():
+            return fill
+        coords = gender_continue_milli(obs) or [500, 455]
+        if int(coords[1]) >= 650:
+            coords = [500, 455]
+        logger.info("[WH] Gender answer done; Continue at %s", coords)
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+            "target_coords": coords, "coordinate_authoritative": True, "target_element_id": None,
+            "confidence_score": 0.96, "postcondition": "screen changed",
+            "answer_reason": "Male/Female is chosen; tap the orange Continue bar.",
+        }
     if county_question_visible(obs.ocr_text) and not county_selection_complete(obs):
         fill = county_dropdown_decision(obs)
         if fill and not is_progression_cta(str(fill.get("target_text") or "")):
