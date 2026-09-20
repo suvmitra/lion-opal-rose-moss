@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.99": [
+        "Card gender (Are you...?) taps Male then mid-screen Continue. Radio-list Are you? still fills Male before Continue.",
+        "Startup Are-you inspector self-check is restored.",
+    ],
     "24.0.98": [
         "Gender cards: tap Male at the upper-left card (~y=280), then orange Continue at ~y=455.",
         "Never re-tap Male, never scroll, never tap y=875 gray. Learned coords [274,709] ignored.",

@@ -152,7 +152,7 @@ def main() -> int:
             decision_source = "router-i-agree"
             logger.info("[I AGREE] Hard-route before RL/VLM coords=%s",
                         None if not decision else decision.get("target_coords"))
-        elif gender_choice_screen(obs):
+        elif gender_choice_screen(obs) and not gender_radio_list(obs):
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
             decision_source = "router-gender"

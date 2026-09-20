@@ -544,6 +544,13 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
     if fill:
         logger.info("[INSPECTOR] Gender %s at %s", fill.get("target_text"), fill.get("target_coords"))
         return fill
+    if gender_choice_screen(obs) and action in {"click"} and is_progression_cta(target) and (
+        survey_validation_error(obs) or required_answer_missing(obs)
+    ):
+        alt = exact_kb_option_decision(obs)
+        if alt:
+            logger.warning("[INSPECTOR] Gender unanswered; tap %r before Continue.", alt.get("target_text"))
+            return alt
 
     if county_question_visible(obs.ocr_text):
         fill = county_dropdown_decision(obs)

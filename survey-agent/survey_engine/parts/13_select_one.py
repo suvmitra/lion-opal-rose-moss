@@ -202,6 +202,14 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
     }
 
 
+def gender_radio_list(obs: Observation) -> bool:
+    blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    return bool(re.search(
+        r"please select an answer|select one of the below|non-binary|gender fluid|prefer not to say",
+        blob,
+    ))
+
+
 def gender_continue_milli(obs: Observation) -> Optional[list[int]]:
     """Mid-screen orange Continue (~y=45%). Never footer y=87% / dump y=92%."""
     for bar in orange_cta_milli(obs, 0.34, 0.62):
@@ -227,7 +235,7 @@ def gender_male_milli(obs: Observation) -> list[int]:
 
 def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Card gender UI: tap Male (upper-left card), then the orange Continue that appears."""
-    if not gender_choice_screen(obs):
+    if not gender_choice_screen(obs) or gender_radio_list(obs):
         return None
     intended = str((obs.kb or {}).get("gender") or "Male")
     path = str(obs.screenshot or "")

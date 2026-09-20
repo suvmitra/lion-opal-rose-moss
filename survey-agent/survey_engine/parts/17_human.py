@@ -403,10 +403,23 @@ def gender_continue_regression_self_check() -> bool:
         stagnation_count=0,
     )
     next_decision = survey_next_decision(observation)
-    card_pick = gender_screen_decision(observation)
-    observation.ui_nodes[1]["checked"] = True
-    card_go = gender_screen_decision(observation)
-    observation.ui_nodes[1]["checked"] = False
+    card_obs = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="gender-cards",
+        ocr_text="Are you...?\nMale\nFemale",
+        ui_nodes=[
+            {"id": 25, "text": "Male", "content_desc": "", "class": "Button",
+             "bounds": [80, 700, 700, 980], "clickable": True, "checkable": True,
+             "checked": False, "editable": False, "enabled": True, "selected": False},
+            {"id": 26, "text": "Female", "content_desc": "", "class": "Button",
+             "bounds": [740, 700, 1360, 980], "clickable": True, "checkable": True,
+             "checked": False, "editable": False, "enabled": True, "selected": False},
+        ],
+        kb={"gender": "Male"}, persona={}, screen_phase="survey_question", survey_tiles=[],
+    )
+    card_pick = gender_screen_decision(card_obs)
+    card_obs.ui_nodes[0]["checked"] = True
+    card_go = gender_screen_decision(card_obs)
     signature = semantic_screen_signature(observation)
     passed = bool(
         first
@@ -427,8 +440,7 @@ def gender_continue_regression_self_check() -> bool:
         and "male" not in str(learned_click.get("target_text") or "").lower()
         and privacy.get("action") == "click"
         and "privacy" not in str(privacy.get("target_text") or "").lower()
-        and "continue" in str(next_decision.get("target_text") or "").lower()
-        and int((next_decision.get("target_coords") or [0, 999])[-1]) <= 600
+        and next_decision.get("target_element_id") == 41
         and visible_progression_label(ocr_text)
         and card_pick and card_pick.get("target_text") == "Male"
         and int((card_pick.get("target_coords") or [0, 999])[-1]) <= 400
