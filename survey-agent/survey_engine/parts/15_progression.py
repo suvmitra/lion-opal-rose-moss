@@ -269,6 +269,12 @@ def survey_next_decision(obs: Observation) -> dict[str, Any]:
             }
 
     fallback_coords = visual_progression_coords(obs)
+    ocr = visible_continue_milli(obs)
+    orange = orange_cta_milli(obs)
+    if ocr:
+        fallback_coords = ocr
+    elif orange:
+        fallback_coords = orange[-1]
     if target_text and obs.screenshot:
         ocr_center = ocr_text_center(Path(obs.screenshot), target_text)
         if ocr_center:
@@ -276,17 +282,17 @@ def survey_next_decision(obs: Observation) -> dict[str, Any]:
                 int(max(0, min(1000, ocr_center[0] * 1000 / max(1, obs.image_width)))),
                 int(max(0, min(1000, ocr_center[1] * 1000 / max(1, obs.image_height)))),
             ]
-    pill = None
-    if obs.screenshot:
-        pill = green_continue_pill_coords(obs, 0.42, 0.88) or fallback_coords
+    pill = ocr or (orange[-1] if orange else None)
+    if pill is None and obs.screenshot:
+        pill = green_continue_pill_coords(obs, 0.38, 0.88) or fallback_coords
+    if pill is None:
+        pill = fallback_coords
     if open_text_question_visible(obs.ocr_text):
         _OPEN_TEXT_DONE[open_text_screen_key(obs)] = True
         logger.info("[OPEN TEXT] Screen marked done; next cycle must not retype.")
     logger.info(
-        "[QUESTION ROUTER] Answer is selected; advancing via node=%s text=%r coords=%s",
-        target.get("id") if target else None,
-        target_text,
-        pill if pill else (None if target else fallback_coords),
+        "[WH] Answer selected; tap Continue. node=%s text=%r coords=%s",
+        target.get("id") if target else None, target_text, pill,
     )
     return {
         "screen_state": "survey_question",

@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.97": [
+        "Selected Male + visible Continue: tap Continue once. Do not re-tap Male (toggle off).",
+        "Learned click is treated like select_option. Continue OCR includes mid-screen orange bars.",
+    ],
     "24.0.96": [
         "Tap the screenshot word Continue (OCR box, inverted footer if white-on-orange).",
         "Never use UI dump node 84 at y=920; that is the Android nav, not the orange bar.",

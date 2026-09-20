@@ -238,7 +238,7 @@ def visible_continue_milli(obs: Observation) -> Optional[list[int]]:
         cy = (int(bounds[1]) + int(bounds[3])) / 2
         y = int(cy * 1000 / max(1, obs.image_height))
         x = int(cx * 1000 / max(1, obs.image_width))
-        if 830 <= y <= 915 and 150 <= x <= 850:
+        if 380 <= y <= 915 and 150 <= x <= 850:
             hits.append([x, y])
 
     for psm in (6, 11):
@@ -260,7 +260,7 @@ def visible_continue_milli(obs: Observation) -> Optional[list[int]]:
                 cy = y0 + int(data["top"][i]) + int(data["height"][i]) // 2
                 y = int(cy * 1000 / max(1, obs.image_height))
                 x = int(cx * 1000 / max(1, obs.image_width))
-                if 830 <= y <= 915:
+                if 380 <= y <= 915:
                     hits.append([x, y])
         except Exception:
             pass

@@ -262,6 +262,18 @@ def learned_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "expected_next_signature": entry.get("next_signature"),
         "answer_provenance": str(decision.get("answer_provenance") or "verified"),
     })
+    target = str(decision.get("target_text") or "").strip()
+    action = str(decision.get("action") or "").lower()
+    if action in {"click", "select_option", "toggle_checkbox"} and target and not is_progression_cta(target):
+        keys = {target.lower()} | option_match_keys(target)
+        last = (
+            _LAST_SELECT_FINGERPRINT.get(question_fingerprint(obs), "")
+            or _LAST_SELECT_FINGERPRINT.get(semantic_screen_signature(obs), "")
+        )
+        already = bool(keys & selected_option_labels(obs)) or answer_already_selected(obs)
+        if already or (last and (last == target.lower() or last in keys)):
+            logger.info("[LEARNED SCREEN] %r already selected; Continue instead of re-tap.", target)
+            return None
     logger.info(
         "[LEARNED SCREEN] Reusing signature=%s action=%s target=%r confidence=%.3f",
         signature, decision.get("action"), decision.get("target_text"), confidence,

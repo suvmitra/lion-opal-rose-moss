@@ -1,6 +1,7 @@
-# Survey automation · v24.0.96
+# Survey automation · v24.0.97
 
-Tap the screenshot word **Continue** (OCR / inverted orange bar). Do not use UI dump node y=92% (Android nav).
+After Male (or any single choice) is selected, tap the visible orange Continue.
+Do not re-tap the option. Continue may sit mid-screen (y~45%), not only at the footer.
 
 Copy `survey_with_salad.py` and the whole `survey_engine\` folder into `survey_automation\`.
 

@@ -542,25 +542,32 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
             return alt
     if gender_choice_screen(obs):
         intended = str((obs.kb or {}).get("gender") or "Male")
-        if action in {"select_option"} and kb_option_match(target or intended, intended):
+        already = answer_already_selected(obs) or intended.lower() in selected_option_labels(obs) or (
+            _LAST_SELECT_FINGERPRINT.get(question_fingerprint(obs), "") == intended.lower()
+        )
+        if already and action in {"click", "select_option"} and not is_progression_cta(target):
+            nxt = survey_next_decision(obs)
+            if nxt:
+                logger.info("[WH] %s is selected; tap Continue.", intended)
+                return nxt
+        if action == "select_option" and kb_option_match(target or intended, intended):
             coords = body_option_coords(obs, intended)
             if coords:
                 decision["target_coords"] = coords
                 decision["coordinate_authoritative"] = True
                 decision["target_element_id"] = None
-        if action in {"click"} and is_progression_cta(target) and (
+        if action == "click" and is_progression_cta(target) and (
             survey_validation_error(obs) or required_answer_missing(obs)
         ):
             alt = exact_kb_option_decision(obs)
             if alt:
                 logger.warning("[INSPECTOR] Gender unanswered; tap %r before Continue.", alt.get("target_text"))
                 return alt
-        if action in {"select_option", "click"} and target and not is_progression_cta(target):
-            if not kb_option_match(target, intended):
-                alt = exact_kb_option_decision(obs)
-                if alt:
-                    logger.warning("[INSPECTOR] Gender target %r is not KB %r.", target, intended)
-                    return alt
+        if action in {"select_option", "click"} and target and not is_progression_cta(target) and not kb_option_match(target, intended):
+            alt = exact_kb_option_decision(obs)
+            if alt:
+                logger.warning("[INSPECTOR] Gender target %r is not KB %r.", target, intended)
+                return alt
 
     if county_question_visible(obs.ocr_text):
         fill = county_dropdown_decision(obs)
@@ -709,7 +716,6 @@ def prefer_progression_over_repeat(
     obs: Observation,
     stagnation_count: int = 0,
 ) -> dict[str, Any]:
-    """Never re-tap a selected option, and never advance via Privacy Policy/Back."""
     if obs.screen_phase != "survey_question" or not decision:
         return decision
     action = str(decision.get("action") or "").lower()
@@ -758,7 +764,7 @@ def prefer_progression_over_repeat(
         if already or (payload and payload[:12].lower() in (obs.ocr_text or "").lower()):
             logger.info("[PROGRESSION REPAIR] Text already typed; Continue instead of re-tapping the box/keyboard.")
             return survey_next_decision(obs) or decision
-    if action in {"select_option", "toggle_checkbox"} and target:
+    if action in {"click", "select_option", "toggle_checkbox"} and target and not is_progression_cta(target):
         selected = selected_option_labels(obs)
         keys = {target.lower()} | option_match_keys(target)
         already = bool(keys & selected)
@@ -780,18 +786,12 @@ def prefer_progression_over_repeat(
                 inferred = inferred_preference_decision(obs)
                 if inferred:
                     return inferred
-            if select_all_apply_visible(obs.ocr_text) and select_all_lime_band_count(obs) < 1 and re.search(
-                r"(?i)you selected\s*0\b", str(obs.ocr_text or "")
-            ):
+            if select_all_apply_visible(obs.ocr_text):
                 fill = select_all_apply_decision(obs)
-                if fill and fill.get("action") != "click":
-                    logger.info("[PROGRESSION REPAIR] Select-all still has 0 ticks; keep ticking.")
-                    return fill
-            if select_all_apply_visible(obs.ocr_text) and select_all_lime_band_count(obs) >= 1:
-                fill = select_all_apply_decision(obs)
-                if fill:
-                    logger.info("[PROGRESSION REPAIR] Select-all is green; advancing %s.", fill.get("action"))
-                    return fill
+                if fill and (select_all_lime_band_count(obs) >= 1 or fill.get("action") != "click"):
+                    logger.info("[PROGRESSION REPAIR] Select-all %s.", fill.get("action"))
+                    if not (select_all_lime_band_count(obs) < 1 and fill.get("action") == "click"):
+                        return fill
             logger.info(
                 "[PROGRESSION REPAIR] Option %r already issued; clicking Continue instead of toggling it off.",
                 target,

@@ -135,7 +135,8 @@ def main() -> int:
             no_change_count += 1
         else:
             no_change_count = 0
-            pending_question_advance = False
+            if previous and question_fingerprint(obs) != question_fingerprint(previous):
+                pending_question_advance = False
 
         if no_change_count:
             logger.warning(
@@ -620,8 +621,9 @@ def main() -> int:
             reset_matrix_session()
         if (
             result.success
-            and str(decision.get("action") or "").lower() in {"select_option", "toggle_checkbox"}
+            and str(decision.get("action") or "").lower() in {"select_option", "toggle_checkbox", "click"}
             and decision.get("target_text")
+            and not is_progression_cta(str(decision.get("target_text") or ""))
         ):
             # Record immediately. Waiting for visual verify caused a second tap
             # that unchecked Male on the gender radio screen.

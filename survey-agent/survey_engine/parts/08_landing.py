@@ -256,7 +256,7 @@ def i_agree_consent_visible(ocr_text: str) -> bool:
     return "agree" in blob and "decline" in blob
 
 
-def orange_consent_bars(obs: Observation) -> list[list[int]]:
+def orange_cta_milli(obs: Observation, y0: float = 0.38, y1: float = 0.92) -> list[list[int]]:
     path = str(obs.screenshot or "")
     if not path or not Path(path).exists():
         return []
@@ -266,8 +266,8 @@ def orange_consent_bars(obs: Observation) -> list[list[int]]:
             return []
         height, width = image.shape[:2]
         mask = cv2.inRange(cv2.cvtColor(image, cv2.COLOR_BGR2HSV), (5, 90, 140), (25, 255, 255))
-        mask[: int(height * 0.68), :] = 0
-        mask[int(height * 0.93):, :] = 0
+        mask[: int(height * y0), :] = 0
+        mask[int(height * y1):, :] = 0
         row = (mask > 0).sum(axis=1)
         bars: list[list[int]] = []
         in_bar, start, need = False, 0, int(width * 0.28)
@@ -282,9 +282,13 @@ def orange_consent_bars(obs: Observation) -> list[list[int]]:
                 xs = [x for x in range(0, width, 3) if mask[mid, x] > 0]
                 if xs:
                     bars.append([int(((xs[0] + xs[-1]) // 2) * 1000 / width), int(mid * 1000 / height)])
-        return bars[:3]
+        return bars[:4]
     except Exception:
         return []
+
+
+def orange_consent_bars(obs: Observation) -> list[list[int]]:
+    return [b for b in orange_cta_milli(obs, 0.68, 0.93)]
 
 def i_agree_already_selected(obs: Observation) -> bool:
     return bool(_I_AGREE_SESSION.get("tapped") or any(700 <= int(b[1]) <= 830 for b in orange_consent_bars(obs)))

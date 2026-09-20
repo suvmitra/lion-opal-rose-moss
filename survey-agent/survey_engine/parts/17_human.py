@@ -386,6 +386,14 @@ def gender_continue_regression_self_check() -> bool:
         observation,
         stagnation_count=1,
     )
+    learned_click = prefer_progression_over_repeat(
+        {
+            "action": "click", "target_text": "Male",
+            "target_coords": [274, 709], "confidence_score": 0.83,
+        },
+        observation,
+        stagnation_count=0,
+    )
     privacy = prefer_progression_over_repeat(
         {
             "action": "click", "target_text": "Open privacy policy modal",
@@ -410,6 +418,9 @@ def gender_continue_regression_self_check() -> bool:
         and "back" not in cta_core(str(second.get("target_text") or ""))
         and repaired.get("action") == "click"
         and is_progression_cta(str(repaired.get("target_text") or ""))
+        and learned_click.get("action") == "click"
+        and is_progression_cta(str(learned_click.get("target_text") or ""))
+        and "male" not in str(learned_click.get("target_text") or "").lower()
         and privacy.get("action") == "click"
         and "privacy" not in str(privacy.get("target_text") or "").lower()
         and next_decision.get("target_element_id") == 41
