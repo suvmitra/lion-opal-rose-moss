@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.110": [
+        "Continue from OCR text still grounds when there is no screenshot (MaxDiff self-check).",
+        "Sticky orange footer (y~910) still wins over a county row when the screenshot exists.",
+    ],
     "24.0.109": [
         "County picked flag must not leak into later self-checks or unrelated screens.",
         "RL replay of Hovis select-one works again after the county module.",

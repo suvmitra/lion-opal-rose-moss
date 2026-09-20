@@ -106,6 +106,9 @@ def continue_button_on_screen(obs: Observation) -> Optional[tuple[list[int], str
     bars = orange_cta_milli(obs, 0.84, 0.98)
     if bars:
         return [500, max(int(b[1]) for b in bars)], "Continue"
+    label = visible_progression_label(obs.ocr_text)
+    if label:
+        return [500, 820], label
     return None
 
 
