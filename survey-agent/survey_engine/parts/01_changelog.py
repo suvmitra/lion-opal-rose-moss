@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.101": [
+        "Age box is the rounded field ABOVE the orange Continue bar, not the gray slab at y=603.",
+        "Type 44 with digit keyevents into the WebView, then tap Continue. ui.xml/Aloha dump has no Qualtrics field.",
+    ],
     "24.0.100": [
         "What is your age? types knowledge_base age=44 into the empty box, then the orange Continue bar.",
         "Whole-number validation is adult age, not child_age=8. RL/VLM cannot Continue on an empty field.",

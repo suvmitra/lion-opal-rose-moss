@@ -233,6 +233,7 @@ def empty_rounded_input_coords(obs: Observation) -> Optional[list[int]]:
                 rel_y = y_mid / max(1, height)
                 rel_x = left / max(1, width)
                 rel_w = (right - left) / max(1, width)
+                thick = cluster[-1][0] - cluster[0][0]
                 score = 0.0
                 if 0.25 <= rel_y <= 0.34:
                     score += 5.0
@@ -240,10 +241,12 @@ def empty_rounded_input_coords(obs: Observation) -> Optional[list[int]]:
                     score += 4.0
                 if 0.18 <= rel_w <= 0.38:
                     score += 3.0
-                if rel_y >= 0.68:
-                    score -= 6.0  # Back/Continue bar, not the field
-                if 0.36 <= rel_y <= 0.58:
-                    score += 2.0  # Child-age box sits lower when the red banner is up
+                if rel_y >= 0.52:
+                    score -= 10.0  # gray slab under Continue, not the input
+                if thick > int(height * 0.04):
+                    score -= 8.0
+                if 0.36 <= rel_y <= 0.48:
+                    score += 3.0  # red-banner layout: field sits just above Continue
                 return score
 
             cluster = max(clusters, key=cluster_score)
@@ -511,6 +514,9 @@ def drag_drop_decision(obs: Observation) -> Optional[dict[str, Any]]:
     }
 
 
+_AGE_FIELD_MISS: dict[str, int] = {"n": 0}
+
+
 def adult_age_question_visible(ocr_text: str) -> bool:
     blob = re.sub(r"\s+", " ", str(ocr_text or "").lower())
     if any(token in blob for token in (
@@ -540,10 +546,19 @@ def adult_age_in_field(obs: Observation, wanted: str) -> bool:
 
 
 def adult_age_field_coords(obs: Observation) -> list[int]:
+    """Tap the rounded box *above* the orange Continue bar — never the gray slab."""
+    cont = adult_age_continue_coords(obs)
+    cy = int((cont or [500, 455])[1])
+    miss = int(_AGE_FIELD_MISS.get("n") or 0)
+    gap = (90, 115, 70, 140, 50)[miss % 5]
+    field_y = max(280, min(cy - 40, cy - gap))
     found = empty_rounded_input_coords(obs)
-    if found and 280 <= int(found[1]) <= 650:
-        return found
-    return found or [500, 440]
+    if found and (cy - 170) <= int(found[1]) <= (cy - 30):
+        coords = [max(220, int(found[0])), int(found[1])]
+    else:
+        coords = [500, field_y]
+    logger.info("[AGE] Field=%s continue=%s miss=%s found=%s", coords, cont, miss, found)
+    return coords
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
@@ -563,6 +578,7 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     wanted = adult_age_payload(obs)
     if not adult_age_in_field(obs, wanted):
         coords = adult_age_field_coords(obs)
+        _AGE_FIELD_MISS["n"] = int(_AGE_FIELD_MISS.get("n") or 0) + 1
         logger.info("[AGE] Type knowledge_base.json:age=%s at %s", wanted, coords)
         return {
             "screen_state": "survey_question", "action": "type_text",
@@ -571,6 +587,7 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
             "answer_reason": f"knowledge_base.json:age={wanted}. Type it, then Continue.",
         }
+    _AGE_FIELD_MISS["n"] = 0
     coords = adult_age_continue_coords(obs)
     logger.info("[AGE] %s is in the box; Continue at %s", wanted, coords)
     return {

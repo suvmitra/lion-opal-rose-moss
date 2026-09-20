@@ -21,6 +21,17 @@ def shell_input_text(value: str) -> str:
     )
 
 
+def type_digits(value: str) -> None:
+    """WebView often ignores `input text`; digit keyevents land in the focused box."""
+    for ch in str(value):
+        if ch.isdigit():
+            adb(["shell", "input", "keyevent", str(7 + int(ch))], timeout=10)
+            time.sleep(0.14)
+        else:
+            adb_input_multiline(ch)
+            time.sleep(0.1)
+
+
 def adb_input_multiline(value: str) -> None:
     """Enter multiline comments without sending literal newline shell syntax."""
     lines = str(value).replace("\r\n", "\n").replace("\r", "\n").split("\n")
@@ -292,18 +303,32 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             x, y = normalized_to_native(coords, (obs.image_width, obs.image_height),
                                         (obs.device_width, obs.device_height))
             logger.info("[TEXT FIELD] Focusing WebView field at native=(%s,%s)", x, y)
-            tap_native(x, y)
-            time.sleep(0.55)
-            tap_native(x, y)
-            time.sleep(0.45)
-            adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
-            clear_n = 96 if (
-                open_text_is_garbage(obs.ocr_text)
-                or "any other" in str(obs.ocr_text or "").lower()
-            ) else 24
-            for _ in range(clear_n):
-                adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
-            adb_input_multiline(str(payload).replace("&", " and ").replace("'", ""))
+            if str(decision.get("kb_key") or "") == "age":
+                webview_click(x, y)
+                time.sleep(0.45)
+                webview_click(x, y)
+                time.sleep(0.45)
+                adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
+                for _ in range(8):
+                    adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
+                type_digits(str(payload))
+                time.sleep(0.15)
+                adb_input_multiline(str(payload))
+                time.sleep(0.5)
+                logger.info("[AGE] Typed digits %r at native=(%s,%s)", payload, x, y)
+            else:
+                tap_native(x, y)
+                time.sleep(0.55)
+                tap_native(x, y)
+                time.sleep(0.45)
+                adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
+                clear_n = 96 if (
+                    open_text_is_garbage(obs.ocr_text)
+                    or "any other" in str(obs.ocr_text or "").lower()
+                ) else 24
+                for _ in range(clear_n):
+                    adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
+                adb_input_multiline(str(payload).replace("&", " and ").replace("'", ""))
         else:
             type_into_node(target_node, str(payload))
 
@@ -314,7 +339,7 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
         if str(decision.get("kb_key") or "") == "child_age" and payload:
             _CHILD_AGE_TYPED[semantic_screen_signature(obs)] = str(payload).strip()
             logger.info("[CHILD AGE] Marked typed=%r after execute.", payload)
-        if action in {"type_text", "type_comment"} and payload:
+        if action in {"type_text", "type_comment"} and payload and str(decision.get("kb_key") or "") != "age":
             typed_value = str(payload).strip()
             _OPEN_TEXT_TYPED[question_fingerprint(obs)] = typed_value
             _OPEN_TEXT_TYPED[open_text_screen_key(obs)] = typed_value
