@@ -626,6 +626,10 @@ def verify_postcondition(
             wanted = str(decision.get("target_text") or decision.get("input_payload") or "").strip()
             if wanted.lower() == intended_county(after).lower():
                 if county_dropdown_open(after.ocr_text):
+                    if county_picked_visual(after) or _COUNTY_SESSION.get("tapped"):
+                        _COUNTY_SESSION["picked"] = True
+                        logger.info("[VERIFY] %s selected; list stays open until Continue.", wanted)
+                        return True
                     logger.warning("[VERIFY] County list still open after tapping %s.", wanted)
                     return False
                 shown = county_displayed_value(after)

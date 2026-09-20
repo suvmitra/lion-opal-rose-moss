@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.112": [
+        "Dublin orange (even if OCR misses white-on-orange) then ONLY scroll down to Continue.",
+        "Never scroll back up after Dublin is chosen. Open list after the tap is success.",
+    ],
     "24.0.111": [
         "Open county list: tap Dublin, never rewrite to Continue at y=610 (that was Kerry).",
         "Orange Kerry is not a completed answer. Scroll until the footer Continue (y>=860).",

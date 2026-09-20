@@ -92,6 +92,7 @@ def initialize_fresh_run() -> bool:
     _SELECT_ONE_SESSION.update({"key": "", "taps": 0, "misses": 0, "verified": False})
     _I_AGREE_SESSION.update({"tapped": False})
     _COUNTY_SESSION["picked"] = False
+    _COUNTY_SESSION["tapped"] = False
     _COUNTY_OPEN_TRIES.clear()
     _AGE_SESSION["typed"] = False
     _VISUAL_RADIO_CACHE.clear()

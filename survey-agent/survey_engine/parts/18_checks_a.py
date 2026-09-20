@@ -499,6 +499,7 @@ def vlm_stack_regression_self_check() -> bool:
 def county_dropdown_regression_self_check() -> bool:
     _COUNTY_OPEN_TRIES.clear()
     _COUNTY_SESSION["picked"] = False
+    _COUNTY_SESSION["tapped"] = False
     kb = {"city": "Dublin", "area_code": "D22", "postal_code": "D22V048", "country": "Ireland"}
     closed = Observation(
         step=0, screenshot=None, image_width=1440, image_height=3088,
@@ -541,6 +542,7 @@ def county_dropdown_regression_self_check() -> bool:
         ui_nodes=[], kb=kb, persona={}, screen_phase="survey_question", survey_tiles=[],
     )
     _COUNTY_SESSION["picked"] = False
+    _COUNTY_SESSION["tapped"] = False
     d_past = county_dropdown_decision(past)
     d_near = county_dropdown_decision(near)
     banner = Observation(
@@ -600,6 +602,7 @@ def county_dropdown_regression_self_check() -> bool:
         logger.error("[SELF-CHECK] County failed closed=%s open=%s wrong=%s good=%s nxt=%s",
                      d_closed, d_open, d_wrong, d_good, nxt)
     _COUNTY_SESSION["picked"] = False
+    _COUNTY_SESSION["tapped"] = False
     _COUNTY_OPEN_TRIES.clear()
     return passed
 

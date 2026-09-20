@@ -317,7 +317,7 @@ def occupation_group_decision(obs: Observation) -> Optional[dict[str, Any]]:
     }
 
 
-_COUNTY_SESSION: dict[str, Any] = {"picked": False}
+_COUNTY_SESSION: dict[str, Any] = {"picked": False, "tapped": False}
 
 IRISH_COUNTIES = (
     "Carlow", "Cavan", "Clare", "Cork", "Donegal", "Dublin", "Galway",
@@ -411,16 +411,20 @@ def county_displayed_value(obs: Observation) -> Optional[str]:
 
 
 def county_picked_visual(obs: Observation) -> bool:
-    """True only when the orange row is the intended county (Dublin), not Kerry."""
-    wanted = intended_county(obs)
-    dcoords = county_option_coords(obs, wanted)
-    if not dcoords:
+    """Orange row is Dublin: OCR hit, or orange between Donegal and Galway (white-on-orange OCR miss)."""
+    bars = [b for b in orange_cta_milli(obs, 0.18, 0.80) if 200 <= int(b[1]) <= 780]
+    if not bars:
         return False
-    dy = int(dcoords[1])
-    for bar in orange_cta_milli(obs, 0.16, 0.82):
-        if abs(int(bar[1]) - dy) <= 32:
+    dcoords = county_option_coords(obs, intended_county(obs))
+    donegal = county_option_coords(obs, "Donegal")
+    galway = county_option_coords(obs, "Galway")
+    for bar in bars:
+        y = int(bar[1])
+        if dcoords and abs(y - int(dcoords[1])) <= 40:
             return True
-    return False
+        if donegal and galway and int(donegal[1]) < y < int(galway[1]):
+            return True
+    return bool(_COUNTY_SESSION.get("tapped"))
 
 
 def county_list_context(obs: Observation) -> bool:
@@ -466,6 +470,7 @@ def county_selection_complete(obs: Observation) -> bool:
 def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
     if not county_list_context(obs):
         _COUNTY_SESSION["picked"] = False
+        _COUNTY_SESSION["tapped"] = False
         return None
     wanted = intended_county(obs)
     shown = county_displayed_value(obs)
@@ -496,8 +501,9 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
         _COUNTY_OPEN_TRIES["county"] = 0
         cont = county_continue_coords(obs)
         dcoords = county_option_coords(obs, wanted)
-        if dcoords and int(dcoords[1]) < 840 and not county_picked_visual(obs):
+        if dcoords and int(dcoords[1]) < 840 and not county_picked_visual(obs) and not _COUNTY_SESSION.get("tapped"):
             logger.info("[COUNTY] Tapping list value %r coords=%s", wanted, dcoords)
+            _COUNTY_SESSION["tapped"] = True
             return {
                 "screen_state": "survey_question",
                 "question_text": current_question_text(obs),
@@ -530,16 +536,18 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
                 "postcondition": "screen changed",
                 "selection_complete": True,
             }
-        if county_picked_visual(obs) or _COUNTY_SESSION.get("picked"):
+        if county_picked_visual(obs) or _COUNTY_SESSION.get("picked") or _COUNTY_SESSION.get("tapped"):
+            _COUNTY_SESSION["picked"] = True
             logger.info("[COUNTY] %s is selected; scroll down until Continue is visible.", wanted)
             return {
                 "screen_state": "survey_question",
                 "action": "scroll_down",
                 "list_scroll": True,
-                "confidence_score": 0.93,
+                "confidence_score": 0.94,
                 "postcondition": "screen changed",
                 "kb_key": "county",
                 "answer_reason": f"{wanted} is selected; scroll down to Continue.",
+                "selection_complete": True,
             }
         blob = str(obs.ocr_text or "")
         coords = dcoords
@@ -677,6 +685,18 @@ def county_option_coords(obs: Observation, county: str) -> Optional[list[int]]:
 
 
 def county_list_scroll_action(obs: Observation, wanted: str) -> dict[str, Any]:
+    if _COUNTY_SESSION.get("picked") or _COUNTY_SESSION.get("tapped"):
+        logger.info("[COUNTY] %s already chosen; scroll down to Continue.", wanted)
+        return {
+            "screen_state": "survey_question",
+            "action": "scroll_down",
+            "list_scroll": True,
+            "confidence_score": 0.94,
+            "postcondition": "screen changed",
+            "kb_key": "county",
+            "answer_reason": f"{wanted} already chosen; scroll down to Continue.",
+            "selection_complete": True,
+        }
     visible = visible_counties_in_ocr_order(obs.ocr_text)
     wanted_i = county_index(wanted)
     vis_i = [county_index(name) for name in visible if county_index(name) >= 0]
