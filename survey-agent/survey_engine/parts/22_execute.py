@@ -304,15 +304,17 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                                         (obs.device_width, obs.device_height))
             logger.info("[TEXT FIELD] Focusing WebView field at native=(%s,%s)", x, y)
             if str(decision.get("kb_key") or "") == "age":
-                tap_native(x, y)
-                time.sleep(0.4)
+                _AGE_FIELD_MISS["n"] = int(_AGE_FIELD_MISS.get("n") or 0) + 1
+                webview_click(x, y)
+                time.sleep(0.7)
                 adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
-                for _ in range(24):
+                for _ in range(16):
                     adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
                 type_digits(str(payload))
-                time.sleep(0.35)
+                time.sleep(0.4)
                 _AGE_SESSION["typed"] = True
-                logger.info("[AGE] Replaced field with %r at native=(%s,%s)", payload, x, y)
+                logger.info("[AGE] Typed %r at native=(%s,%s) miss=%s",
+                            payload, x, y, _AGE_FIELD_MISS.get("n"))
             else:
                 tap_native(x, y)
                 time.sleep(0.55)

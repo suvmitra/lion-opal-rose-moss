@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.105": [
+        "Age tap is the white box ~55 milli above Continue (y≈418), not the 'no more than 99' error at y=380.",
+        "Crop OCR ignores banner 99. Empty box + error still types 44. Continue once the box is exactly 44.",
+    ],
     "24.0.104": [
         "Screenshot-first THINK: SEE the box/error, THEREFORE act. VLM reads 4444 when Tesseract misses it.",
         "Continue only after the model or crop OCR confirms the box is exactly 44.",
