@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.113": [
+        "Participate taps the green pill CENTER (y~860), never the Android nav at y=899/2776.",
+        "SAFE TAP clamps Participate instead of refusing. WebView click on the landing CTA.",
+    ],
     "24.0.112": [
         "Dublin orange (even if OCR misses white-on-orange) then ONLY scroll down to Continue.",
         "Never scroll back up after Dublin is chosen. Open list after the tap is success.",

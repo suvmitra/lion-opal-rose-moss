@@ -422,12 +422,21 @@ def navigation_cta_decision(obs: Observation) -> Optional[dict[str, Any]]:
         except Exception:
             vis = None
         if vis and 720 <= int(vis[1]) <= 930:
-            coords = vis
-        elif not (isinstance(coords, list) and len(coords) == 2 and 720 <= int(coords[1]) <= 930):
-            coords = [500, 900]
+            y = int(vis[1])
+            if y >= 890:
+                y -= 30
+            coords = [500, min(875, max(850, y))]
+        elif not (isinstance(coords, list) and len(coords) == 2 and 850 <= int(coords[1]) <= 875):
+            coords = [500, 860]
+        else:
+            y = int(coords[1])
+            if y >= 890:
+                y = min(875, y - 30)
+            coords = [int(coords[0]), min(875, max(850, y))]
         label = visible_label or label or "Participate"
         node = None
         coordinate_authoritative = True
+        logger.info("[THINK] SEE green Participate THEREFORE tap pill center %s (above Android nav)", coords)
     if label:
         logger.info(
             "[LANDING ROUTER] CTA=%r node=%s coords=%s screenshot_grounded=%s",

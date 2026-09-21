@@ -477,7 +477,12 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                     milli_y = int(tc[1])
                 except (TypeError, ValueError):
                     milli_y = 0
-            if "continue" in tlow and milli_y > 905:
+            if any(tok in tlow for tok in ("participate", "get started", "start survey", "start now")):
+                cap = int(height * 0.860)
+                if y > cap:
+                    logger.info("[SAFE TAP] Participate native y=%s clamped to %s (pill center, above nav)", y, cap)
+                    y = cap
+            elif "continue" in tlow and milli_y > 905:
                 logger.warning("[SAFE TAP] Continue milli y=%s is nav; clamp to 890.", milli_y)
                 y = int(height * 0.890)
                 milli_y = 890
@@ -488,10 +493,10 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 ))
             ) else 0.88
             nav_y = int(height * nav_ratio)
-            if y >= nav_y:
+            if y >= nav_y and "participate" not in tlow:
                 logger.warning("[SAFE TAP] Refusing Android nav-bar tap native=(%s,%s) text=%r", x, y, target_text)
                 return ActionResult(False, False, "Refusing system-nav tap.")
-            if action == "select_option" or "start" in tlow or "agree" in tlow or decision.get("i_agree_continue") or (
+            if action == "select_option" or "start" in tlow or "agree" in tlow or "participate" in tlow or decision.get("i_agree_continue") or (
                 str(decision.get("kb_key") or "") == "age" and "continue" in tlow
             ):
                 webview_click(x, y)

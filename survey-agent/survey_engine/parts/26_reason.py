@@ -16,7 +16,10 @@ def think_from_screenshot(obs: Observation, fact: str) -> dict[str, Any]:
         logger.warning("[THINK] No image model; using local OCR only.")
         return {}
     prompt = (
-        "LOOK at this Android survey screenshot. Think like a careful human.\n"
+        "LOOK at this Android survey screenshot. Think like a careful, curious, honest human.\n"
+        "Use: curiosity (what is actually on screen?), rationality (what must happen to go next?),\n"
+        "objectivity (trust pixels over old coords), empiricism (did the last tap move the screen?),\n"
+        "skepticism (is this the Android nav bar or the real button?), intellectual honesty.\n"
         f"FACT: {fact}\n"
         "SEE: quote the question, the EXACT characters in the input box, "
         "any red error, and whether an orange Continue bar is visible.\n"
