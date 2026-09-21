@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.114": [
+        "Mindset is code: curiosity, rationality, open-mind, objectivity, empiricism, critical thinking, skepticism, honesty.",
+        "critique_decision clamps Participate y>=880, retries failed coords, refuses nav-bar y>940.",
+    ],
     "24.0.113": [
         "Participate taps the green pill CENTER (y~860), never the Android nav at y=899/2776.",
         "SAFE TAP clamps Participate instead of refusing. WebView click on the landing CTA.",

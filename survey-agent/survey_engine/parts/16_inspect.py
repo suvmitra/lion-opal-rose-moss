@@ -508,6 +508,7 @@ def gender_choice_screen(obs: Observation) -> bool:
 def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, Any]:
     if not decision:
         return decision
+    decision = critique_decision(obs, decision)
     action = str(decision.get("action") or "").lower()
     target = str(decision.get("target_text") or "")
     if i_agree_consent_visible(obs.ocr_text):

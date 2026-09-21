@@ -4,6 +4,112 @@ _THINK_CACHE: dict[str, dict[str, Any]] = {}
 _LOCAL_ADULT_AGE = adult_age_screen_decision
 
 
+def mindset_prompt() -> str:
+    """Operational traits, not slogans. Injected into every image-model ask."""
+    return (
+        "MINDSET: curiosity=what is on THIS screenshot; "
+        "rationality=one action that advances the survey; "
+        "open-mind=if last tap failed, try a different y or method; "
+        "objectivity=pixels beat remembered coords; "
+        "empiricism=unchanged screen means the tap missed; "
+        "critical=is Continue/Participate actually visible; "
+        "skepticism=y>920 is the Android nav, not a button; "
+        "honesty=if unknown, say so, do not fake a tap."
+    )
+
+
+def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, Any]:
+    """Apply the mindset to a planned tap before it hits the device."""
+    if not decision:
+        return decision
+    out = dict(decision)
+    action = str(out.get("action") or "").lower()
+    text = str(out.get("target_text") or "")
+    tlow = text.lower()
+    coords = out.get("target_coords")
+    y = 0
+    if isinstance(coords, (list, tuple)) and len(coords) >= 2:
+        try:
+            y = int(coords[1])
+        except (TypeError, ValueError):
+            y = 0
+    see = re.sub(r"\s+", " ", str(obs.ocr_text or ""))[:120]
+    logger.info("[MINDSET] curiosity SEE=%r action=%s text=%r y=%s", see, action, text[:40], y)
+
+    if any(tok in tlow for tok in ("participate", "get started", "start survey")) and y >= 880:
+        out["target_coords"] = [500, 860]
+        out["coordinate_authoritative"] = True
+        out["answer_reason"] = (
+            "SKEPTICISM: OCR baseline y>=880 is the nav/text foot. "
+            "Tap the green Participate pill CENTER at [500,860]."
+        )
+        logger.info("[MINDSET] skepticism: Participate %s -> [500, 860]", coords)
+        y = 860
+
+    if y >= 940 and action in {"click", "select_option"}:
+        logger.info("[MINDSET] skepticism: y=%s is Android nav; refuse this coord", y)
+        out["target_coords"] = [500, 860] if "participate" in tlow else [500, 875]
+        out["coordinate_authoritative"] = True
+
+    failed = failed_coords_set() if "failed_coords_set" in globals() else set()
+    if isinstance(out.get("target_coords"), list) and len(out["target_coords"]) == 2:
+        pair = (int(out["target_coords"][0]), int(out["target_coords"][1]))
+        if pair in failed:
+            alt_y = max(820, pair[1] - 40)
+            out["target_coords"] = [pair[0], alt_y]
+            out["answer_reason"] = (
+                f"EMPIRICISM/open-mind: {pair} already missed; trying y={alt_y}."
+            )
+            logger.info("[MINDSET] empiricism: %s failed; retry y=%s", pair, alt_y)
+
+    if qualified_landing_visible(obs.ocr_text) and "participate" not in tlow and action == "click":
+        fill = navigation_cta_decision(obs)
+        if fill and "participate" in str(fill.get("target_text") or "").lower():
+            logger.info("[MINDSET] rationality: landing shows Participate; using that CTA")
+            return fill
+
+    if action in {"select_option", "click"} and not out.get("input_payload") and looks_like_single_choice(obs.ocr_text):
+        if is_progression_cta(text):
+            logger.info("[MINDSET] honesty: Continue with empty payload on a radio page; fill first")
+            fill = single_choice_radio_decision(obs) if "single_choice_radio_decision" in globals() else None
+            if fill:
+                return fill
+
+    out.setdefault("mindset", "applied")
+    return out
+
+
+def mindset_regression_self_check() -> bool:
+    ocr = (
+        "You've qualified for this survey! Click below to get started. "
+        "Survey will take around 38 minutes. Participate"
+    )
+    obs = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="mindset-part",
+        ocr_text=ocr, ui_nodes=[], kb={}, persona={},
+        screen_phase="survey_landing", survey_tiles=[],
+    )
+    raw = {
+        "action": "click", "target_text": "Participate",
+        "target_coords": [499, 899], "confidence_score": 0.95,
+    }
+    fixed = critique_decision(obs, raw)
+    y = int((fixed.get("target_coords") or [0, 0])[1])
+    prompt = mindset_prompt()
+    passed = (
+        "skepticism" in prompt and "empiricism" in prompt
+        and "curiosity" in prompt and "honesty" in prompt
+        and 850 <= y <= 875
+        and "participate" in str(fixed.get("target_text") or "").lower()
+    )
+    if passed:
+        logger.info("[SELF-CHECK] Mindset critique clamps Participate y=899 -> %s.", y)
+    else:
+        logger.error("[SELF-CHECK] Mindset failed y=%s decision=%s", y, fixed)
+    return passed
+
+
 def think_from_screenshot(obs: Observation, fact: str) -> dict[str, Any]:
     """Ask the image model what is actually on screen before we tap."""
     path = Path(str(obs.screenshot or ""))
@@ -16,10 +122,8 @@ def think_from_screenshot(obs: Observation, fact: str) -> dict[str, Any]:
         logger.warning("[THINK] No image model; using local OCR only.")
         return {}
     prompt = (
-        "LOOK at this Android survey screenshot. Think like a careful, curious, honest human.\n"
-        "Use: curiosity (what is actually on screen?), rationality (what must happen to go next?),\n"
-        "objectivity (trust pixels over old coords), empiricism (did the last tap move the screen?),\n"
-        "skepticism (is this the Android nav bar or the real button?), intellectual honesty.\n"
+        f"{mindset_prompt()}\n"
+        "LOOK at this Android survey screenshot.\n"
         f"FACT: {fact}\n"
         "SEE: quote the question, the EXACT characters in the input box, "
         "any red error, and whether an orange Continue bar is visible.\n"

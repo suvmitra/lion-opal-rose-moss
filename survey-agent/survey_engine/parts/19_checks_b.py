@@ -167,7 +167,7 @@ def screen_ask_brief(obs: Observation) -> str:
     """Compact instruction the VLM cannot miss: what this screen actually asks."""
     q = current_question_text(obs)
     blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    bits = [f"VISIBLE QUESTION: {q[:220]}"]
+    bits = [mindset_prompt(), f"VISIBLE QUESTION: {q[:220]}"]
     if "please provide an answer" in blob or survey_validation_error(obs):
         bits.append("VALIDATION: empty required box. TYPE an answer. Do not Continue yet.")
     if "select one" in blob or "please select an answer" in blob:

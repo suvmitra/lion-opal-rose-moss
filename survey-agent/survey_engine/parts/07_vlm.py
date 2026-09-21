@@ -303,6 +303,7 @@ def build_observation_prompt(obs: Observation, ultra_compact: bool = False) -> s
         ),
     }.get(obs.screen_phase, "Choose one safe grounded action.")
     return (
+        f"{mindset_prompt()}\n"
         f"OBS mode={mode};step={obs.step};image={obs.image_width}x{obs.image_height};"
         f"device={obs.device_width}x{obs.device_height};hash={obs.screen_hash};"
         f"phase={obs.screen_phase};foreground={get_foreground_window()}\n"
@@ -714,19 +715,11 @@ def stagnation_vlm_decision(obs: Observation, no_change_count: int) -> Optional[
     failed = json.dumps(_FAILED_TAPS[-4:], ensure_ascii=False)
     ocr = re.sub(r"\s+", " ", str(obs.ocr_text or ""))[:1100]
     prompt = (
-        "WHO: You supervise an Android survey agent. You SEE the screenshot.\n"
-        "WHAT: Name the real tappable control (green Start!, Continue, radio, field). "
-        "Give milli target_coords 0..1000 [x,y].\n"
-        f"WHY: Local routers tapped and the screen did not change (unchanged={no_change_count}). "
-        f"Failed taps (do not repeat): {failed}\n"
-        "HOW: One JSON action. Rules:\n"
-        "- Look at the image, not OCR sentences.\n"
-        "- 'Simply click on start' is INSTRUCTION TEXT. The green Start! pill is BELOW it (~y=405).\n"
-        "- Cookie bar X is not the survey CTA.\n"
-        "- Do not click Continue if Start! is visible.\n"
-        "- Do not reuse a failed coordinate.\n"
-        "WHEN: Now. JSON only.\n"
+        f"{mindset_prompt()}\n"
+        f"STUCK unchanged={no_change_count} failed={failed}\n"
         f"phase={obs.screen_phase}\nOCR={ocr}\n"
+        "JSON: action, target_text, target_coords milli 0-1000. Do not reuse failed coords. "
+        "Participate/Start is the green pill CENTER, never Android nav y>920.\n"
     )
     compact = (
         "JSON only. Example "

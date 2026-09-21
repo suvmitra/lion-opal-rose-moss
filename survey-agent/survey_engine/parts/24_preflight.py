@@ -167,6 +167,8 @@ def preflight() -> bool:
         return False
     if not consent_and_embedded_cta_regression_self_check():
         return False
+    if not mindset_regression_self_check():
+        return False
     if not start_gate_regression_self_check():
         return False
     if not i_agree_consent_regression_self_check():
