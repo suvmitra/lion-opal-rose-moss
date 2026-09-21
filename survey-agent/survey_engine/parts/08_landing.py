@@ -414,25 +414,18 @@ def navigation_cta_decision(obs: Observation) -> Optional[dict[str, Any]]:
             coordinate_authoritative = True
             node = None
     if qualified_landing_visible(obs.ocr_text) and not info_page_needs_scroll(obs):
-        # Wide bottom Participate sits at ~90% of the screenshot, just above the
-        # system nav. Dump-node centers look like nav-bar taps and get refused.
+        greens = green_cta_milli(obs) if "green_cta_milli" in globals() else []
         vis = None
         try:
             vis = visual_progression_coords(obs)
         except Exception:
             vis = None
-        if vis and 720 <= int(vis[1]) <= 930:
-            y = int(vis[1])
-            if y >= 890:
-                y -= 30
-            coords = [500, min(875, max(850, y))]
-        elif not (isinstance(coords, list) and len(coords) == 2 and 850 <= int(coords[1]) <= 875):
-            coords = [500, 860]
+        if greens:
+            coords = [int(greens[-1][0]), min(875, max(830, int(greens[-1][1])))]
+        elif vis and 720 <= int(vis[1]) <= 880:
+            coords = [500, min(875, max(850, int(vis[1])))]
         else:
-            y = int(coords[1])
-            if y >= 890:
-                y = min(875, y - 30)
-            coords = [int(coords[0]), min(875, max(850, y))]
+            coords = [500, 860]
         label = visible_label or label or "Participate"
         node = None
         coordinate_authoritative = True

@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.115": [
+        "Tap the GREEN pill blob center, not the OCR text baseline (y=899 was the nav).",
+        "Log CODE DIR so v24.0.93 in clinical_trials\\survey_automation is obvious.",
+    ],
     "24.0.114": [
         "Mindset is code: curiosity, rationality, open-mind, objectivity, empiricism, critical thinking, skepticism, honesty.",
         "critique_decision clamps Participate y>=880, retries failed coords, refuses nav-bar y>940.",

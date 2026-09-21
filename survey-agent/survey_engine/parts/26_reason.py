@@ -18,6 +18,44 @@ def mindset_prompt() -> str:
     )
 
 
+def green_cta_milli(obs: Observation) -> list[list[int]]:
+    """Center of the wide green Participate/Start pill. Ignores Android nav (bottom 8%)."""
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return []
+    try:
+        image = cv2.imread(path)
+        if image is None:
+            return []
+        height, width = image.shape[:2]
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, (35, 70, 50), (95, 255, 255))
+        mask[: int(height * 0.62), :] = 0
+        mask[int(height * 0.92):, :] = 0
+        row = (mask > 0).sum(axis=1)
+        bars: list[list[int]] = []
+        in_bar, start, need = False, 0, int(width * 0.40)
+        for y, count in enumerate(row):
+            if count >= need and not in_bar:
+                in_bar, start = True, y
+            elif count < need and in_bar:
+                in_bar = False
+                if y - start < int(height * 0.012):
+                    continue
+                mid = (start + y) // 2
+                xs = [x for x in range(0, width, 4) if mask[mid, x] > 0]
+                if xs:
+                    bars.append([
+                        int(((xs[0] + xs[-1]) // 2) * 1000 / width),
+                        int(mid * 1000 / height),
+                    ])
+        if bars:
+            logger.info("[COORD] green pill(s)=%s (tap the CENTER, not OCR baseline)", bars)
+        return bars[:3]
+    except Exception:
+        return []
+
+
 def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, Any]:
     """Apply the mindset to a planned tap before it hits the device."""
     if not decision:
@@ -36,15 +74,20 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     see = re.sub(r"\s+", " ", str(obs.ocr_text or ""))[:120]
     logger.info("[MINDSET] curiosity SEE=%r action=%s text=%r y=%s", see, action, text[:40], y)
 
-    if any(tok in tlow for tok in ("participate", "get started", "start survey")) and y >= 880:
-        out["target_coords"] = [500, 860]
-        out["coordinate_authoritative"] = True
-        out["answer_reason"] = (
-            "SKEPTICISM: OCR baseline y>=880 is the nav/text foot. "
-            "Tap the green Participate pill CENTER at [500,860]."
-        )
-        logger.info("[MINDSET] skepticism: Participate %s -> [500, 860]", coords)
-        y = 860
+    greens = green_cta_milli(obs)
+    if any(tok in tlow for tok in ("participate", "get started", "start survey")):
+        if greens:
+            gx, gy = int(greens[-1][0]), int(greens[-1][1])
+            gy = min(875, max(820, gy))
+            out["target_coords"] = [gx, gy]
+            out["coordinate_authoritative"] = True
+            logger.info("[MINDSET] objectivity: green-pill center [%s,%s] not OCR y=%s", gx, gy, y)
+            y = gy
+        elif y >= 880:
+            out["target_coords"] = [500, 860]
+            out["coordinate_authoritative"] = True
+            logger.info("[MINDSET] skepticism: Participate %s -> [500, 860]", coords)
+            y = 860
 
     if y >= 940 and action in {"click", "select_option"}:
         logger.info("[MINDSET] skepticism: y=%s is Android nav; refuse this coord", y)

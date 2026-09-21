@@ -105,6 +105,7 @@ def initialize_fresh_run() -> bool:
     _SALAD_ONLINE = True
     logger.info("=" * 78)
     logger.info("FRESH SURVEY AUTOMATION SESSION - v%s", VERSION)
+    logger.info("CODE DIR=%s  (must be lion-opal-rose-moss\\survey-agent, not clinical_trials\\survey_automation)", BASE_DIR)
     logger.info(
         "Fresh-run cleanup=%s: screenshots, temporary vision files, debug log, "
         "action log and agent state reset; persistent KB retained.",

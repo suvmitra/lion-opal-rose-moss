@@ -34,7 +34,7 @@ except ImportError as exc:
     raise SystemExit(1)
 
 
-VERSION = "24.0.114"
+VERSION = "24.0.115"
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
