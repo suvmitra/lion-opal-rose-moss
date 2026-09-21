@@ -598,6 +598,35 @@ def build():
     ], [16 * mm, 38 * mm, 58 * mm, 62 * mm]))
     story.append(Paragraph("Table 9. Reviewer punch-list. F1 and F8 are operational; F10 is architectural.", s["caption"]))
 
+    story.append(Paragraph("16b. Core types", s["h1"]))
+    story.append(Paragraph(
+        "Every step is an Observation in, a decision dict out, an ActionResult after execute.",
+        s["body"],
+    ))
+    story.append(Preformatted(
+        "@dataclass\n"
+        "class Observation:\n"
+        "    step: int\n"
+        "    screenshot: Optional[str]      # PNG path on the host\n"
+        "    image_width, image_height: int # screenshot pixels (often 1440x3088)\n"
+        "    device_width, device_height: int\n"
+        "    screen_hash: Optional[str]     # sha256; phash stored alongside\n"
+        "    ocr_text: str\n"
+        "    ui_nodes: list[dict]           # UIAutomator {id,text,bounds,clickable,...}\n"
+        "    kb: dict                       # knowledge_base.json\n"
+        "    persona: dict                  # persona_data.MASTER_USER_PERSONA\n"
+        "    screen_phase: str\n"
+        "    survey_tiles: list[dict]       # dashboard cards only\n"
+        "\n"
+        "@dataclass\n"
+        "class ActionResult:\n"
+        "    success: bool\n"
+        "    changed: bool                  # hash or OCR differed\n"
+        "    message: str\n"
+        "    after_hash: Optional[str]",
+        s["code"],
+    ))
+
     story.append(Paragraph("17. Decision object (contract)", s["h1"]))
     story.append(Preformatted(
         "{\n"
@@ -722,7 +751,35 @@ def build():
         s["code"],
     ))
 
-    story.append(Paragraph("23. Document control", s["h1"]))
+    story.append(Paragraph("23. Latency, cost, and ethics (for the reviewer)", s["h1"]))
+    story.append(Paragraph(
+        "A healthy step (no VLM) is typically 3–8 seconds: screencap ~1s, "
+        "Tesseract ~2–4s, UI dump ~1–3s, tap ~0.3s, verify screencap. "
+        "A stagnation cycle that calls Gemini 3.6 Flash adds ~5s and about "
+        "$0.0018. Twenty refused Participate taps therefore burned ~$0.04 and "
+        "~two minutes on a button that a human would tap once. The $0.30/hour "
+        "cap is an operator constraint; architecture that re-asks the VLM on "
+        "the same phash violates it in spirit even when the dollar cap is not hit.",
+        s["body"],
+    ))
+    story.append(Paragraph(
+        "This software automates a paid consumer survey app using a declared "
+        "persona. An external reviewer should flag terms-of-service, survey "
+        "integrity, and personal-data handling (knowledge_base.json contains "
+        "a real name, employer, child age). Those issues are product/legal, "
+        "not solved in code. The technical brief assumes the operator is "
+        "accountable for use.",
+        s["body"],
+    ))
+    story.append(Paragraph(
+        "Suggested reading order for the consultant: this PDF; "
+        "survey_engine/bootstrap.py; parts/25_runner.py main(); "
+        "parts/22_execute.py SAFE TAP; parts/26_reason.py; parts/09_county.py; "
+        "one live debug_runner.log + matching step_*.png.",
+        s["body"],
+    ))
+
+    story.append(Paragraph("24. Document control", s["h1"]))
     story.append(Paragraph(
         "This brief describes engine <b>v24.0.115</b> as pushed to "
         "github.com/suvmitra/lion-opal-rose-moss (commit on branch main, "
