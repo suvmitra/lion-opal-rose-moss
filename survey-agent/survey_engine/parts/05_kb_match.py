@@ -204,6 +204,9 @@ CANONICAL_ALIASES = {
     "language": "preferred_language",
     "pets": "household_pets",
     "household_pet": "household_pets",
+    "birthdate": "date_of_birth",
+    "birth_date": "date_of_birth",
+    "dob": "date_of_birth",
 }
 
 
@@ -244,6 +247,8 @@ OPTION_CHROME_LABELS = {
 }
 
 QUESTION_KB_KEY_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("birth date",), "date_of_birth"),
+    (("date of birth",), "date_of_birth"),
     (("following counties",), "county"),
     (("which county",), "county"),
     (("occupational group",), "occupation_group"),

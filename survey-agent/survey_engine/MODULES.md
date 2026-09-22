@@ -1,4 +1,4 @@
-# Survey engine modules (v24.0.88)
+# Survey engine modules (v24.0.116)
 
 `python survey_with_salad.py` still starts the agent. Parts are loaded into that
 file's namespace so every original function is intact.
@@ -26,6 +26,7 @@ file's namespace so every original function is intact.
 | `parts/18_checks_a.py` | Self-checks A |
 | `parts/19_checks_b.py` | Self-checks B |
 | `parts/20_text_fields.py` | Text-box geometry |
+| `parts/20a_form_controls.py` | Fused UI/OCR control map; composite DOB resolver/operator |
 | `parts/21_open_text.py` | Captcha, drag-drop, open text |
 | `parts/22_execute.py` | Tap/type/verify |
 | `parts/23_checks_c.py` | Self-checks C |

@@ -182,6 +182,9 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
         time.sleep(0.8)
         return ActionResult(True, False, "Waited.")
 
+    if action == "fill_date_parts":
+        return execute_birth_date_action(decision, obs)
+
     if action == "back":
         adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
         time.sleep(0.6)

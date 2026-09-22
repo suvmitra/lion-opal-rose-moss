@@ -95,6 +95,7 @@ def initialize_fresh_run() -> bool:
     _COUNTY_SESSION["tapped"] = False
     _COUNTY_OPEN_TRIES.clear()
     _AGE_SESSION["typed"] = False
+    _BIRTH_DATE_SESSION.update({"prompted": False, "filled": False, "value": None})
     _VISUAL_RADIO_CACHE.clear()
     _OCR_LINE_CACHE.clear()
     _OPEN_TEXT_TYPED.clear()

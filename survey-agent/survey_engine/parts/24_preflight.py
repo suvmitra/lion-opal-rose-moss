@@ -101,6 +101,7 @@ def prompt_operator_start_salad() -> None:
 def local_fallback_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Used when Salad is 503/521/522 so the agent never stalls waiting on VLM."""
     for fn in (
+        birth_date_decision,
         county_dropdown_decision,
         dependent_children_decision,
         child_age_text_decision,
@@ -188,6 +189,8 @@ def preflight() -> bool:
     if not gender_continue_regression_self_check():
         return False
     if not age_text_entry_regression_self_check():
+        return False
+    if not birth_date_regression_self_check():
         return False
     if not kb_choice_regression_self_check():
         return False

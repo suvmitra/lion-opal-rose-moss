@@ -5,6 +5,11 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.116": [
+        "Fuse UIAutomator and OCR into a confidence-scored form-control map with device-relative coordinates.",
+        "Resolve DOB only from KB/persona or formatted terminal input, fill Day/Month/Year, verify, then submit.",
+        "Add bounded dropdown search and a composite-control regression self-check.",
+    ],
     "24.0.115": [
         "Tap the GREEN pill blob center, not the OCR text baseline (y=899 was the nav).",
         "Log CODE DIR so v24.0.93 in clinical_trials\\survey_automation is obvious.",

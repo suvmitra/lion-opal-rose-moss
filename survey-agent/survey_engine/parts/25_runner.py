@@ -157,11 +157,11 @@ def main() -> int:
             decision_source = "router-gender"
             logger.info("[GENDER] Hard-route %s %s", None if not decision else decision.get("target_text"),
                         None if not decision else decision.get("target_coords"))
-        elif adult_age_question_visible(obs.ocr_text):
+        elif birth_date_question_visible(obs.ocr_text) or adult_age_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
-            decision = adult_age_screen_decision(obs)
-            decision_source = "router-age"
-            logger.info("[AGE] Hard-route %s %s", None if not decision else decision.get("action"),
+            decision = birth_date_decision(obs) if birth_date_question_visible(obs.ocr_text) else adult_age_screen_decision(obs)
+            decision_source = "router-birth-date" if birth_date_question_visible(obs.ocr_text) else "router-age"
+            logger.info("[PERSONAL FORM] Hard-route %s %s", None if not decision else decision.get("action"),
                         None if not decision else decision.get("input_payload") or decision.get("target_coords"))
         else:
             gated, halt = stagnation_gate(obs, no_change_count)

@@ -31,6 +31,7 @@ PART_FILES: tuple[str, ...] = (
     "18_checks_a.py",
     "19_checks_b.py",
     "20_text_fields.py",
+    "20a_form_controls.py",
     "21_open_text.py",
     "22_execute.py",
     "23_checks_c.py",
