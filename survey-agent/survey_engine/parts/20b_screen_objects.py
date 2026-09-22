@@ -110,6 +110,8 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
             return
         if y1 < int(height * 0.025) or y2 > int(height * 0.986):
             return
+        if y1 >= int(height * 0.55) and source == "opencv-shape":
+            return
         for current in candidates:
             if _box_iou(box, current["bounds"]) > 0.82:
                 if confidence > current["confidence"]:
@@ -125,7 +127,9 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
                 labels.append(line["label"])
         label = " ".join(dict.fromkeys(labels)).strip()
         aspect = bw / max(1, bh)
-        if _is_action_label(label) or (aspect >= 3.0 and color != "neutral"):
+        if y1 < int(height * 0.22) and color == "green" and not _is_action_label(label):
+            role = "label"
+        elif _is_action_label(label) or (aspect >= 3.0 and color != "neutral"):
             role = "button"
         elif 0.70 <= aspect <= 1.40 and bw <= int(width * 0.15):
             role = "choice"
@@ -295,6 +299,14 @@ def find_screen_control(
                 score += 4.0
             if item["milli"][1] >= 700:
                 score += 1.0
+        if "submit" in wanted or "continue" in wanted or "next" in wanted:
+            y = int(item.get("milli", [0, 0])[1])
+            if y < 150:
+                score -= 20.0
+            if item.get("color") == "green" and 300 <= y <= 700:
+                score += 6.0
+            if y >= 720:
+                score -= 8.0
         score += float(item.get("confidence") or 0)
         if score >= 4.0:
             candidates.append((score, item))
@@ -355,6 +367,10 @@ def ground_decision_to_screen_map(decision: dict[str, Any], obs: Observation) ->
         return decision
     control = _decision_control(decision, obs)
     if not control or float(control.get("confidence") or 0) < 0.70:
+        return decision
+    wanted = _clean_control_label(str(decision.get("target_text") or ""))
+    cy = int((control.get("visual_milli") or control.get("milli") or [0, 0])[1])
+    if wanted in {"submit", "continue", "next"} and (cy < 150 or cy > 720):
         return decision
     scene = build_screen_object_map(obs)
     control = dict(control)

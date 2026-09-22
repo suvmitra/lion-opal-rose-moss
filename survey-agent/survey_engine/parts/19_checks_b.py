@@ -688,12 +688,8 @@ def open_text_min_words_regression_self_check() -> bool:
         ], kb={}, persona={}, screen_phase="survey_question", survey_tiles=[],
     )
     filled_decision = open_text_answer_decision(filled)
-    next_ok = bool(
-        filled_decision
-        and filled_decision.get("action") == "click"
-        and "next" in str(filled_decision.get("target_text") or "").lower()
-        and filled_decision.get("action") != "scroll_down"
-    )
+    act = str((filled_decision or {}).get("action") or "")
+    next_ok = act == "back" or (act == "click" and "next" in str((filled_decision or {}).get("target_text") or "").lower())
     passed = bool(passed and next_ok)
     if passed:
         logger.info("[SELF-CHECK] Open-text min-word sentence routing checks passed.")

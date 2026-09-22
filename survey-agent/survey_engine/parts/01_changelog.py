@@ -5,6 +5,12 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.118": [
+        "Empty comment box: 'Type your answer here' and 'Please fill in this field' mean TYPE, never Submit.",
+        "Ask/SEE/THEREFORE: write a 5+ word human sentence (LLM or persona), tap the box, dismiss keyboard, then teal Submit.",
+        "Do not treat the question body, keyboard keys, or a false typed flag as a filled answer.",
+        "Submit grounding ignores status-bar y<150 and IME y>720; keyboard keys are not choices.",
+    ],
     "24.0.117": [
         "Fix Participate by preserving its detected y≈900 centre instead of clamping it to 875/860/835 above the button.",
         "Fuse UIAutomator, OCR, OpenCV color components and contour geometry into a confidence-scored screen-object scene graph.",

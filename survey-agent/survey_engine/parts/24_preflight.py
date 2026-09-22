@@ -246,6 +246,8 @@ def preflight() -> bool:
         return False
     if not open_text_min_words_regression_self_check():
         return False
+    if not world_change_open_text_regression_self_check():
+        return False
     if not captcha_code_regression_self_check():
         return False
     if not drag_drop_regression_self_check():

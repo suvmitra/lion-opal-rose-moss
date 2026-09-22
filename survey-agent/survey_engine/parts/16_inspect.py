@@ -750,10 +750,10 @@ def prefer_progression_over_repeat(
             obs, adult_age_payload(obs)
         ):
             return decision
-        if survey_validation_error(obs):
+        if survey_validation_error(obs) or open_text_field_empty(obs):
             return decision
         key = question_fingerprint(obs)
-        already = (
+        already = (not open_text_field_empty(obs)) and (
             _OPEN_TEXT_TYPED.get(key)
             or _OPEN_TEXT_TYPED.get(open_text_screen_key(obs))
             or _OPEN_TEXT_DONE.get(open_text_screen_key(obs))

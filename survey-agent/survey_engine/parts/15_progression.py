@@ -71,10 +71,10 @@ def survey_next_decision(obs: Observation) -> dict[str, Any]:
         fill = ranking_decision(obs)
         if fill and "continue" not in str(fill.get("target_text") or "").lower():
             return fill
-    if open_text_needs_more_words(obs) and not _OPEN_TEXT_TYPED.get(question_fingerprint(obs)):
+    if open_text_question_visible(obs.ocr_text) and open_text_field_empty(obs):
         fill = open_text_answer_decision(obs)
         if fill:
-            logger.warning("[QUESTION ROUTER] Refusing Continue; open text still needs more words.")
+            logger.warning("[QUESTION ROUTER] Refusing Continue; open text box is still empty.")
             return fill
     if captcha_code_question_visible(obs.ocr_text) and not captcha_field_complete(obs):
         fill = captcha_code_decision(obs)
@@ -286,16 +286,25 @@ def survey_next_decision(obs: Observation) -> dict[str, Any]:
     if target_text and obs.screenshot:
         ocr_center = ocr_text_center(Path(obs.screenshot), target_text)
         if ocr_center:
-            fallback_coords = [
-                int(max(0, min(1000, ocr_center[0] * 1000 / max(1, obs.image_width)))),
-                int(max(0, min(1000, ocr_center[1] * 1000 / max(1, obs.image_height)))),
-            ]
+            y = int(max(0, min(1000, ocr_center[1] * 1000 / max(1, obs.image_height))))
+            x = int(max(0, min(1000, ocr_center[0] * 1000 / max(1, obs.image_width))))
+            if y >= 180:
+                fallback_coords = [x, y]
     pill = ocr or (orange[-1] if orange else None)
     if pill is None and obs.screenshot:
-        pill = green_continue_pill_coords(obs, 0.38, 0.88) or fallback_coords
+        y0, y1 = (0.36, 0.62) if soft_keyboard_visible(obs) else (0.38, 0.88)
+        pill = green_continue_pill_coords(obs, y0, y1) or fallback_coords
+    if open_text_question_visible(obs.ocr_text):
+        if open_text_field_empty(obs):
+            fill = open_text_answer_decision(obs)
+            if fill:
+                return fill
+        submit = open_text_submit_coords(obs)
+        if submit:
+            pill = submit
     if pill is None:
         pill = fallback_coords
-    if open_text_question_visible(obs.ocr_text):
+    if open_text_question_visible(obs.ocr_text) and not open_text_field_empty(obs):
         _OPEN_TEXT_DONE[open_text_screen_key(obs)] = True
         logger.info("[OPEN TEXT] Screen marked done; next cycle must not retype.")
     logger.info(

@@ -569,3 +569,69 @@ def answer_grounding_regression_self_check() -> bool:
             exact, repaired,
         )
     return passed
+
+
+def world_change_open_text_regression_self_check() -> bool:
+    """Empty 'Type your answer here' must type a 5+ word sentence, never Submit."""
+    ocr = (
+        "Please answer the following question to proceed\n"
+        "Imagine you have the power to change one thing about the world. "
+        "What issue would you address, and what steps would you take?\n"
+        "Type your answer here\nPlease fill in this field.\nSubmit\nEnglish (US)"
+    )
+    empty = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="world-empty",
+        ocr_text=ocr, ui_nodes=[
+            {"id": 18, "text": "Submit", "content_desc": "", "class": "Button",
+             "bounds": [455, 1656, 984, 1762], "clickable": True, "checkable": False,
+             "checked": False, "editable": False, "enabled": True, "selected": False},
+        ], kb={}, persona={}, screen_phase="survey_question", survey_tiles=[],
+    )
+    _OPEN_TEXT_TYPED.clear()
+    _OPEN_TEXT_DONE.clear()
+    first = open_text_answer_decision(empty)
+    nxt = survey_next_decision(empty)
+    repaired = prefer_progression_over_repeat(
+        {"action": "type_text", "input_payload": "Climate Change",
+         "target_coords": [266, 500], "confidence_score": 0.9},
+        empty, 3,
+    )
+    payload = str((first or {}).get("input_payload") or "")
+    filled = Observation(
+        step=1, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="world-filled",
+        ocr_text=(
+            "Imagine you have the power to change one thing about the world.\n"
+            "I would address climate change by using public transport, "
+            "cutting household waste, and backing cleaner energy locally.\n"
+            "Submit"
+        ),
+        ui_nodes=empty.ui_nodes, kb={}, persona={},
+        screen_phase="survey_question", survey_tiles=[],
+    )
+    _OPEN_TEXT_TYPED[open_text_screen_key(filled)] = payload
+    second = open_text_answer_decision(filled)
+    passed = bool(
+        open_text_question_visible(ocr)
+        and open_text_field_empty(empty)
+        and first and first.get("action") == "type_text"
+        and open_text_word_count(payload) >= 5
+        and "type your answer" not in payload.lower()
+        and nxt and nxt.get("action") == "type_text"
+        and repaired and repaired.get("action") == "type_text"
+        and second and second.get("action") in {"click", "back"}
+        and second.get("action") != "type_text"
+        and (
+            second.get("action") == "back"
+            or "submit" in str(second.get("target_text") or "").lower()
+        )
+    )
+    if passed:
+        logger.info("[SELF-CHECK] World-change empty box types a sentence, then Submit.")
+    else:
+        logger.error(
+            "[SELF-CHECK] World-change failed first=%s next=%s repaired=%s second=%s payload=%r",
+            first, nxt, repaired, second, payload,
+        )
+    return passed

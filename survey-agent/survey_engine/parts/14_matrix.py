@@ -50,7 +50,9 @@ def matrix_grid_visible(obs: Observation) -> bool:
 def survey_validation_error(obs: Observation) -> bool:
     text = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     return any(term in text for term in (
-        "please select an answer",
+        "please fill in this field",
+        "this field is required",
+        "fill in this field",
         "please provide an answer",
         "please rate at least",
         "rate at least",
@@ -635,16 +637,19 @@ def required_answer_missing(obs: Observation) -> bool:
         return not likert_complete(obs)
     if ranking_question_visible(obs.ocr_text):
         return not ranking_complete(obs)
+    if open_text_question_visible(obs.ocr_text) and open_text_field_empty(obs):
+        return True
     if open_text_needs_more_words(obs) and not (
+        (not open_text_field_empty(obs)) and (
         _OPEN_TEXT_TYPED.get(question_fingerprint(obs))
         or _OPEN_TEXT_TYPED.get(open_text_screen_key(obs))
-        or _OPEN_TEXT_DONE.get(open_text_screen_key(obs))
+        or _OPEN_TEXT_DONE.get(open_text_screen_key(obs)))
     ):
         return True
     if county_question_visible(obs.ocr_text):
         return not county_selection_complete(obs)
     if survey_validation_error(obs):
-        if open_text_question_visible(obs.ocr_text) and (
+        if open_text_question_visible(obs.ocr_text) and not open_text_field_empty(obs) and (
             open_text_box_has_answer(obs)
             or _OPEN_TEXT_TYPED.get(open_text_screen_key(obs))
             or _OPEN_TEXT_DONE.get(open_text_screen_key(obs))
