@@ -101,7 +101,7 @@ def open_text_question_visible(ocr_text: str) -> bool:
         "write a", "please describe", "comment box", "tell us what",
         "three things you like", "role model",
         "be as specific as possible", "brands of bread", "brands of breads",
-        "what brands", "please state what", "any other brand", "any other",
+        "what brands", "please state what", "any other brand",
         "please provide an answer", "think of?",
         "imagine you have the power", "change one thing about the world",
         "what issue would you", "please answer the following question to proceed",
@@ -393,9 +393,31 @@ def open_text_needs_more_words(obs: Observation) -> bool:
     return open_text_word_count(current) < need
 
 
+def open_text_control_evidence(obs: Observation) -> bool:
+    """Require a live text field or an unambiguous open-response instruction."""
+    if any(node.get("editable") for node in obs.ui_nodes):
+        return True
+    if open_text_placeholder_visible(obs) or open_text_empty_banner(obs):
+        return True
+    if "build_screen_object_map" in globals():
+        try:
+            if any(item.get("role") == "text_input" for item in build_screen_object_map(obs).get("controls") or []):
+                return True
+        except Exception:
+            pass
+    text = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    return any(token in text for token in (
+        "three things you like", "in your own words", "please describe",
+        "change one thing about the world", "what issue would you",
+        "brands of bread", "any other brand", "please state what",
+    ))
+
+
 def open_text_answer_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Read the ask, type a real sentence, then Submit. Placeholder is not an answer."""
-    if not open_text_question_visible(obs.ocr_text):
+    if not open_text_question_visible(obs.ocr_text) or not open_text_control_evidence(obs):
+        if open_text_question_visible(obs.ocr_text):
+            logger.info("[OPEN TEXT] Rejected text-like prose: no current-screen input control.")
         return None
     open_text_clear_false_typed(obs)
     key = open_text_screen_key(obs)

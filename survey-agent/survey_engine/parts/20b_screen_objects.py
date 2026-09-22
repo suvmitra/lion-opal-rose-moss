@@ -238,7 +238,14 @@ def build_screen_object_map(obs: Observation, persist: bool = False) -> dict[str
             duplicate["visual_milli"] = candidate["milli"]
             duplicate["color"] = candidate["color"]
             duplicate["source"] = f"{duplicate.get('source')}+{candidate['source']}"
-            if candidate["role"] == "button":
+            # Colored question text may overlap an OCR label. Never promote that
+            # semantic label to a button unless either source actually says it
+            # is actionable; otherwise the planner can tap words in the stem.
+            if candidate["role"] == "button" and (
+                duplicate.get("clickable")
+                or _is_action_label(candidate.get("label") or "")
+                or _is_action_label(duplicate.get("label") or "")
+            ):
                 duplicate["role"] = "button"
         else:
             controls.append(candidate)

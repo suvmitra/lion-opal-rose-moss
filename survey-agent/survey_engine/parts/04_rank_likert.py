@@ -602,8 +602,11 @@ def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
         _COMFORT_SESSION["pick_issued"] = False
         selected = False
     if not options_on_screen and _COMFORT_SESSION.get("pick_issued"):
+        settling = page_series_wait_decision(obs, maximum=2) if "page_series_wait_decision" in globals() else None
+        if settling:
+            return settling
         done = mapped_footer_progression_decision(
-            obs, f"{pick} was verified for {topic}; the cards collapsed, so tap the exact footer arrow."
+            obs, f"{pick} was verified for {topic}; no next series item appeared, so use the exact footer arrow."
         ) if "mapped_footer_progression_decision" in globals() else None
         if done:
             _COMFORT_SESSION["picked"] = True
@@ -619,9 +622,12 @@ def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "target_text": pick, "target_coords": tap, "coordinate_authoritative": True,
             "input_payload": pick, "kb_key": f"ai_access_{topic}_comfort", "kb_write": True,
             "confidence_score": 0.95, "postcondition": "selected option is " + pick,
-            "answer_reason": f"Comfort Likert for {topic}: tap {pick} on the mapped card, then the footer arrow.",
+            "answer_reason": f"Comfort Likert for {topic}: tap {pick}; answer any next page-series item before the footer.",
             "skip_object_grounding": True,
         }
+    settling = page_series_wait_decision(obs) if "page_series_wait_decision" in globals() else None
+    if settling:
+        return settling
     arrow = footer_cta_milli(obs) if "footer_cta_milli" in globals() else [500, 890]
     _COMFORT_SESSION.update({"picked": True, "pick_issued": True})
     logger.info("[COMFORT] %s is gray; ARROW %s", pick, arrow)

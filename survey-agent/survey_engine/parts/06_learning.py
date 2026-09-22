@@ -486,7 +486,10 @@ def option_labels_from_ocr(obs: Observation) -> list[str]:
 def pick_option_assumption(labels: list[str]) -> Optional[str]:
     preferred = ("samsung", "buy another", "yes", "agree", "employed", "brennan", "dublin", "male", "neutral")
     skip = ("none of these", "prefer not", "don't know", "not sure", "skip", "other please")
-    questionish = ("how comfortable", "how ", "which of", "which ", "what ", "please select")
+    questionish = (
+        "how comfortable", "how ", "which of", "which ", "what ", "please select",
+        "having access", "functions and types", "personal information", "error on your page",
+    )
     usable = []
     for lab in labels:
         low = lab.lower().strip()
@@ -593,6 +596,9 @@ def generalized_unseen_router(obs: Observation) -> Optional[dict[str, Any]]:
         return _continue_decision(obs, "Continue is the only visible action.")
     labels = option_labels_from_ocr(obs)
     if labels and ("select" in blob or "which of" in blob or "would you" in blob):
+        if "planned_vlm_backends" in globals() and planned_vlm_backends():
+            logger.info("[GENERALIZE] Multiple unknown choices remain; defer answer semantics to the VLM.")
+            return None
         pick = pick_option_assumption(labels)
         if pick:
             logger.info("[GENERALIZE] Unknown screen treated as select-one pick=%r", pick)

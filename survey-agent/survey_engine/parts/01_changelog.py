@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.133": [
+        "Adds page-series planning: one verified option is not page completion when the form auto-reveals another required subquestion.",
+        "Tracks topic-aware active-question signatures, waits for JavaScript transitions, and unlocks the fixed footer only after the series settles.",
+        "Stops the open-text router from claiming ordinary choice pages when no editable/text-input control exists.",
+        "Defers unknown multi-option answer semantics to the configured vision LLM instead of selecting an OCR question fragment.",
+        "Prevents colored question paragraphs merged with OCR from being promoted into clickable buttons.",
+    ],
     "24.0.132": [
         "Adds a question-flow master: after a verified answer, an exact mapped footer CTA owns the next action before matrix/RL/VLM routers.",
         "Fixes the 2026-09-22 comfort screen: 'each of the following' alone is not matrix evidence, so the agent taps next button at [499,891] instead of issuing dead vertical swipes.",

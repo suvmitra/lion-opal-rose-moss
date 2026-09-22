@@ -91,7 +91,8 @@ Rules:
 - If screen_phase is consent_overlay, resolve the visible cookie/consent control
   before interacting with the covered survey. Use the configured accept/reject action.
 - Persona and KB are intentionally withheld outside survey_question screens.
-- Do not click Next while a required answer is missing.
+- Treat a page as a series of atomic subquestions. After one option is selected,
+  answer any newly revealed required control before clicking the fixed footer.
 - For multi-select questions, set selection_complete=true only after every intended
   choice is selected. For matrix questions, answer one incomplete row per cycle.
 - Never Continue a Select-one-for-each matrix while any row still has only empty
@@ -233,6 +234,7 @@ def compact_personal_evidence(
 
 def build_observation_prompt(obs: Observation, ultra_compact: bool = False) -> str:
     nodes = compact_nodes(obs.ui_nodes, ultra_compact=ultra_compact)
+    flow_state = page_flow_prompt(obs) if "page_flow_prompt" in globals() else "{}"
     ocr_limit = min(OCR_CHAR_LIMIT, 1200) if ultra_compact else OCR_CHAR_LIMIT
     compact_json = lambda value: json.dumps(
         value, ensure_ascii=False, separators=(",", ":")
@@ -309,6 +311,7 @@ def build_observation_prompt(obs: Observation, ultra_compact: bool = False) -> s
         f"phase={obs.screen_phase};foreground={get_foreground_window()}\n"
         f"OCR={obs.ocr_text[:ocr_limit]}\n"
         f"{screen_ask_brief(obs)}\n"
+        f"PAGE_FLOW={flow_state}\n"
         f"UI={compact_json(nodes)}\n"
         f"TILES={compact_json(obs.survey_tiles)}\n"
         f"{personal_context}"

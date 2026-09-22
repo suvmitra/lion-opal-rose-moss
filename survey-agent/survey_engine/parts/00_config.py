@@ -35,7 +35,7 @@ except ImportError as exc:
     raise SystemExit(1)
 
 
-VERSION = "24.0.132"
+VERSION = "24.0.133"
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
@@ -130,4 +130,3 @@ pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 logger = logging.getLogger("SurveyAutomation")
 logger.setLevel(logging.INFO)
-

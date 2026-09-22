@@ -128,7 +128,7 @@ def main() -> int:
             no_change_count += 1
         else:
             no_change_count = 0
-            if previous and question_fingerprint(obs) != question_fingerprint(previous):
+            if previous and active_question_signature(obs) != active_question_signature(previous):
                 pending_question_advance = False
 
         if no_change_count:
@@ -784,10 +784,8 @@ def main() -> int:
                 or action_name in {"type_text", "type_comment", "set_slider"}
                 or completed_complex_answer
             ):
-                pending_question_advance = True
-                logger.info(
-                    "[QUESTION STATE] Answer entry verified; next cycle will ground progression."
-                )
+                pending_question_advance = mark_verified_answer_flow(obs, after)
+                logger.info("[QUESTION STATE] Answer verified; footer_pending=%s.", pending_question_advance)
             elif pending_question_advance and action_name == "click":
                 pending_question_advance = False
             no_change_count = 0
