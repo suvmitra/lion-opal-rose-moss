@@ -685,3 +685,52 @@ def quoted_select_instruction_regression_self_check() -> bool:
             quoted_select_pick(messy), first, second, inspected,
         )
     return passed
+
+
+def smartphone_brand_regression_self_check() -> bool:
+    """ADB/KB brand must tap the matching card then the purple arrow, never Continue first."""
+    ocr = (
+        "This question is required\n"
+        "Which brand of smartphone do you currently use?\n"
+        "Samsung\nApple iPhone\nGoogle Pixel\nXiaomi / Redmi\n"
+        "Oppo / OnePlus\nOther Android phone\nOther"
+    )
+    obs = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="phone-brand",
+        ocr_text=ocr, ui_nodes=[], kb={}, persona={},
+        screen_phase="survey_question", survey_tiles=[],
+    )
+    _DEVICE_BRAND_CACHE["raw"] = "samsung SM-A"
+    _SELECT_ONE_SESSION.update({"key": "", "taps": 0, "misses": 0, "verified": False})
+    first = smartphone_brand_decision(obs)
+    second = smartphone_brand_decision(obs)
+    obs.kb = {"smartphone_brand": "Samsung"}
+    _SELECT_ONE_SESSION.update({"key": "", "taps": 0})
+    reused = smartphone_brand_decision(obs)
+    repaired = prefer_progression_over_repeat(
+        {"action": "click", "target_text": "Samsung", "target_coords": [499, 400],
+         "confidence_score": 0.9, "postcondition": "screen changed"},
+        obs, stagnation_count=3,
+    )
+    _DEVICE_BRAND_CACHE["raw"] = None
+    _SELECT_ONE_SESSION.update({"key": "", "taps": 0, "misses": 0, "verified": False})
+    passed = bool(
+        smartphone_brand_question_visible(ocr)
+        and survey_validation_error(obs)
+        and first and first.get("action") == "select_then_continue"
+        and first.get("target_text") == "Samsung"
+        and first.get("kb_key") == "smartphone_brand"
+        and first.get("kb_write") is True
+        and first.get("continue_coords")
+        and second and str(second.get("target_text") or "") in {"Samsung", "arrow", "Continue"}
+        and reused and reused.get("target_text") == "Samsung"
+        and repaired and str(repaired.get("action")) in {"select_then_continue", "click"}
+        and "continue" not in str(repaired.get("target_text") or "").lower()
+    )
+    if passed:
+        logger.info("[SELF-CHECK] Smartphone brand taps Samsung then purple arrow; KB reuse works.")
+    else:
+        logger.error("[SELF-CHECK] Phone brand failed first=%s second=%s reused=%s repaired=%s",
+                     first, second, reused, repaired)
+    return passed

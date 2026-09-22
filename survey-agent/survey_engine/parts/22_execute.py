@@ -260,7 +260,7 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             time.sleep(0.22)
         time.sleep(0.35)
         cont = decision.get("continue_coords") or [500, 778]
-        if isinstance(cont, list) and len(cont) == 2 and int(cont[1]) < 900:
+        if isinstance(cont, list) and len(cont) == 2 and int(cont[1]) < 930:
             cx, cy = normalized_to_native(
                 cont, (obs.image_width, obs.image_height), (obs.device_width, obs.device_height)
             )

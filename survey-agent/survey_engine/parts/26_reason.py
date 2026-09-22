@@ -74,6 +74,12 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     """Apply the mindset to a planned tap before it hits the device."""
     if not decision:
         return decision
+    if smartphone_brand_question_visible(obs.ocr_text):
+        fill = smartphone_brand_decision(obs)
+        if fill:
+            logger.info("[MINDSET] empiricism: device brand → %r then purple arrow",
+                        fill.get("target_text"))
+            return fill
     if quoted_select_instruction_visible(obs.ocr_text):
         if str(decision.get("action") or "") == "select_then_continue":
             out = dict(decision)

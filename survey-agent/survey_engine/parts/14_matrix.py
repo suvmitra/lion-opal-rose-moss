@@ -60,6 +60,9 @@ def survey_validation_error(obs: Observation) -> bool:
         "questions with errors",
         "you must select",
         "required question",
+        "this question is required",
+        "question is required",
+        "an answer is required",
     ))
 
 

@@ -273,6 +273,9 @@ QUESTION_KB_KEY_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
     (("their ages",), "child_age"),
     (("child's age",), "child_age"),
     (("enter a whole number",), "child_age"),
+    (("brand of smartphone",), "smartphone_brand"),
+    (("smartphone do you currently",), "smartphone_brand"),
+    (("which brand of smartphone",), "smartphone_brand"),
 )
 
 NONE_TOKENS = {

@@ -480,7 +480,7 @@ def option_labels_from_ocr(obs: Observation) -> list[str]:
 
 
 def pick_option_assumption(labels: list[str]) -> Optional[str]:
-    preferred = ("buy another", "yes", "agree", "employed", "brennan", "dublin", "male")
+    preferred = ("samsung", "buy another", "yes", "agree", "employed", "brennan", "dublin", "male")
     skip = ("none of these", "prefer not", "don't know", "not sure", "skip", "other please")
     for lab in labels:
         if any(p in lab.lower() for p in preferred):

@@ -61,6 +61,8 @@ def looks_like_single_choice(ocr_text: str) -> bool:
         "higher managerial", "intermediate managerial",
         "following counties", "which county",
         "not available in a store",
+        "brand of smartphone", "smartphone do you currently",
+        "which brand of",
     ))
 
 
@@ -323,6 +325,9 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
     quoted = quoted_instruction_decision(obs)
     if quoted:
         return quoted
+    phone = smartphone_brand_decision(obs)
+    if phone:
+        return phone
     blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     if select_all_apply_visible(obs.ocr_text):
         return None
@@ -470,4 +475,128 @@ def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "kb_key": "gender", "confidence_score": 0.96,
         "postcondition": f"The {intended} option is selected.", "selection_complete": False,
         "answer_reason": f"Select {intended} on the card. Do not use learned y=709.",
+    }
+
+
+_DEVICE_BRAND_CACHE = {"raw": None}
+
+
+def smartphone_brand_question_visible(ocr_text: str) -> bool:
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    return ("smartphone" in text or "mobile phone" in text) and (
+        "brand" in text or "currently use" in text
+    )
+
+
+def cached_device_brand() -> str:
+    if _DEVICE_BRAND_CACHE["raw"] is not None:
+        return str(_DEVICE_BRAND_CACHE["raw"])
+    parts: list[str] = []
+    for prop in ("ro.product.brand", "ro.product.manufacturer", "ro.product.model"):
+        try:
+            parts.append(adb_text(["shell", "getprop", prop], timeout=3).strip())
+        except Exception:
+            parts.append("")
+    _DEVICE_BRAND_CACHE["raw"] = " ".join(p for p in parts if p)
+    logger.info("[PHONE] getprop=%r", _DEVICE_BRAND_CACHE["raw"])
+    return str(_DEVICE_BRAND_CACHE["raw"])
+
+
+def map_device_to_phone_option(raw: str, labels: list[str]) -> str:
+    blob = (raw or "").lower()
+    wanted = "Samsung" if not blob else "Other Android phone"
+    for needle, label in (
+        ("samsung", "Samsung"), ("google", "Google Pixel"), ("pixel", "Google Pixel"),
+        ("xiaomi", "Xiaomi / Redmi"), ("redmi", "Xiaomi / Redmi"), ("poco", "Xiaomi / Redmi"),
+        ("oppo", "Oppo / OnePlus"), ("oneplus", "Oppo / OnePlus"), ("realme", "Oppo / OnePlus"),
+        ("apple", "Apple iPhone"), ("iphone", "Apple iPhone"),
+    ):
+        if needle in blob:
+            wanted = label
+            break
+    for lab in labels:
+        low = lab.lower()
+        if wanted.lower() == low or wanted.lower() in low or low in wanted.lower():
+            return lab
+    token = wanted.split()[0].lower()
+    for lab in labels:
+        if token in lab.lower():
+            return lab
+    return wanted
+
+
+def smartphone_continue_milli(obs: Observation) -> list[int]:
+    for name in ("purple_submit_arrow_milli", "mapped_age_arrow_milli"):
+        fn = globals().get(name)
+        if not callable(fn):
+            continue
+        hit = fn(obs)
+        if hit and 400 <= int(hit[1]) <= 920:
+            return [int(hit[0]), int(hit[1])]
+    found = continue_button_on_screen(obs)
+    if found and 500 <= int(found[0][1]) <= 920:
+        return [int(found[0][0]), int(found[0][1])]
+    return [500, 860]
+
+
+def mapped_option_milli(obs: Observation, pick: str) -> Optional[list[int]]:
+    if not pick or "build_screen_object_map" not in globals():
+        return None
+    try:
+        scene = build_screen_object_map(obs)
+    except Exception:
+        return None
+    needle = pick.lower()[:8]
+    for item in scene.get("controls") or []:
+        label = str(item.get("label") or "").lower()
+        milli = list(item.get("visual_milli") or item.get("milli") or [])
+        if needle[:6] in label and len(milli) == 2 and 220 <= int(milli[1]) <= 820:
+            return [int(milli[0]), int(milli[1])]
+    return None
+
+
+def smartphone_brand_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    """Read ADB brand, persist to KB, tap that card, then the purple arrow."""
+    if not smartphone_brand_question_visible(obs.ocr_text):
+        return None
+    obs.screen_phase = "survey_question"
+    labels = option_labels_from_ocr(obs)
+    stored = str((obs.kb or {}).get("smartphone_brand") or "").strip()
+    raw = stored or cached_device_brand()
+    pick = map_device_to_phone_option(raw, labels)
+    write = not stored or stored != pick
+    key = question_fingerprint(obs)
+    if _SELECT_ONE_SESSION.get("key") != key:
+        _SELECT_ONE_SESSION.update({"key": key, "taps": 0, "misses": 0, "verified": False})
+    missing = survey_validation_error(obs)
+    tapped = int(_SELECT_ONE_SESSION.get("taps") or 0) >= 1 and not missing
+    arrow = smartphone_continue_milli(obs)
+    if tapped:
+        logger.info("[PHONE] %r already tapped; arrow %s", pick, arrow)
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+            "target_coords": arrow, "coordinate_authoritative": True,
+            "input_payload": pick, "kb_key": "smartphone_brand", "kb_write": write,
+            "confidence_score": 0.97, "postcondition": "screen changed",
+            "answer_reason": f"{pick} selected; tap the purple arrow.",
+            "skip_object_grounding": True, "object_kind": "button",
+        }
+    row = mapped_option_milli(obs, pick) or select_one_ocr_row_milli(obs, pick)
+    order = ["Samsung", "Apple iPhone", "Google Pixel", "Xiaomi / Redmi",
+             "Oppo / OnePlus", "Other Android phone"]
+    idx = next((i for i, name in enumerate(order) if pick.lower()[:6] in name.lower()), 0)
+    tap = list(row) if row else [500, 370 + idx * 68]
+    tap = [max(180, min(820, int(tap[0]))), int(tap[1])]
+    _SELECT_ONE_SESSION["taps"] = int(_SELECT_ONE_SESSION.get("taps") or 0) + 1
+    logger.info("[PHONE] device/KB → %r tap=%s arrow=%s write=%s", pick, tap, arrow, write)
+    return {
+        "screen_state": "survey_question", "action": "select_then_continue",
+        "target_text": pick, "target_coords": tap, "coordinate_authoritative": True,
+        "tap_points": [tap, [500, tap[1]], [220, tap[1]]], "continue_coords": arrow,
+        "input_payload": pick, "kb_key": "smartphone_brand", "kb_write": write,
+        "confidence_score": 0.96, "postcondition": "screen changed",
+        "answer_reason": f"Device brand maps to {pick}; tap the card then the purple arrow.",
+        "answer_provenance": "declared",
+        "source_basis": "adb getprop / knowledge_base.json:smartphone_brand",
+        "skip_object_grounding": True, "object_kind": "choice",
     }

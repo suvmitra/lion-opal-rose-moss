@@ -776,15 +776,16 @@ def prefer_progression_over_repeat(
             if carousel_row_question_visible(obs.ocr_text):
                 fill = carousel_row_decision(obs)
                 if fill:
-                    logger.info(
-                        "[PROGRESSION REPAIR] Carousel keeps %s %r, not Continue.",
-                        fill.get("action"), fill.get("target_text"),
-                    )
+                    logger.info("[PROGRESSION REPAIR] Carousel keeps %s.", fill.get("target_text"))
                     return fill
-            if required_answer_missing(obs):
-                inferred = inferred_preference_decision(obs)
-                if inferred:
+            if required_answer_missing(obs) or survey_validation_error(obs):
+                inferred = (
+                    smartphone_brand_decision(obs)
+                    if smartphone_brand_question_visible(obs.ocr_text) else None
+                ) or inferred_preference_decision(obs)
+                if inferred and not is_progression_cta(str(inferred.get("target_text") or "")):
                     return inferred
+                return decision
             if select_all_apply_visible(obs.ocr_text):
                 fill = select_all_apply_decision(obs)
                 if fill and (select_all_lime_band_count(obs) >= 1 or fill.get("action") != "click"):

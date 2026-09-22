@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.123": [
+        "Smartphone brand: ADB getprop → knowledge_base, tap that card, then purple arrow.",
+        "Do not Continue on 'This question is required'. Progression cannot skip an unselected option.",
+    ],
     "24.0.122": [
         "Age: tap mapped text_input, type 44 once, tap mapped purple arrow in the same action.",
         "Do not retype (DEL wipes 44). After typed, only the arrow. Never tap the question title.",

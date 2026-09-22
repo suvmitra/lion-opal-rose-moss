@@ -151,17 +151,18 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
             decision_source = "router-gender"
-            logger.info("[GENDER] Hard-route %s %s", None if not decision else decision.get("target_text"), None if not decision else decision.get("target_coords"))
         elif quoted_select_instruction_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = quoted_instruction_decision(obs)
             decision_source = "router-quoted-select"
-            logger.info("[QUOTED SELECT] Hard-route %s %s", None if not decision else decision.get("action"), None if not decision else decision.get("target_text"))
+        elif smartphone_brand_question_visible(obs.ocr_text):
+            obs.screen_phase = "survey_question"
+            decision = smartphone_brand_decision(obs)
+            decision_source = "router-phone"
         elif birth_date_question_visible(obs.ocr_text) or adult_age_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = birth_date_decision(obs) if birth_date_question_visible(obs.ocr_text) else adult_age_screen_decision(obs)
-            decision_source = "router-birth-date" if birth_date_question_visible(obs.ocr_text) else "router-age"
-            logger.info("[PERSONAL FORM] Hard-route %s %s", None if not decision else decision.get("action"), None if not decision else decision.get("input_payload") or decision.get("target_coords"))
+            decision_source = "router-age"
         else:
             gated, halt = stagnation_gate(obs, no_change_count)
             if halt:
@@ -787,9 +788,6 @@ def main() -> int:
             elif pending_question_advance and action_name == "click":
                 pending_question_advance = False
             no_change_count = 0
-            # Compare the next logical observation with the pre-action screen.
-            # A successfully changed post-action screen should be treated as a
-            # new phase, not immediately counted as one stagnant cycle.
             previous = obs
 
     state["completed"] = False
