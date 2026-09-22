@@ -406,7 +406,7 @@ RL_POLICY_MAX = 80
 _OPTION_CHROME = (
     "survey", "continue", "accessibility", "select one", "select all",
     "please select", "problems with", "there were", "instructions",
-    "screen ", "english", "help",
+    "screen ", "english", "help", "question is required", "select up to",
 )
 
 
@@ -431,7 +431,7 @@ def generalized_widget_class_from_text(ocr_text: str, phase: str = "") -> str:
     blob = strip_transient_ocr(ocr_text)
     if phase == "dashboard":
         return "dashboard"
-    if select_all_apply_visible(ocr_text):
+    if select_up_to_n_visible(ocr_text) or select_all_apply_visible(ocr_text):
         return "select_all"
     if looks_like_single_choice(ocr_text) or "please select an answer" in blob:
         return "select_one"
@@ -476,7 +476,7 @@ def option_labels_from_ocr(obs: Observation) -> list[str]:
             continue
         if re.search(r"\d{1,2}:\d{2}", line) or re.search(r"\d{1,3}%", line):
             continue
-        if any(tok in low for tok in ("jin", "linkedin", "battery")):
+        if is_banner_or_instruction_label(line) or is_garbage_option_label(line):
             continue
         if line not in labels:
             labels.append(line)

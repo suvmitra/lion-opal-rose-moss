@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.127": [
+        "Select-up-to-N matches 'three' as well as '3'. Never tap the red required banner.",
+        "Checkbox lists are not matrices. Tick 3 real options on the grid, then the footer arrow.",
+    ],
     "24.0.126": [
         "Select-up-to-N uses the object-map grid for each checkbox, then the footer arrow at y>=800.",
         "Never tap y=705 as Continue. Strip OCR junk (YW). skip_object_grounding is honoured.",

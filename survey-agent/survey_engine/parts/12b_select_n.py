@@ -1,10 +1,13 @@
 # 12b_select_n.py — select-up-to-N multi-choice (grid coords, then footer arrow)
 
+_SELECT_N_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
 _SELECT_N_SESSION: dict[str, Any] = {"key": "", "ticked": [], "picks": []}
 _LLM_PICK_CACHE: dict[str, list[str]] = {}
 SELECT_N_PREFERRED = (
+    "Helping to complete a task", "Summarising emails", "Finding photos",
     "Productivity at work", "Reducing repetitive tasks", "Finding information faster",
     "Creativity and content creation", "Learning and education",
+    "Translating conversations", "Managing calendar",
 )
 SELECT_N_ORDER = (
     "Reducing repetitive tasks", "Accessibility for people with disabilities",
@@ -19,7 +22,9 @@ def is_garbage_option_label(text: str) -> bool:
         return True
     if len(re.sub(r"[^A-Za-z]", "", raw)) < 4:
         return True
-    return raw.lower() in {"survey", "continue", "next", "select up to 3", "select up to"}
+    return "question is required" in raw.lower() or raw.lower() in {
+        "survey", "continue", "next", "select up to 3", "select up to",
+    }
 
 
 def clean_option_label(text: str) -> str:
@@ -29,19 +34,24 @@ def clean_option_label(text: str) -> str:
 
 
 def select_up_to_n_visible(ocr_text: str) -> bool:
-    return bool(re.search(r"select up to\s+\d+", re.sub(r"\s+", " ", str(ocr_text or "").lower())))
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    return bool(re.search(r"select up to\s+(\d+|one|two|three|four|five)", text))
 
 
 def select_up_to_limit(ocr_text: str) -> int:
-    match = re.search(r"select up to\s+(\d+)", str(ocr_text or "").lower())
-    return max(1, min(5, int(match.group(1)))) if match else 3
+    match = re.search(r"select up to\s+(\d+|one|two|three|four|five)", str(ocr_text or "").lower())
+    if not match:
+        return 3
+    token = match.group(1)
+    return max(1, min(5, _SELECT_N_WORDS.get(token, int(token) if token.isdigit() else 3)))
 
 
 def select_n_session_key(obs: Observation) -> str:
-    text = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    if "excites you most" in text:
-        return "excites-ai-assistants"
-    return "select-n:" + question_fingerprint(obs)[:20]
+    text = re.sub(r"this question is required", " ", re.sub(r"\s+", " ", str(obs.ocr_text or "").lower()))
+    words = [w for w in re.findall(r"[a-z]{4,}", text) if w not in {
+        "survey", "please", "select", "which", "following", "would", "three", "this",
+    }]
+    return "select-n:" + " ".join(words[:6])
 
 
 def select_up_to_labels(obs: Observation) -> list[str]:
@@ -51,6 +61,8 @@ def select_up_to_labels(obs: Observation) -> list[str]:
         if is_garbage_option_label(line) or is_chrome_option_label(line):
             continue
         if "?" in line or line.lower().startswith("in general") or len(line) > 80:
+            continue
+        if "required" in line.lower() or is_banner_or_instruction_label(line):
             continue
         if line.lower() not in {x.lower() for x in found}:
             found.append(line)
@@ -120,17 +132,18 @@ def footer_cta_milli(obs: Observation) -> list[int]:
     return [500, 875]
 
 
-def select_n_grid_milli(obs: Observation, pick: str) -> list[int]:
-    """Left checkbox of the named row from the object grid, else known layout."""
+def select_n_grid_milli(obs: Observation, pick: str, labels: Optional[list[str]] = None) -> list[int]:
+    """Left checkbox of the named row from the object grid, else label order."""
     mapped = mapped_option_milli(obs, pick) if "mapped_option_milli" in globals() else None
     if mapped and 250 <= int(mapped[1]) <= 790:
         logger.info("[SELECT N] Grid option %r %s", pick, mapped)
         return [180, int(mapped[1])]
     low = clean_option_label(pick).lower()
-    for index, name in enumerate(SELECT_N_ORDER):
+    sequence = list(labels or []) or list(SELECT_N_ORDER)
+    for index, name in enumerate(sequence):
         if name.lower()[:14] in low or low[:14] in name.lower():
-            return [180, 343 + index * 67]
-    return [180, 430]
+            return [180, 400 + index * 72]
+    return [180, 445]
 
 
 def select_n_already_checked(obs: Observation, pick: str) -> bool:
@@ -164,7 +177,7 @@ def select_up_to_n_decision(obs: Observation) -> Optional[dict[str, Any]]:
     remaining = [p for p in picks if p.lower() not in {t.lower() for t in ticked}]
     if remaining and labels and len(ticked) < need:
         pick = remaining[0]
-        tap = select_n_grid_milli(obs, pick)
+        tap = select_n_grid_milli(obs, pick, labels)
         _SELECT_N_SESSION["ticked"] = ticked + [pick]
         logger.info("[SELECT N] %s/%s tick %r grid=%s", len(ticked) + 1, need, pick, tap)
         return {
@@ -190,10 +203,15 @@ def select_up_to_n_decision(obs: Observation) -> Optional[dict[str, Any]]:
 def select_up_to_n_regression_self_check() -> bool:
     """Select-up-to-3 uses grid rows then a footer arrow (y>=800), never YW/header/y=705."""
     ocr = (
-        "In general, what excites you most about AI assistants?\nSelect up to 3\n"
-        "YW Reducing repetitive tasks\nAccessibility for people with disabilities\n"
-        "Learning and education\nProductivity at work\nTranslation and communication\n"
-        "Finding information faster\nCreativity and content creation (including images)\nee"
+        "This question is required\n"
+        "Which of the following features are, or would be, most valuable "
+        "to you in an AI assistant on your phone?\nSelect up to three.\n"
+        "Summarising emails or messages\n"
+        "Helping to complete a task across multiple apps\n"
+        "Finding photos, files, or notes\n"
+        "Translating conversations or documents\n"
+        "Managing calendar events\n"
+        "Controlling phone settings"
     )
     obs = Observation(
         step=0, screenshot=None, image_width=1440, image_height=3088,
@@ -212,9 +230,9 @@ def select_up_to_n_regression_self_check() -> bool:
     passed = bool(
         select_up_to_n_visible(ocr) and select_up_to_limit(ocr) == 3
         and is_garbage_option_label("ee")
-        and "YW Reducing repetitive tasks" not in labels
-        and any("Reducing repetitive" in x for x in labels)
-        and first and first.get("action") == "select_option" and "YW" not in str(first.get("target_text"))
+        and first and first.get("action") == "select_option"
+        and "required" not in str(first.get("target_text") or "").lower()
+        and any("Helping" in x or "Summarising" in x or "Finding photos" in x for x in labels)
         and int((first.get("target_coords") or [0, 0])[1]) < 800
         and second and second.get("target_text") != first.get("target_text")
         and third and third.get("action") == "select_option"

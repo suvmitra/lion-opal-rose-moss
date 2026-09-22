@@ -105,6 +105,8 @@ def is_banner_or_instruction_label(text: str) -> bool:
         "instructions attached",
         "please select one of the below",
         "there were problems",
+        "this question is required",
+        "question is required",
         "the chief income earner is the person",
         "consider yourself the",
         "if your income is equal",

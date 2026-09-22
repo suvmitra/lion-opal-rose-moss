@@ -24,6 +24,8 @@ def matrix_grid_visible(obs: Observation) -> bool:
         return False
     if captcha_code_question_visible(obs.ocr_text) or drag_drop_question_visible(obs.ocr_text):
         return False
+    if select_up_to_n_visible(obs.ocr_text):
+        return False
     if occupation_group_question_visible(obs.ocr_text):
         return False
     if county_question_visible(obs.ocr_text):
