@@ -74,6 +74,17 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     """Apply the mindset to a planned tap before it hits the device."""
     if not decision:
         return decision
+    if quoted_select_instruction_visible(obs.ocr_text):
+        if str(decision.get("action") or "") == "select_then_continue":
+            out = dict(decision)
+            out.setdefault("mindset", "applied")
+            logger.info("[MINDSET] rationality: keep radio-then-Continue for named option")
+            return out
+        fill = quoted_instruction_decision(obs)
+        if fill:
+            logger.info("[MINDSET] rationality: instruction names %r; tap radio then Continue",
+                        fill.get("target_text"))
+            return fill
     out = ground_decision_to_screen_map(dict(decision), obs) if "ground_decision_to_screen_map" in globals() else dict(decision)
     action = str(out.get("action") or "").lower()
     text = str(out.get("target_text") or "")

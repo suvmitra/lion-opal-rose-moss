@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.120": [
+        "Please select the 'X' option: parse the quoted label, tap that radio, then red Continue.",
+        "Do not re-tap the named option; object-map must not steal Continue. Instruction screens are survey_question.",
+    ],
     "24.0.119": [
         "Filled world-change box is still an open-text question after the placeholder disappears; tap Submit, do not return None.",
         "Strong prompts (imagine/change one thing/type your answer) do not require a '?' to stay on the type-then-Submit path.",

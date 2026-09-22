@@ -137,6 +137,7 @@ def prompt_operator_start_salad() -> None:
 def local_fallback_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Used when Salad is 503/521/522 so the agent never stalls waiting on VLM."""
     for fn in (
+        quoted_instruction_decision,
         birth_date_decision,
         county_dropdown_decision,
         dependent_children_decision,
@@ -247,6 +248,8 @@ def preflight() -> bool:
     if not open_text_min_words_regression_self_check():
         return False
     if not world_change_open_text_regression_self_check():
+        return False
+    if not quoted_select_instruction_regression_self_check():
         return False
     if not captcha_code_regression_self_check():
         return False

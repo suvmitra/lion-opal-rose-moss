@@ -28,7 +28,7 @@ def observe(
     phase = classify_screen_phase(text, nodes)
     if child_ages_question_visible(text) or children_count_question_visible(text) or carousel_row_question_visible(text):
         phase = "survey_question"
-    if maxdiff_question_visible(text) or select_all_apply_visible(text):
+    if maxdiff_question_visible(text) or select_all_apply_visible(text) or quoted_select_instruction_visible(text):
         phase = "survey_question"
     if phase != "survey_question" and matrix_semantic_hint(text) and not looks_like_single_choice(text):
         phase = "survey_question"
@@ -37,7 +37,7 @@ def observe(
     if (not light) and phase in {"survey_question", "navigation"} and (
         phase != "survey_question" or maybe_dashboard
     ):
-        # Sparse OCR only when dashboard cards may have been misclassified.
+        # Sparse OCR if dashboard cards may have been misclassified.
         ocr_nodes = ocr_line_nodes(path, psm=11)
         recovered_phase = classify_screen_phase(text, nodes + ocr_nodes)
         if recovered_phase == "dashboard":
@@ -52,17 +52,14 @@ def observe(
         _, reasons = dashboard_evidence(text, nodes + ocr_nodes)
         logger.info("[PHASE] Dashboard evidence=%s", reasons)
         if not ocr_nodes:
-            # PSM 11 keeps the two-column survey catalog separated. Dense PSM
-            # 6 can merge both cards into a single line and place the computed
-            # center in the non-clickable gap between them.
+            # PSM 11 keeps two-column catalog cards separated.
             ocr_nodes = ocr_line_nodes(path, psm=11)
         tiles = extract_survey_tiles(nodes + ocr_nodes, iw, ih)
         if not tiles:
             dense_nodes = ocr_line_nodes(path, psm=6)
             tiles = extract_survey_tiles(nodes + dense_nodes, iw, ih)
 
-    # Always attach the on-disk KB. Routers (child_age, age, county) must not
-    # see an empty obs.kb just because phase was briefly navigation.
+    # Always attach the on-disk KB even if phase was briefly navigation.
     kb = load_kb()
     persona = load_persona() if phase == "survey_question" else {}
 
@@ -154,14 +151,17 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
             decision_source = "router-gender"
-            logger.info("[GENDER] Hard-route %s %s", None if not decision else decision.get("target_text"),
-                        None if not decision else decision.get("target_coords"))
+            logger.info("[GENDER] Hard-route %s %s", None if not decision else decision.get("target_text"), None if not decision else decision.get("target_coords"))
+        elif quoted_select_instruction_visible(obs.ocr_text):
+            obs.screen_phase = "survey_question"
+            decision = quoted_instruction_decision(obs)
+            decision_source = "router-quoted-select"
+            logger.info("[QUOTED SELECT] Hard-route %s %s", None if not decision else decision.get("action"), None if not decision else decision.get("target_text"))
         elif birth_date_question_visible(obs.ocr_text) or adult_age_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = birth_date_decision(obs) if birth_date_question_visible(obs.ocr_text) else adult_age_screen_decision(obs)
             decision_source = "router-birth-date" if birth_date_question_visible(obs.ocr_text) else "router-age"
-            logger.info("[PERSONAL FORM] Hard-route %s %s", None if not decision else decision.get("action"),
-                        None if not decision else decision.get("input_payload") or decision.get("target_coords"))
+            logger.info("[PERSONAL FORM] Hard-route %s %s", None if not decision else decision.get("action"), None if not decision else decision.get("input_payload") or decision.get("target_coords"))
         else:
             gated, halt = stagnation_gate(obs, no_change_count)
             if halt:

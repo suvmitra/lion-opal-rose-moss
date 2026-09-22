@@ -635,3 +635,53 @@ def world_change_open_text_regression_self_check() -> bool:
             first, nxt, repaired, second, payload,
         )
     return passed
+
+
+def quoted_select_instruction_regression_self_check() -> bool:
+    """'Please select the X option' must tap X then Continue, not loop on X."""
+    messy = (
+        "Please select the ‘Somewhat , disagree’ option from the below: "
+        "O Neither agree nor di Continue"
+    )
+    clean = (
+        "Please select the 'Somewhat disagree' option from the below:\n"
+        "Strongly agree\nSomewhat agree\nNeither agree nor disagree\n"
+        "Somewhat disagree\nStrongly disagree\n« Back\nContinue »"
+    )
+    obs = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="quoted-select",
+        ocr_text=clean, ui_nodes=[], kb={}, persona={},
+        screen_phase="navigation", survey_tiles=[],
+    )
+    _SELECT_ONE_SESSION.update({"key": "", "taps": 0, "misses": 0, "verified": False})
+    first = quoted_instruction_decision(obs)
+    second = quoted_instruction_decision(obs)
+    _SELECT_ONE_SESSION.update({"key": "", "taps": 0, "misses": 0, "verified": False})
+    inspected = critique_decision(obs, {
+        "action": "click", "target_text": "Somewhat disagree",
+        "target_coords": [499, 570], "confidence_score": 0.9,
+        "postcondition": "screen changed",
+    })
+    passed = bool(
+        quoted_select_pick(messy) == "Somewhat disagree"
+        and quoted_select_instruction_visible(messy)
+        and looks_like_single_choice(clean)
+        and classify_screen_phase(clean, []) == "survey_question"
+        and first and first.get("action") == "select_then_continue"
+        and first.get("target_text") == "Somewhat disagree"
+        and int((first.get("target_coords") or [500, 0])[0]) <= 280
+        and first.get("continue_coords")
+        and int((first.get("continue_coords") or [0, 0])[1]) < 900
+        and second and second.get("action") == "click"
+        and "continue" in str(second.get("target_text") or "").lower()
+        and inspected and inspected.get("action") == "select_then_continue"
+    )
+    if passed:
+        logger.info("[SELF-CHECK] Quoted-select taps Somewhat disagree then Continue.")
+    else:
+        logger.error(
+            "[SELF-CHECK] Quoted-select failed pick=%r first=%s second=%s inspected=%s",
+            quoted_select_pick(messy), first, second, inspected,
+        )
+    return passed
