@@ -311,15 +311,29 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             if str(decision.get("kb_key") or "") == "age":
                 _AGE_FIELD_MISS["n"] = int(_AGE_FIELD_MISS.get("n") or 0) + 1
                 webview_click(x, y)
-                time.sleep(0.7)
-                adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
-                for _ in range(16):
-                    adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
-                type_digits(str(payload))
-                time.sleep(0.4)
-                _AGE_SESSION["typed"] = True
-                logger.info("[AGE] Typed %r at native=(%s,%s) miss=%s",
-                            payload, x, y, _AGE_FIELD_MISS.get("n"))
+                time.sleep(0.55)
+                if not _AGE_SESSION.get("typed"):
+                    adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
+                    for _ in range(8):
+                        adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
+                    type_digits(str(payload))
+                    time.sleep(0.35)
+                    _AGE_SESSION["typed"] = True
+                    logger.info("[AGE] Typed %r at native=(%s,%s)", payload, x, y)
+                arrow = decision.get("arrow_coords")
+                if not (isinstance(arrow, list) and len(arrow) == 2) and "purple_submit_arrow_milli" in globals():
+                    arrow = purple_submit_arrow_milli(obs) or mapped_age_arrow_milli(obs)
+                if isinstance(arrow, list) and len(arrow) == 2:
+                    ax, ay = normalized_to_native(
+                        arrow, (obs.image_width, obs.image_height),
+                        (obs.device_width, obs.device_height),
+                    )
+                    time.sleep(0.2)
+                    webview_click(ax, ay)
+                    logger.info("[AGE] Arrow after type native=(%s,%s) milli=%s", ax, ay, arrow)
+                else:
+                    logger.info("[AGE] Typed %r at native=(%s,%s) miss=%s",
+                                payload, x, y, _AGE_FIELD_MISS.get("n"))
             else:
                 tap_native(x, y)
                 time.sleep(0.55)

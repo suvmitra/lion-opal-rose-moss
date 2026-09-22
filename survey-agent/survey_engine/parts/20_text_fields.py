@@ -630,17 +630,74 @@ def purple_submit_arrow_milli(obs: Observation) -> Optional[list[int]]:
         return None
 
 
+def mapped_age_input_milli(obs: Observation) -> Optional[list[int]]:
+    if "build_screen_object_map" not in globals():
+        return None
+    try:
+        scene = build_screen_object_map(obs)
+    except Exception:
+        return None
+    best = None
+    for item in scene.get("controls") or []:
+        role = str(item.get("role") or "")
+        milli = list(item.get("visual_milli") or item.get("milli") or [])
+        if len(milli) != 2:
+            continue
+        y = int(milli[1])
+        if role in {"text_input", "input_or_listbox"} and 250 <= y <= 580:
+            best = [max(180, min(820, int(milli[0]))), y]
+            if role == "text_input":
+                logger.info("[AGE] Mapped text_input milli=%s", best)
+                return best
+    if best:
+        logger.info("[AGE] Mapped input milli=%s", best)
+    return best
+
+
+def mapped_age_arrow_milli(obs: Observation) -> Optional[list[int]]:
+    if "build_screen_object_map" not in globals():
+        return None
+    try:
+        scene = build_screen_object_map(obs)
+    except Exception:
+        return None
+    best, best_y = None, 0
+    for item in scene.get("controls") or []:
+        if str(item.get("role") or "") != "button":
+            continue
+        label = str(item.get("label") or "").lower()
+        if any(tok in label for tok in ("close", "reload", "survey")):
+            continue
+        milli = list(item.get("visual_milli") or item.get("milli") or [])
+        if len(milli) != 2:
+            continue
+        x, y = int(milli[0]), int(milli[1])
+        if y < 400 or y > 720 or abs(x - 500) > 260:
+            continue
+        if y > best_y:
+            best_y, best = y, [x, y]
+    if best:
+        logger.info("[AGE] Mapped arrow button milli=%s", best)
+    return best
+
+
 def adult_age_field_coords(obs: Observation) -> list[int]:
-    """Centre of the empty rounded text box, never the question title."""
+    """Centre of the mapped/rounded text box, never the question title."""
+    mapped = mapped_age_input_milli(obs)
+    if mapped:
+        return mapped
     found = empty_rounded_input_coords(obs)
-    if found and 240 <= int(found[1]) <= 460:
+    if found and 240 <= int(found[1]) <= 580:
         logger.info("[AGE] Field from rounded box %s", found)
         return [max(220, min(780, int(found[0]))), int(found[1])]
-    logger.info("[AGE] Field fallback [500, 318]")
-    return [500, 318]
+    logger.info("[AGE] Field fallback [500, 360] (box, not title)")
+    return [500, 360]
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
+    mapped = mapped_age_arrow_milli(obs)
+    if mapped:
+        return mapped
     arrow = purple_submit_arrow_milli(obs)
     if arrow:
         return arrow
@@ -653,15 +710,11 @@ def adult_age_continue_coords(obs: Observation) -> list[int]:
             milli = [int(hit[0] * 1000 / width), int(hit[1] * 1000 / height)]
             logger.info("[AGE] Keyboard Go milli=%s", milli)
             return milli
-    y1, y2 = (0.40, 0.86) if keyboard_visible_on_survey(obs) else (0.55, 0.88)
-    for bar in orange_cta_milli(obs, y1, y2):
-        if 400 <= int(bar[1]) <= 860:
-            return [500, int(bar[1])]
-    return [500, 520] if keyboard_visible_on_survey(obs) else [500, 780]
+    return [500, 520]
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Text-box object: type KB age=44, then tap the purple arrow. Never trust a typed flag on an empty box."""
+    """One path: type 44 into the text_input, then tap the mapped purple arrow. Never retype."""
     if not adult_age_question_visible(obs.ocr_text):
         _AGE_SESSION["typed"] = False
         return None
@@ -670,27 +723,28 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     too_big = bool(re.search(r"4{3,6}", digits or "")) or (
         digits.isdigit() and (len(digits) > 2 or int(digits) > 99)
     )
-    if not digits or too_big:
+    if too_big:
         _AGE_SESSION["typed"] = False
-    ready = digits == wanted and not too_big
-    logger.info("[AGE REASON] object=text_box box=%r typed=%s kb=%s → %s",
+    arrow = adult_age_continue_coords(obs)
+    already = (digits == wanted or bool(_AGE_SESSION.get("typed"))) and not too_big
+    logger.info("[AGE REASON] object=text_box box=%r typed=%s kb=%s → %s arrow=%s",
                 digits, _AGE_SESSION.get("typed"), keyboard_visible_on_survey(obs),
-                "arrow" if ready else "type")
-    if not ready:
-        coords = adult_age_field_coords(obs)
+                "arrow" if already else "type_then_arrow", arrow)
+    if already:
         return {
-            "screen_state": "survey_question", "action": "type_text",
-            "target_text": "age input field", "target_coords": coords,
-            "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
-            "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-            "answer_reason": f"Empty/wrong text box; type {wanted} from knowledge_base.",
-            "skip_object_grounding": True, "object_kind": "text_input",
+            "screen_state": "survey_question", "action": "click", "target_text": "arrow",
+            "target_coords": arrow, "coordinate_authoritative": True, "kb_key": "age",
+            "confidence_score": 0.97, "postcondition": "screen changed",
+            "answer_reason": f"Age {wanted} is in the box or just typed; tap the purple arrow.",
+            "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
         }
-    coords = adult_age_continue_coords(obs)
+    field = adult_age_field_coords(obs)
     return {
-        "screen_state": "survey_question", "action": "click", "target_text": "arrow",
-        "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
-        "confidence_score": 0.97, "postcondition": "screen changed",
-        "answer_reason": f"Text box shows {wanted}; tap the purple arrow (not the question title).",
-        "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
+        "screen_state": "survey_question", "action": "type_text",
+        "target_text": "age input field", "target_coords": field,
+        "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
+        "confidence_score": 0.99, "postcondition": "screen changed",
+        "answer_reason": f"Tap text box, type {wanted}, tap purple arrow once.",
+        "arrow_coords": arrow, "submit_after_type": True,
+        "skip_object_grounding": True, "object_kind": "text_input",
     }

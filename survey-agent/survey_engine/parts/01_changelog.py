@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.122": [
+        "Age: tap mapped text_input, type 44 once, tap mapped purple arrow in the same action.",
+        "Do not retype (DEL wipes 44). After typed, only the arrow. Never tap the question title.",
+    ],
     "24.0.121": [
         "Age screen is a text box: type knowledge_base 44 into the empty rounded field; a typed flag is not proof.",
         "Then tap the purple arrow (or keyboard Go). Do not remap Continue onto the question title.",
