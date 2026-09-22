@@ -107,8 +107,16 @@ def open_text_question_visible(ocr_text: str) -> bool:
         "what issue would you", "please answer the following question to proceed",
         "please fill in this field",
     )
+    strong = (
+        "type your answer", "imagine you have the power", "change one thing about the world",
+        "what issue would you", "please answer the following question to proceed",
+        "at least 5 words", "in your own words", "please fill in this field",
+    )
+    if any(token in text for token in strong):
+        return True
     return any(token in text for token in hints) and (
         "?" in text or "type your" in text or "words" in text or "fill in this field" in text
+        or "submit" in text
     )
 
 

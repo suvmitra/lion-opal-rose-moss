@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.119": [
+        "Filled world-change box is still an open-text question after the placeholder disappears; tap Submit, do not return None.",
+        "Strong prompts (imagine/change one thing/type your answer) do not require a '?' to stay on the type-then-Submit path.",
+    ],
     "24.0.118": [
         "Empty comment box: 'Type your answer here' and 'Please fill in this field' mean TYPE, never Submit.",
         "Ask/SEE/THEREFORE: write a 5+ word human sentence (LLM or persona), tap the box, dismiss keyboard, then teal Submit.",
