@@ -161,6 +161,8 @@ def option_tap_xy(
 
 
 def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
+    if "ground_decision_to_screen_map" in globals():
+        decision = ground_decision_to_screen_map(decision, obs)
     action = str(decision.get("action", "")).lower().strip()
     node = node_by_id(obs.ui_nodes, decision.get("target_element_id"))
     target_text = str(decision.get("target_text") or "").strip()
@@ -480,25 +482,19 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                     milli_y = int(tc[1])
                 except (TypeError, ValueError):
                     milli_y = 0
-            if any(tok in tlow for tok in ("participate", "get started", "start survey", "start now")):
-                cap = int(height * 0.860)
-                if y > cap:
-                    logger.info("[SAFE TAP] Participate native y=%s clamped to %s (pill center, above nav)", y, cap)
-                    y = cap
-            elif "continue" in tlow and milli_y > 905:
-                logger.warning("[SAFE TAP] Continue milli y=%s is nav; clamp to 890.", milli_y)
-                y = int(height * 0.890)
-                milli_y = 890
-            nav_ratio = 0.94 if (
-                milli_y <= 900 and any(tok in tlow for tok in (
-                    "participate", "get started", "start survey", "start now",
-                    "i agree", "continue",
-                ))
-            ) else 0.88
-            nav_y = int(height * nav_ratio)
-            if y >= nav_y and "participate" not in tlow:
-                logger.warning("[SAFE TAP] Refusing Android nav-bar tap native=(%s,%s) text=%r", x, y, target_text)
+            nav_milli = safe_navigation_top_milli(obs) if "safe_navigation_top_milli" in globals() else 945
+            nav_y = int(height * nav_milli / 1000)
+            if y >= nav_y:
+                logger.warning(
+                    "[SAFE TAP] Refusing system-nav tap native=(%s,%s) nav_top=%s text=%r",
+                    x, y, nav_milli, target_text,
+                )
                 return ActionResult(False, False, "Refusing system-nav tap.")
+            if decision.get("object_map_grounded"):
+                logger.info(
+                    "[SAFE TAP] Object-mapped target bounds=%s native=(%s,%s) nav_top=%s",
+                    decision.get("target_bounds"), x, y, nav_milli,
+                )
             if action == "select_option" or "start" in tlow or "agree" in tlow or "participate" in tlow or decision.get("i_agree_continue") or (
                 str(decision.get("kb_key") or "") == "age" and "continue" in tlow
             ):

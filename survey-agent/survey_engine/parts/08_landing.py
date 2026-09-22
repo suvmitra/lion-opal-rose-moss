@@ -1,5 +1,4 @@
 # 08_landing.py — shared engine namespace (do not import directly)
-
 def node_by_id(nodes: list[dict[str, Any]], node_id: Any) -> Optional[dict[str, Any]]:
     try:
         wanted = int(node_id)
@@ -400,6 +399,7 @@ def navigation_cta_decision(obs: Observation) -> Optional[dict[str, Any]]:
             label = None
             node = None
     coords: Optional[list[int]] = None
+    target_bounds: Optional[list[int]] = None
     coordinate_authoritative = False
 
     # Prefer current screenshot geometry over accessibility nodes that may
@@ -414,22 +414,29 @@ def navigation_cta_decision(obs: Observation) -> Optional[dict[str, Any]]:
             coordinate_authoritative = True
             node = None
     if qualified_landing_visible(obs.ocr_text) and not info_page_needs_scroll(obs):
+        requested_label = visible_label or label or "Participate"
+        mapped = (find_screen_control(obs, requested_label, "button")
+                  if "find_screen_control" in globals() else None)
         greens = green_cta_milli(obs) if "green_cta_milli" in globals() else []
         vis = None
         try:
             vis = visual_progression_coords(obs)
         except Exception:
             vis = None
-        if greens:
-            coords = [int(greens[-1][0]), min(875, max(830, int(greens[-1][1])))]
-        elif vis and 720 <= int(vis[1]) <= 880:
-            coords = [500, min(875, max(850, int(vis[1])))]
+        if mapped:
+            coords = list(mapped.get("visual_milli") or mapped.get("milli") or [])
+            target_bounds = list(mapped.get("visual_bounds") or mapped.get("bounds") or [])
+        elif greens:
+            coords = [int(greens[-1][0]), int(greens[-1][1])]
+        elif vis and 720 <= int(vis[1]) < safe_navigation_top_milli(obs):
+            coords = [int(vis[0]), int(vis[1])]
         else:
-            coords = [500, 860]
-        label = visible_label or label or "Participate"
+            coords = [500, 900]
+        label = requested_label
         node = None
         coordinate_authoritative = True
-        logger.info("[THINK] SEE green Participate THEREFORE tap pill center %s (above Android nav)", coords)
+        logger.info("[THINK] mapped CTA center=%s bounds=%s nav_top=%s",
+                    coords, target_bounds, safe_navigation_top_milli(obs))
     if label:
         logger.info(
             "[LANDING ROUTER] CTA=%r node=%s coords=%s screenshot_grounded=%s",
@@ -443,6 +450,7 @@ def navigation_cta_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "target_element_id": node.get("id") if node else None,
             "target_text": label,
             "target_coords": coords,
+            "target_bounds": target_bounds,
             "coordinate_authoritative": coordinate_authoritative,
             "input_payload": None,
             "kb_key": None,

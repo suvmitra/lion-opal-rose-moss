@@ -719,7 +719,7 @@ def stagnation_vlm_decision(obs: Observation, no_change_count: int) -> Optional[
         f"STUCK unchanged={no_change_count} failed={failed}\n"
         f"phase={obs.screen_phase}\nOCR={ocr}\n"
         "JSON: action, target_text, target_coords milli 0-1000. Do not reuse failed coords. "
-        "Participate/Start is the green pill CENTER, never Android nav y>920.\n"
+        f"Participate/Start is the mapped pill CENTER; Android nav begins near y={safe_navigation_top_milli(obs)}.\n"
     )
     compact = (
         "JSON only. Example "
@@ -735,8 +735,12 @@ def stagnation_vlm_decision(obs: Observation, no_change_count: int) -> Optional[
         data.setdefault("postcondition", "screen changed")
         data.setdefault("coordinate_authoritative", True)
         data["_source"] = f"vlm-stagnation:{backend}"
+        data = ground_decision_to_screen_map(data, obs)
         coords = data.get("target_coords")
         if isinstance(coords, list) and len(coords) == 2:
+            if not all(0 <= int(value) <= 1000 for value in coords):
+                logger.warning("[STAGNATION VLM] Out-of-range milli coords %s; reject.", coords)
+                return None
             if (int(coords[0]), int(coords[1])) in failed_coords_set():
                 if start_gate_visible(obs.ocr_text):
                     data["target_coords"] = [500, 405]
@@ -770,13 +774,13 @@ def stagnation_gate(
             if wh:
                 wh["_source"] = "wh"
                 return wh, False
-    if no_change_count >= 2:
+    if no_change_count >= 2 and _STAGNATION_VLM_TRIES < MAX_STAGNATION_VLM_TRIES:
         vlm = stagnation_vlm_decision(obs, no_change_count)
         if vlm:
             _STAGNATION_VLM_TRIES += 1
             return vlm, False
     if no_change_count >= MAX_STAGNATION_CYCLES:
-        if _STAGNATION_VLM_TRIES < 2:
+        if _STAGNATION_VLM_TRIES < MAX_STAGNATION_VLM_TRIES:
             vlm = stagnation_vlm_decision(obs, no_change_count)
             _STAGNATION_VLM_TRIES += 1
             if vlm:

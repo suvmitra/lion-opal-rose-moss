@@ -23,6 +23,7 @@ from typing import Any, Optional
 
 try:
     import cv2
+    import numpy as np
     from dotenv import load_dotenv
     from PIL import Image
     import imagehash
@@ -34,7 +35,7 @@ except ImportError as exc:
     raise SystemExit(1)
 
 
-VERSION = "24.0.116"
+VERSION = "24.0.117"
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
@@ -59,6 +60,9 @@ PERSONA_FILE = Path(os.getenv("PERSONA_FILE", str(BASE_DIR / "persona_data.py"))
 SURVEY_PACKAGE = os.getenv("SURVEY_PACKAGE", "topsurveys.paid.survey.money.cash")
 SURVEY_ACTIVITY = os.getenv("SURVEY_ACTIVITY", "topsurveys.paid.survey.money.cash/.MainActivity")
 STATE_FILE = Path(os.getenv("STATE_FILE", str(BASE_DIR / "agent_state.json")))
+SAVE_SCREEN_MAPS = os.getenv(
+    "SAVE_SCREEN_MAPS", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
 
 MAX_AGENT_STEPS = int(os.getenv("MAX_AGENT_STEPS", "200"))
 MAX_ACTION_RETRIES = int(os.getenv("MAX_ACTION_RETRIES", "3"))
@@ -84,6 +88,7 @@ ALLOW_INTERACTIVE_HUMAN_INPUT = os.getenv(
 ).strip().lower() in {"1", "true", "yes", "on"}
 HUMAN_INPUT_MAX_ATTEMPTS = max(1, int(os.getenv("HUMAN_INPUT_MAX_ATTEMPTS", "3")))
 MAX_STAGNATION_CYCLES = int(os.getenv("MAX_STAGNATION_CYCLES", "4"))
+MAX_STAGNATION_VLM_TRIES = max(1, int(os.getenv("MAX_STAGNATION_VLM_TRIES", "3")))
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_BASE_URL = os.getenv(
     "GEMINI_BASE_URL",
@@ -125,5 +130,4 @@ pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 logger = logging.getLogger("SurveyAutomation")
 logger.setLevel(logging.INFO)
-
 

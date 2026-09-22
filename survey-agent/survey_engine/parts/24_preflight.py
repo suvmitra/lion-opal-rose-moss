@@ -2,6 +2,42 @@
 
 
 
+def bounded_stagnation_regression_self_check() -> bool:
+    """A healthy VLM response must not keep an unchanged screen alive forever."""
+    global _STAGNATION_VLM_TRIES, stagnation_vlm_decision
+    original = stagnation_vlm_decision
+    calls = {"n": 0}
+
+    def fake_vlm(_obs: Observation, _count: int) -> dict[str, Any]:
+        calls["n"] += 1
+        return {"action": "click", "target_text": "Participate", "target_coords": [500, 900]}
+
+    observation = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="stagnation-fixture",
+        ocr_text="You've qualified for this survey! Participate", ui_nodes=[],
+        kb={}, persona={}, screen_phase="survey_landing", survey_tiles=[],
+    )
+    halted = False
+    try:
+        stagnation_vlm_decision = fake_vlm
+        _STAGNATION_VLM_TRIES = 0
+        stagnation_gate(observation, 0)
+        for count in range(1, MAX_STAGNATION_CYCLES + MAX_STAGNATION_VLM_TRIES + 3):
+            _, halted = stagnation_gate(observation, count)
+            if halted:
+                break
+    finally:
+        stagnation_vlm_decision = original
+        _STAGNATION_VLM_TRIES = 0
+    passed = halted and calls["n"] == MAX_STAGNATION_VLM_TRIES
+    if passed:
+        logger.info("[SELF-CHECK] Stagnation is bounded to %s VLM attempts.", calls["n"])
+    else:
+        logger.error("[SELF-CHECK] Stagnation bound failed: calls=%s halted=%s", calls["n"], halted)
+    return passed
+
+
 def terminal_modal_regression_self_check() -> bool:
     """Guard LLM close intent against the low-confidence safety rewrite."""
     nodes = [
@@ -164,6 +200,10 @@ def preflight_s4_access() -> bool:
 
 
 def preflight() -> bool:
+    if not bounded_stagnation_regression_self_check():
+        return False
+    if not screen_object_map_regression_self_check():
+        return False
     if not navigation_regression_self_check():
         return False
     if not consent_and_embedded_cta_regression_self_check():

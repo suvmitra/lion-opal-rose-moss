@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.117": [
+        "Fix Participate by preserving its detected y≈900 centre instead of clamping it to 875/860/835 above the button.",
+        "Fuse UIAutomator, OCR, OpenCV color components and contour geometry into a confidence-scored screen-object scene graph.",
+        "Ground taps to real control bounds, keep retry points inside the same object and detect the Android navigation boundary from pixels.",
+        "Write one overwritten _screen_map_latest PNG/JSON for precise graphical debugging without duplicate-map accumulation.",
+        "Bound stagnation to three VLM recovery attempts and reject out-of-range 0-1000 coordinates instead of looping dozens of times.",
+    ],
     "24.0.116": [
         "Fuse UIAutomator and OCR into a confidence-scored form-control map with device-relative coordinates.",
         "Resolve DOB only from KB/persona or formatted terminal input, fill Day/Month/Year, verify, then submit.",
@@ -626,4 +633,3 @@ CHANGELOG = {
         "Added fresh-run cleanup without deleting the persistent knowledge base.",
     ]
 }
-

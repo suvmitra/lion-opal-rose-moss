@@ -1,11 +1,7 @@
 # 25_runner.py — shared engine namespace (do not import directly)
-
-
-
 # ------------------------------------------------------------------------------
 # Agent loop
 # ------------------------------------------------------------------------------
-
 def observe(
     step: int,
     save: bool = True,
@@ -74,8 +70,7 @@ def observe(
         "[OBSERVE] step=%s phase=%s phash=%s OCR=%d chars UI=%d tiles=%d saved=%s",
         step, phase, phash, len(text), len(nodes), len(tiles), saved
     )
-
-    return Observation(
+    observation = Observation(
         step=step,
         screenshot=str(path),
         image_width=iw,
@@ -90,8 +85,12 @@ def observe(
         screen_phase=phase,
         survey_tiles=tiles,
     )
-
-
+    if not light and "build_screen_object_map" in globals():
+        try:
+            build_screen_object_map(observation, persist=SAVE_SCREEN_MAPS)
+        except Exception as exc:
+            logger.warning("[SCREEN MAP] Observation mapping failed without blocking the run: %s", exc)
+    return observation
 def main() -> int:
     if not initialize_fresh_run():
         return 1

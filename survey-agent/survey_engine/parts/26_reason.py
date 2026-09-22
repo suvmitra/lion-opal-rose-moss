@@ -13,13 +13,26 @@ def mindset_prompt() -> str:
         "objectivity=pixels beat remembered coords; "
         "empiricism=unchanged screen means the tap missed; "
         "critical=is Continue/Participate actually visible; "
-        "skepticism=y>920 is the Android nav, not a button; "
+        "skepticism=use the detected navigation boundary, never a fixed y guess; "
         "honesty=if unknown, say so, do not fake a tap."
     )
 
 
 def green_cta_milli(obs: Observation) -> list[list[int]]:
-    """Center of the wide green Participate/Start pill. Ignores Android nav (bottom 8%)."""
+    """Centres of mapped green CTA controls, with a pixel-mask fallback."""
+    if "build_screen_object_map" in globals():
+        try:
+            scene = build_screen_object_map(obs)
+            mapped = [
+                list(item.get("visual_milli") or item.get("milli") or [])
+                for item in scene.get("controls", [])
+                if item.get("role") == "button" and item.get("color") == "green"
+                and len(item.get("visual_milli") or item.get("milli") or []) == 2
+            ]
+            if mapped:
+                return mapped[:3]
+        except Exception as exc:
+            logger.debug("[COORD] Screen-map green lookup failed: %s", exc)
     path = str(obs.screenshot or "")
     if not path or not Path(path).exists():
         return []
@@ -31,7 +44,8 @@ def green_cta_milli(obs: Observation) -> list[list[int]]:
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, (35, 70, 50), (95, 255, 255))
         mask[: int(height * 0.62), :] = 0
-        mask[int(height * 0.92):, :] = 0
+        nav_top = safe_navigation_top_milli(obs) if "safe_navigation_top_milli" in globals() else 945
+        mask[int(height * nav_top / 1000):, :] = 0
         row = (mask > 0).sum(axis=1)
         bars: list[list[int]] = []
         in_bar, start, need = False, 0, int(width * 0.40)
@@ -60,7 +74,7 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     """Apply the mindset to a planned tap before it hits the device."""
     if not decision:
         return decision
-    out = dict(decision)
+    out = ground_decision_to_screen_map(dict(decision), obs) if "ground_decision_to_screen_map" in globals() else dict(decision)
     action = str(out.get("action") or "").lower()
     text = str(out.get("target_text") or "")
     tlow = text.lower()
@@ -78,27 +92,27 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     if any(tok in tlow for tok in ("participate", "get started", "start survey")):
         if greens:
             gx, gy = int(greens[-1][0]), int(greens[-1][1])
-            gy = min(875, max(820, gy))
             out["target_coords"] = [gx, gy]
             out["coordinate_authoritative"] = True
             logger.info("[MINDSET] objectivity: green-pill center [%s,%s] not OCR y=%s", gx, gy, y)
             y = gy
-        elif y >= 880:
-            out["target_coords"] = [500, 860]
+        elif y >= safe_navigation_top_milli(obs):
+            out["target_coords"] = [500, max(700, safe_navigation_top_milli(obs) - 35)]
             out["coordinate_authoritative"] = True
-            logger.info("[MINDSET] skepticism: Participate %s -> [500, 860]", coords)
-            y = 860
+            logger.info("[MINDSET] skepticism: Participate %s was below detected nav boundary", coords)
+            y = int(out["target_coords"][1])
 
-    if y >= 940 and action in {"click", "select_option"}:
-        logger.info("[MINDSET] skepticism: y=%s is Android nav; refuse this coord", y)
-        out["target_coords"] = [500, 860] if "participate" in tlow else [500, 875]
+    nav_top = safe_navigation_top_milli(obs) if "safe_navigation_top_milli" in globals() else 945
+    if y >= nav_top and action in {"click", "select_option"}:
+        logger.info("[MINDSET] skepticism: y=%s is at/below detected Android nav=%s", y, nav_top)
+        out["target_coords"] = [500, max(700, nav_top - 35)]
         out["coordinate_authoritative"] = True
 
     failed = failed_coords_set() if "failed_coords_set" in globals() else set()
     if isinstance(out.get("target_coords"), list) and len(out["target_coords"]) == 2:
         pair = (int(out["target_coords"][0]), int(out["target_coords"][1]))
-        if pair in failed:
-            alt_y = max(820, pair[1] - 40)
+        if pair in failed and not out.get("object_map_grounded"):
+            alt_y = max(120, min(nav_top - 20, pair[1] + 24))
             out["target_coords"] = [pair[0], alt_y]
             out["answer_reason"] = (
                 f"EMPIRICISM/open-mind: {pair} already missed; trying y={alt_y}."
@@ -143,11 +157,11 @@ def mindset_regression_self_check() -> bool:
     passed = (
         "skepticism" in prompt and "empiricism" in prompt
         and "curiosity" in prompt and "honesty" in prompt
-        and 850 <= y <= 875
+        and 890 <= y <= 910
         and "participate" in str(fixed.get("target_text") or "").lower()
     )
     if passed:
-        logger.info("[SELF-CHECK] Mindset critique clamps Participate y=899 -> %s.", y)
+        logger.info("[SELF-CHECK] Mindset keeps the detected Participate centre y=%s.", y)
     else:
         logger.error("[SELF-CHECK] Mindset failed y=%s decision=%s", y, fixed)
     return passed

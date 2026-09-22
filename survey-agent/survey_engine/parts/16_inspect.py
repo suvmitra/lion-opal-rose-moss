@@ -1,5 +1,4 @@
 # 16_inspect.py — shared engine namespace (do not import directly)
-
 def apply_authorized_personal_fallback(
     decision: dict[str, Any], obs: Observation
 ) -> dict[str, Any]:
