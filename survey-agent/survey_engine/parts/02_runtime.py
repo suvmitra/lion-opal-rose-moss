@@ -380,13 +380,29 @@ def valid_salad_organization(value: str) -> bool:
 # ------------------------------------------------------------------------------
 
 def screenshot_bytes() -> bytes:
-    result = adb(["exec-out", "screencap", "-p"], timeout=30)
-    if result.returncode != 0 or not result.stdout:
-        raise RuntimeError(
-            "screencap failed: " +
-            (result.stderr or b"").decode(errors="replace")[:500]
-        )
-    return result.stdout
+    last_error = ""
+    for attempt in range(1, 4):
+        result = adb(["exec-out", "screencap", "-p"], timeout=30)
+        if result.returncode == 0 and result.stdout:
+            if attempt > 1:
+                logger.info("[ADB RECOVERY] Screenshot transport restored on attempt %s.", attempt)
+            return result.stdout
+        last_error = (result.stderr or b"").decode(errors="replace")[:500]
+        transient = any(term in last_error.lower() for term in (
+            "device offline", "no devices", "transport", "closed",
+        ))
+        if not transient or attempt >= 3:
+            break
+        logger.warning("[ADB RECOVERY] screencap transport failed (%s); reconnecting.", last_error.strip())
+        try:
+            subprocess.run(
+                [ADB_PATH, "reconnect", "offline"], capture_output=True,
+                timeout=15, check=False,
+            )
+        except Exception as exc:
+            logger.warning("[ADB RECOVERY] reconnect command failed: %s", exc)
+        time.sleep(1.0)
+    raise RuntimeError("screencap failed after transport recovery: " + last_error)
 
 
 def capture_screenshot(

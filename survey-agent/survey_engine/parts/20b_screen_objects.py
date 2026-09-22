@@ -103,7 +103,10 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     candidates: list[dict[str, Any]] = []
 
-    def add_box(box: list[int], source: str, color: str, confidence: float) -> None:
+    def add_box(
+        box: list[int], source: str, color: str, confidence: float,
+        fill_ratio: float = 0.0,
+    ) -> None:
         x1, y1, x2, y2 = box
         bw, bh = x2 - x1, y2 - y1
         if bw < int(width * 0.035) or bh < int(height * 0.009):
@@ -129,7 +132,10 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
         aspect = bw / max(1, bh)
         if y1 < int(height * 0.22) and color == "green" and not _is_action_label(label):
             role = "label"
-        elif _is_action_label(label) or (aspect >= 3.0 and color != "neutral"):
+        elif _is_action_label(label) or (
+            aspect >= 3.0 and color != "neutral" and fill_ratio >= 0.55
+            and int(height * 0.018) <= bh <= int(height * 0.12)
+        ):
             role = "button"
         elif 0.70 <= aspect <= 1.40 and bw <= int(width * 0.15):
             role = "choice"
@@ -166,7 +172,10 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
             fill = area / max(1, bw * bh)
             if fill < 0.18:
                 continue
-            add_box([x, y, x + bw, y + bh], "opencv-color", color, min(0.96, 0.76 + fill * 0.20))
+            add_box(
+                [x, y, x + bw, y + bh], "opencv-color", color,
+                min(0.96, 0.76 + fill * 0.20), fill,
+            )
 
     # Neutral outlined controls: text boxes, dropdowns, list boxes and radio/checkbox outlines.
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

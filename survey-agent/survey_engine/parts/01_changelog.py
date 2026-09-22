@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.132": [
+        "Adds a question-flow master: after a verified answer, an exact mapped footer CTA owns the next action before matrix/RL/VLM routers.",
+        "Fixes the 2026-09-22 comfort screen: 'each of the following' alone is not matrix evidence, so the agent taps next button at [499,891] instead of issuing dead vertical swipes.",
+        "Keeps comfort-Likert state across the compact post-selection screen and clears stale matrix ownership when the control cards collapse.",
+        "Tightens the graphical map so colored question-text fragments are paragraphs/regions, not fake command buttons.",
+        "Retries transient ADB offline screenshot transport with adb reconnect before stopping verification.",
+    ],
     "24.0.131": [
         "Required banner means no Likert card is selected — tap Neutral, never the arrow.",
         "Gray-card detector ignores tiny boxes and white cards (mean>=198).",

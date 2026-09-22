@@ -1,7 +1,4 @@
-# 25_runner.py — shared engine namespace (do not import directly)
-# ------------------------------------------------------------------------------
-# Agent loop
-# ------------------------------------------------------------------------------
+# 25_runner.py — shared engine namespace (agent loop; do not import directly)
 def observe(
     step: int,
     save: bool = True,
@@ -156,7 +153,10 @@ def main() -> int:
             decision_source = "router-quoted-select"
         elif smartphone_brand_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"; decision = smartphone_brand_decision(obs); decision_source = "router-phone"
-        elif comfort_scale_visible(obs.ocr_text):
+        elif pending_question_advance:
+            decision = post_answer_flow_decision(obs, True)
+            if decision: decision_source = "router-verified-footer"
+        elif comfort_question_header_visible(obs.ocr_text) or comfort_scale_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"; decision = comfort_likert_decision(obs); decision_source = "router-comfort"
         elif heard_of_assistants_visible(obs.ocr_text) or select_up_to_n_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"

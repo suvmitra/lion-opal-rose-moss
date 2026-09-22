@@ -537,7 +537,9 @@ _COMFORT_OPTIONS = (
     "Somewhat uncomfortable",
     "Very uncomfortable",
 )
-_COMFORT_SESSION: dict[str, Any] = {"topic": "", "picked": False}
+_COMFORT_SESSION: dict[str, Any] = {
+    "topic": "", "picked": False, "pick_issued": False,
+}
 
 
 def comfort_scale_visible(ocr_text: str) -> bool:
@@ -573,13 +575,23 @@ def comfort_option_milli(obs: Observation, pick: str) -> list[int]:
 
 def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """One Likert card per topic, then the footer arrow. Never tap the question title."""
-    if not comfort_scale_visible(obs.ocr_text):
+    header = (
+        comfort_question_header_visible(obs.ocr_text)
+        if "comfort_question_header_visible" in globals() else False
+    )
+    options_on_screen = comfort_scale_visible(obs.ocr_text)
+    if not options_on_screen and not header:
         return None
     obs.screen_phase = "survey_question"
-    pick = comfort_scale_pick(obs.ocr_text)
-    topic = comfort_scale_topic(obs.ocr_text)
-    if _COMFORT_SESSION.get("topic") != topic:
-        _COMFORT_SESSION.update({"topic": topic, "picked": False})
+    seen_topic = comfort_scale_topic(obs.ocr_text)
+    topic = (
+        str(_COMFORT_SESSION.get("topic") or "item")
+        if seen_topic == "item" and _COMFORT_SESSION.get("pick_issued")
+        else seen_topic
+    )
+    pick = "Somewhat uncomfortable" if topic in {"payment", "purchase"} else "Neutral"
+    if _COMFORT_SESSION.get("topic") != topic and seen_topic != "item":
+        _COMFORT_SESSION.update({"topic": topic, "picked": False, "pick_issued": False})
     banner = "question is required" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     visual = []
     if "select_n_visually_checked" in globals() and not banner:
@@ -587,9 +599,20 @@ def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
     selected = (not banner) and any(pick.lower()[:10] in str(v).lower() for v in visual)
     if banner:
         _COMFORT_SESSION["picked"] = False
+        _COMFORT_SESSION["pick_issued"] = False
         selected = False
+    if not options_on_screen and _COMFORT_SESSION.get("pick_issued"):
+        done = mapped_footer_progression_decision(
+            obs, f"{pick} was verified for {topic}; the cards collapsed, so tap the exact footer arrow."
+        ) if "mapped_footer_progression_decision" in globals() else None
+        if done:
+            _COMFORT_SESSION["picked"] = True
+            return done
+    if not options_on_screen:
+        return None
     if not selected:
         tap = comfort_option_milli(obs, pick)
+        _COMFORT_SESSION["pick_issued"] = True
         logger.info("[COMFORT] SEE topic=%s pick=%s tap=%s visual=%s", topic, pick, tap, visual)
         return {
             "screen_state": "survey_question", "action": "select_option",
@@ -600,7 +623,7 @@ def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "skip_object_grounding": True,
         }
     arrow = footer_cta_milli(obs) if "footer_cta_milli" in globals() else [500, 890]
-    _COMFORT_SESSION["picked"] = True
+    _COMFORT_SESSION.update({"picked": True, "pick_issued": True})
     logger.info("[COMFORT] %s is gray; ARROW %s", pick, arrow)
     return {
         "screen_state": "survey_question", "action": "click", "target_text": "Continue",
@@ -626,10 +649,10 @@ def comfort_likert_regression_self_check() -> bool:
         ocr_text=ocr, ui_nodes=[], kb={}, persona={}, screen_phase="survey_question",
         survey_tiles=[],
     )
-    _COMFORT_SESSION.update({"topic": "", "picked": False})
+    _COMFORT_SESSION.update({"topic": "", "picked": False, "pick_issued": False})
     first = comfort_likert_decision(obs)
     pay = Observation(**{**obs.__dict__, "ocr_text": ocr.replace("Location", "Payment/purchase information")})
-    _COMFORT_SESSION.update({"topic": "", "picked": False})
+    _COMFORT_SESSION.update({"topic": "", "picked": False, "pick_issued": False})
     second = comfort_likert_decision(pay)
     gen = generalized_unseen_router(obs) if "generalized_unseen_router" in globals() else first
     passed = bool(

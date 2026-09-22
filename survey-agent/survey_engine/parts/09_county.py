@@ -59,15 +59,24 @@ def matrix_semantic_hint(ocr_text: str) -> bool:
     text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
     if likert_slider_question_visible(ocr_text):
         return False
-    return any(term in text for term in (
+    if "comfort_question_header_visible" in globals() and comfort_question_header_visible(text):
+        return False
+    explicit_rows = any(term in text for term in (
         "select one for each", "for each option", "for each row",
         "in each row", "select one in each row",
-        "each of the following", "rate each", "select one answer per row",
-        "one for each", "for each of the",
-        "change in the types of bread", "types of bread bought",
-        "strongly disagree", "strongly agree",
-        "have never used", "within the past 12 months",
+        "rate each row", "select one answer per row", "one answer per row",
+        "one for each row",
     ))
+    paired_columns = any(all(part in text for part in pair) for pair in (
+        ("strongly disagree", "strongly agree"),
+        ("have never used", "within the past 12 months"),
+    ))
+    domain_matrix = any(term in text for term in (
+        "change in the types of bread", "types of bread bought",
+    ))
+    # "Each of the following" is ordinary English used by single questions.
+    # It is not matrix evidence unless rows/columns are also visible.
+    return explicit_rows or paired_columns or domain_matrix
 
 
 _MATRIX_SESSION: dict[str, Any] = {
