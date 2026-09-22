@@ -161,7 +161,7 @@ def option_tap_xy(
 
 
 def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
-    if "ground_decision_to_screen_map" in globals():
+    if "ground_decision_to_screen_map" in globals() and not decision.get("skip_object_grounding"):
         decision = ground_decision_to_screen_map(decision, obs)
     action = str(decision.get("action", "")).lower().strip()
     node = node_by_id(obs.ui_nodes, decision.get("target_element_id"))
@@ -421,10 +421,7 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                 coords, (obs.image_width, obs.image_height), (obs.device_width, obs.device_height)
             )
             logger.info("[AUTH TAP] native=(%s,%s) from coords=%s text=%r", x, y, coords, target_text)
-            if (
-                str(decision.get("kb_key") or "") == "age"
-                and "continue" in str(target_text or "").lower()
-            ) or decision.get("dismiss_keyboard"):
+            if decision.get("dismiss_keyboard") and str(decision.get("kb_key") or "") != "age":
                 adb(["shell", "input", "keyevent", "KEYCODE_BACK"], timeout=10)
                 time.sleep(0.45)
                 logger.info("[AGE] Keyboard dismissed before Continue")

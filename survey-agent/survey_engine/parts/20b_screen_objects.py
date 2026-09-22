@@ -368,6 +368,13 @@ def ground_decision_to_screen_map(decision: dict[str, Any], obs: Observation) ->
     control = _decision_control(decision, obs)
     if not control or float(control.get("confidence") or 0) < 0.70:
         return decision
+    if decision.get("skip_object_grounding") or str(decision.get("kb_key") or "") == "age":
+        wanted_label = _clean_control_label(str(decision.get("target_text") or ""))
+        if action == "click" and wanted_label in {"arrow", "continue", "go", "next"}:
+            milli = list((control.get("visual_milli") or control.get("milli") or [0, 0]))
+            if len(milli) < 2 or int(milli[1]) < 400 or abs(int(milli[0]) - 500) > 220:
+                logger.info("[OBJECT GROUNDING] Keeping age/arrow coords; rejected %s", milli)
+                return decision
     wanted = _clean_control_label(str(decision.get("target_text") or ""))
     cy = int((control.get("visual_milli") or control.get("milli") or [0, 0])[1])
     if wanted in {"submit", "continue", "next"} and (cy < 150 or cy > 720):

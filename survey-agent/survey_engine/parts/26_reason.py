@@ -239,16 +239,15 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     wanted = adult_age_payload(obs)
     digits = adult_age_visible_digits(obs)
     too_big = bool(re.search(r"4{3,6}", str(digits or "")))
-    if (digits == wanted or _AGE_SESSION.get("typed")) and not too_big:
-        logger.info("[THINK] SEE box=%s typed=%s THEREFORE Continue",
-                    digits or wanted, _AGE_SESSION.get("typed"))
+    if digits == wanted and not too_big:
+        logger.info("[THINK] SEE box=%s THEREFORE purple arrow", digits)
         coords = adult_age_continue_coords(obs)
         return {
             **local,
-            "action": "click", "target_text": "Continue", "target_coords": coords,
+            "action": "click", "target_text": "arrow", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": None, "kb_key": "age",
-            "answer_reason": f"SEE 44 in the box. THEREFORE hide keyboard and tap Continue.",
-            "dismiss_keyboard": True,
+            "answer_reason": "SEE 44 in the text box. THEREFORE tap the purple arrow.",
+            "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
         }
     if local.get("action") == "type_text" and str(local.get("input_payload")) == wanted:
         logger.info("[THINK] SEE box=%r THEREFORE type %s (local)", digits or "empty/wrong", wanted)
@@ -263,10 +262,11 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     if seen == wanted and thought.get("action") == "click":
         coords = thought.get("target_coords") if isinstance(thought.get("target_coords"), list) else adult_age_continue_coords(obs)
         return {
-            **local, "action": "click", "target_text": "Continue",
+            **local, "action": "click", "target_text": "arrow",
             "target_coords": coords or adult_age_continue_coords(obs),
             "coordinate_authoritative": True, "kb_key": "age",
-            "answer_reason": f"VLM SEE {thought.get('see')}. THEREFORE Continue.",
+            "answer_reason": f"VLM SEE {thought.get('see')}. THEREFORE purple arrow.",
+            "dismiss_keyboard": False, "skip_object_grounding": True,
         }
     coords = adult_age_field_coords(obs)
     if isinstance(thought.get("target_coords"), list) and thought.get("action") == "type_text":

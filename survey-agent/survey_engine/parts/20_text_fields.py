@@ -578,44 +578,90 @@ def adult_age_visible_digits(obs: Observation) -> str:
 
 def keyboard_visible_on_survey(obs: Observation) -> bool:
     blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-    return any(token in blob for token in (
+    if any(token in blob for token in (
         "english (us)", "english(us)", "q w e r t y", "asdf",
-    )) or bool(re.search(r"1\s*2\s*3\s*4\s*5\s*6\s*7\s*8\s*9\s*0", blob))
+    )):
+        return True
+    if "go" in blob and re.search(r"1\s*2\s*3", blob):
+        return True
+    return bool(re.search(r"7\s*8\s*9", blob) and re.search(r"\b0\b", blob))
 
 
 def adult_age_in_field(obs: Observation, wanted: str) -> bool:
-    digits = adult_age_visible_digits(obs)
-    if digits == str(wanted):
-        return True
-    return bool(_AGE_SESSION.get("typed") and digits not in {"4444", "444"} and not (
-        digits.isdigit() and len(digits) > 2
-    ))
+    return adult_age_visible_digits(obs) == str(wanted)
+
+
+def purple_submit_arrow_milli(obs: Observation) -> Optional[list[int]]:
+    """Wide purple-outlined → above the keyboard or at the bottom of the form."""
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return None
+    try:
+        image = cv2.imread(path)
+        if image is None:
+            return None
+        height, width = image.shape[:2]
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, (115, 35, 40), (170, 255, 255))
+        kernel = cv2.getStructuringElement(
+            cv2.MORPH_RECT, (max(11, width // 70), max(5, height // 180))
+        )
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        best, best_score = None, -1.0
+        for contour in contours:
+            x, y, bw, bh = cv2.boundingRect(contour)
+            if bw < width * 0.26 or bh < height * 0.022 or bh > height * 0.14:
+                continue
+            if bw / max(1, bh) < 2.0:
+                continue
+            mx = int((x + bw / 2) * 1000 / width)
+            my = int((y + bh / 2) * 1000 / height)
+            if my < 390 or my > 870 or abs(mx - 500) > 220:
+                continue
+            score = (bw / width) * 50 + (bw / max(1, bh)) - abs(mx - 500) * 0.05
+            if score > best_score:
+                best_score, best = score, [mx, my]
+        if best:
+            logger.info("[AGE] Purple arrow milli=%s", best)
+        return best
+    except Exception as exc:
+        logger.debug("[AGE] Purple arrow scan failed: %s", exc)
+        return None
 
 
 def adult_age_field_coords(obs: Observation) -> list[int]:
-    """Left-center of the white box, ~55 milli above the orange Continue bar."""
-    cy = int((adult_age_continue_coords(obs) or [500, 470])[1])
-    miss = int(_AGE_FIELD_MISS.get("n") or 0)
-    gap = (52, 42, 62, 75, 32)[miss % 5]
-    y = max(360, min(cy - 28, cy - gap))
-    coords = [280, y]
-    logger.info("[AGE] Field=%s continue_y=%s miss=%s", coords, cy, miss)
-    return coords
+    """Centre of the empty rounded text box, never the question title."""
+    found = empty_rounded_input_coords(obs)
+    if found and 240 <= int(found[1]) <= 460:
+        logger.info("[AGE] Field from rounded box %s", found)
+        return [max(220, min(780, int(found[0]))), int(found[1])]
+    logger.info("[AGE] Field fallback [500, 318]")
+    return [500, 318]
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
-    y1, y2 = (0.38, 0.64) if keyboard_visible_on_survey(obs) else (0.38, 0.54)
+    arrow = purple_submit_arrow_milli(obs)
+    if arrow:
+        return arrow
+    path = str(obs.screenshot or "")
+    height = max(1, int(obs.image_height or 1))
+    width = max(1, int(obs.image_width or 1))
+    if path and Path(path).exists():
+        hit = ocr_text_center(Path(path), "Go")
+        if hit and hit[1] / height >= 0.55:
+            milli = [int(hit[0] * 1000 / width), int(hit[1] * 1000 / height)]
+            logger.info("[AGE] Keyboard Go milli=%s", milli)
+            return milli
+    y1, y2 = (0.40, 0.86) if keyboard_visible_on_survey(obs) else (0.55, 0.88)
     for bar in orange_cta_milli(obs, y1, y2):
-        if 400 <= int(bar[1]) <= 640:
+        if 400 <= int(bar[1]) <= 860:
             return [500, int(bar[1])]
-    hit = gender_continue_milli(obs)
-    if hit and 400 <= int(hit[1]) <= 640:
-        return [500, int(hit[1])]
-    return [500, 520] if keyboard_visible_on_survey(obs) else [500, 470]
+    return [500, 520] if keyboard_visible_on_survey(obs) else [500, 780]
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Type 44 once. If it is in the box or we just typed it, hide keyboard and Continue."""
+    """Text-box object: type KB age=44, then tap the purple arrow. Never trust a typed flag on an empty box."""
     if not adult_age_question_visible(obs.ocr_text):
         _AGE_SESSION["typed"] = False
         return None
@@ -624,10 +670,12 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     too_big = bool(re.search(r"4{3,6}", digits or "")) or (
         digits.isdigit() and (len(digits) > 2 or int(digits) > 99)
     )
-    ready = (digits == wanted or bool(_AGE_SESSION.get("typed"))) and not too_big
-    logger.info("[AGE REASON] box=%r typed=%s kb=%s → %s",
+    if not digits or too_big:
+        _AGE_SESSION["typed"] = False
+    ready = digits == wanted and not too_big
+    logger.info("[AGE REASON] object=text_box box=%r typed=%s kb=%s → %s",
                 digits, _AGE_SESSION.get("typed"), keyboard_visible_on_survey(obs),
-                "continue" if ready else "replace")
+                "arrow" if ready else "type")
     if not ready:
         coords = adult_age_field_coords(obs)
         return {
@@ -635,13 +683,14 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "target_text": "age input field", "target_coords": coords,
             "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
             "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-            "answer_reason": f"Box shows {digits or 'empty'}; type {wanted} once then Continue.",
+            "answer_reason": f"Empty/wrong text box; type {wanted} from knowledge_base.",
+            "skip_object_grounding": True, "object_kind": "text_input",
         }
     coords = adult_age_continue_coords(obs)
     return {
-        "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+        "screen_state": "survey_question", "action": "click", "target_text": "arrow",
         "target_coords": coords, "coordinate_authoritative": True, "kb_key": "age",
         "confidence_score": 0.97, "postcondition": "screen changed",
-        "answer_reason": f"Age {wanted} is entered; hide keyboard and tap Continue.",
-        "dismiss_keyboard": True,
+        "answer_reason": f"Text box shows {wanted}; tap the purple arrow (not the question title).",
+        "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
     }
