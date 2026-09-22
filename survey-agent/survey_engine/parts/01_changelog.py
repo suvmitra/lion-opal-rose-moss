@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.129": [
+        "Select-N taps the mapped checkbox on each card and never retaps a gray-filled row.",
+        "One tick does not need the required banner to clear. After 3 distinct ticks, centred footer arrow.",
+    ],
     "24.0.128": [
         "Select-N 6-step workflow: SEE screen, ASK LLM, GRID coords, ACT tick, VALIDATE banner, ARROW centre.",
         "Required banner means boxes are empty — never Continue at x=326. Footer tap is always [500, y].",

@@ -423,7 +423,7 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
 
         option_xy = (
             option_tap_xy(obs, target_node, target_text)
-            if action in {"select_option", "toggle_checkbox"}
+            if action in {"select_option", "toggle_checkbox"} and not decision.get("skip_object_grounding")
             else None
         )
         if (
@@ -681,6 +681,9 @@ def verify_postcondition(
             logger.warning("[VERIFY] Select-one tap missed (hash unchanged); will retarget miss=%s.",
                            _SELECT_ONE_SESSION["misses"])
             return False
+        if select_up_to_n_visible(after.ocr_text) or select_up_to_n_visible(before.ocr_text):
+            logger.info("[VERIFY] Select-up-to-N tick; required banner stays until 3 boxes are checked.")
+            return True
         if survey_validation_error(after) and not children_count_question_visible(after.ocr_text):
             logger.warning("[VERIFY] Selection did not clear the red error banner.")
             return False

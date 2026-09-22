@@ -128,24 +128,49 @@ def footer_cta_milli(obs: Observation) -> list[int]:
     return [500, y]
 
 
+def select_n_map_checkbox_milli(obs: Observation, pick: str) -> Optional[list[int]]:
+    """Left checkbox of the mapped card for this label (screen-object grid)."""
+    if "build_screen_object_map" not in globals():
+        return None
+    try:
+        scene = build_screen_object_map(obs)
+    except Exception:
+        return None
+    needle = clean_option_label(pick).lower()[:14]
+    width = max(1, int(obs.image_width or 1440))
+    height = max(1, int(obs.image_height or 3088))
+    cards: list[tuple[int, list[int]]] = []
+    for item in scene.get("controls") or []:
+        label = str(item.get("label") or "").lower()
+        if needle[:10] not in label and label[:10] not in needle:
+            continue
+        bounds = list(item.get("visual_bounds") or item.get("bounds") or [])
+        if len(bounds) != 4:
+            continue
+        x1, y1, x2, y2 = [int(v) for v in bounds]
+        if y2 < height * 0.28 or y1 > height * 0.82:
+            continue
+        cards.append((x2 - x1, [x1, y1, x2, y2]))
+    if not cards:
+        return None
+    x1, y1, x2, y2 = max(cards, key=lambda row: row[0])[1]
+    cx = int(((x1 + min(64, max(28, (x2 - x1) * 0.08))) / width) * 1000)
+    cy = int((((y1 + y2) / 2) / height) * 1000)
+    best = [max(90, min(220, cx)), max(300, min(800, cy))]
+    logger.info("[SELECT N] Map checkbox %r %s bounds=%s", pick, best, [x1, y1, x2, y2])
+    return best
+
+
 def select_n_grid_milli(obs: Observation, pick: str, labels: Optional[list[str]] = None) -> list[int]:
-    """Left checkbox of the named row; retry offsets when prior taps missed."""
-    miss = int(_SELECT_N_SESSION.get("miss") or 0)
-    mapped = mapped_option_milli(obs, pick) if "mapped_option_milli" in globals() else None
-    if mapped and 250 <= int(mapped[1]) <= 790:
-        x, y = 170, int(mapped[1])
-    else:
-        low = clean_option_label(pick).lower()
-        sequence = list(labels or []) or list(SELECT_N_ORDER)
-        x, y = 170, 445
-        for index, name in enumerate(sequence):
-            if name.lower()[:14] in low or low[:14] in name.lower():
-                x, y = 170, 445 + index * 78
-                break
-    x += (miss % 3) * 30 - 30
-    y += (miss % 3) * 12
-    logger.info("[SELECT N] Grid option %r [%s, %s] miss=%s", pick, x, y, miss)
-    return [max(120, min(260, x)), max(280, min(790, y))]
+    mapped = select_n_map_checkbox_milli(obs, pick)
+    if mapped:
+        return mapped
+    low = clean_option_label(pick).lower()
+    sequence = list(labels or []) or list(SELECT_N_ORDER)
+    for index, name in enumerate(sequence):
+        if name.lower()[:14] in low or low[:14] in name.lower():
+            return [140, 445 + index * 78]
+    return [140, 445]
 
 
 def select_n_required_banner(obs: Observation) -> bool:
@@ -164,21 +189,32 @@ def select_n_already_checked(obs: Observation, pick: str) -> bool:
 
 
 def select_n_visually_checked(obs: Observation, labels: list[str]) -> list[str]:
+    """Gray filled cards from the object-map bounds. Empty white cards are not checked."""
     path = str(obs.screenshot or "")
-    if not path or not Path(path).exists():
+    if not path or not Path(path).exists() or not labels:
         return []
     try:
         image = cv2.imread(path)
+        scene = build_screen_object_map(obs) if "build_screen_object_map" in globals() else {}
         if image is None:
             return []
-        height, width = image.shape[:2]
         found: list[str] = []
-        for index, lab in enumerate(labels[:8]):
-            y = int((445 + index * 78) / 1000 * height)
-            x = int(0.13 * width)
-            crop = image[max(0, y - 14): y + 14, max(0, x - 16): x + 16]
-            if crop.size and float(crop.mean()) < 205:
-                found.append(lab)
+        for lab in labels:
+            needle = lab.lower()[:12]
+            for item in scene.get("controls") or []:
+                if needle not in str(item.get("label") or "").lower():
+                    continue
+                bounds = list(item.get("visual_bounds") or item.get("bounds") or [])
+                if len(bounds) != 4:
+                    continue
+                x1, y1, x2, y2 = [int(v) for v in bounds]
+                crop = image[y1 + 6: max(y1 + 7, y2 - 6), x1 + 50: min(x2 - 8, x1 + 420)]
+                if crop.size == 0:
+                    continue
+                mean = float(crop.mean())
+                if 140.0 < mean < 222.0 and lab not in found:
+                    found.append(lab)
+                    logger.info("[SELECT N] Gray card %r mean=%.1f", lab, mean)
         return found
     except Exception:
         return []
@@ -200,8 +236,6 @@ def select_up_to_n_decision(obs: Observation) -> Optional[dict[str, Any]]:
     visual = select_n_visually_checked(obs, labels)
     if obs.screenshot:
         ticked = [p for p in picks if select_n_already_checked(obs, p) or any(p.lower()[:12] in v.lower() for v in visual)]
-        if banner and len(ticked) < need:
-            _SELECT_N_SESSION["miss"] = int(_SELECT_N_SESSION.get("miss") or 0) + 1
     else:
         ticked = [clean_option_label(t) for t in (_SELECT_N_SESSION.get("attempted") or [])]
     _SELECT_N_SESSION["ticked"] = ticked
