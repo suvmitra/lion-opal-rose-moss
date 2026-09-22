@@ -515,11 +515,6 @@ def inspect_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, An
         if fill:
             logger.warning("[INSPECTOR] Consent screen; %s not %r.", fill.get("target_text"), target)
             return fill
-    if comfort_scale_visible(obs.ocr_text):
-        fill = comfort_likert_decision(obs)
-        if fill:
-            logger.warning("[INSPECTOR] Comfort Likert %s not %r.", fill.get("target_text"), target)
-            return fill
     if start_gate_visible(obs.ocr_text) and "start" not in target.lower():
         fill = navigation_cta_decision(obs)
         if fill and "start" in str(fill.get("target_text") or "").lower():
