@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.130": [
+        "Comfort Likert (Location/Microphone/Payment): tap Neutral or Somewhat uncomfortable, never the question title.",
+        "Hard-route before RL/generalize; then centred footer arrow. Repeats for each topic.",
+    ],
     "24.0.129": [
         "Select-N taps the mapped checkbox on each card and never retaps a gray-filled row.",
         "One tick does not need the required banner to clear. After 3 distinct ticks, centred footer arrow.",

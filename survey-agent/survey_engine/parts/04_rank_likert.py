@@ -528,3 +528,123 @@ def classify_screen_phase(ocr_text: str, nodes: list[dict[str, Any]]) -> str:
     if "?" in combined or any(n.get("checkable") or n.get("editable") for n in nodes):
         return "survey_question"
     return "navigation"
+
+
+_COMFORT_OPTIONS = (
+    "Very comfortable",
+    "Somewhat comfortable",
+    "Neutral",
+    "Somewhat uncomfortable",
+    "Very uncomfortable",
+)
+_COMFORT_SESSION: dict[str, Any] = {"topic": "", "picked": False}
+
+
+def comfort_scale_visible(ocr_text: str) -> bool:
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    return "very comfortable" in text and ("somewhat comfortable" in text or "neutral" in text)
+
+
+def comfort_scale_topic(ocr_text: str) -> str:
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    for name in (
+        "payment", "purchase", "microphone", "location", "camera", "contacts",
+        "photos", "messages", "health", "fitness", "calendar", "browsing",
+    ):
+        if name in text:
+            return name
+    return "item"
+
+
+def comfort_scale_pick(ocr_text: str) -> str:
+    topic = comfort_scale_topic(ocr_text)
+    if topic in {"payment", "purchase"}:
+        return "Somewhat uncomfortable"
+    return "Neutral"
+
+
+def comfort_option_milli(obs: Observation, pick: str) -> list[int]:
+    mapped = select_n_map_checkbox_milli(obs, pick) if "select_n_map_checkbox_milli" in globals() else None
+    if mapped:
+        return [500, int(mapped[1])]
+    index = list(_COMFORT_OPTIONS).index(pick) if pick in _COMFORT_OPTIONS else 2
+    return [500, 410 + index * 78]
+
+
+def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    """One Likert card per topic, then the footer arrow. Never tap the question title."""
+    if not comfort_scale_visible(obs.ocr_text):
+        return None
+    obs.screen_phase = "survey_question"
+    pick = comfort_scale_pick(obs.ocr_text)
+    topic = comfort_scale_topic(obs.ocr_text)
+    if _COMFORT_SESSION.get("topic") != topic:
+        _COMFORT_SESSION.update({"topic": topic, "picked": False})
+    banner = "question is required" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+    visual = []
+    if "select_n_visually_checked" in globals():
+        visual = select_n_visually_checked(obs, list(_COMFORT_OPTIONS))
+    selected = any(pick.lower()[:10] in str(v).lower() for v in visual)
+    if banner:
+        _COMFORT_SESSION["picked"] = False
+    if not selected:
+        tap = comfort_option_milli(obs, pick)
+        logger.info("[COMFORT] SEE topic=%s pick=%s tap=%s visual=%s", topic, pick, tap, visual)
+        return {
+            "screen_state": "survey_question", "action": "select_option",
+            "target_text": pick, "target_coords": tap, "coordinate_authoritative": True,
+            "input_payload": pick, "kb_key": f"ai_access_{topic}_comfort", "kb_write": True,
+            "confidence_score": 0.95, "postcondition": "selected option is " + pick,
+            "answer_reason": f"Comfort Likert for {topic}: tap {pick} on the mapped card, then the footer arrow.",
+            "skip_object_grounding": True,
+        }
+    arrow = footer_cta_milli(obs) if "footer_cta_milli" in globals() else [500, 890]
+    _COMFORT_SESSION["picked"] = True
+    logger.info("[COMFORT] %s is gray; ARROW %s", pick, arrow)
+    return {
+        "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+        "target_coords": arrow, "coordinate_authoritative": True,
+        "input_payload": pick, "kb_key": f"ai_access_{topic}_comfort", "kb_write": True,
+        "confidence_score": 0.96, "postcondition": "screen changed",
+        "answer_reason": f"{pick} is selected for {topic}; tap centred footer arrow {arrow}.",
+        "skip_object_grounding": True, "object_kind": "button",
+    }
+
+
+def comfort_likert_regression_self_check() -> bool:
+    ocr = (
+        "This question is required\n"
+        "How comfortable are you/ would you be with an AI assistant having access "
+        "to each of the following functions and types of personal information?\n"
+        "Location\nVery comfortable\nSomewhat comfortable\nNeutral\n"
+        "Somewhat uncomfortable\nVery uncomfortable\n"
+    )
+    obs = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="comfort",
+        ocr_text=ocr, ui_nodes=[], kb={}, persona={}, screen_phase="survey_question",
+        survey_tiles=[],
+    )
+    _COMFORT_SESSION.update({"topic": "", "picked": False})
+    first = comfort_likert_decision(obs)
+    pay = Observation(**{**obs.__dict__, "ocr_text": ocr.replace("Location", "Payment/purchase information")})
+    _COMFORT_SESSION.update({"topic": "", "picked": False})
+    second = comfort_likert_decision(pay)
+    gen = generalized_unseen_router(obs) if "generalized_unseen_router" in globals() else first
+    passed = bool(
+        comfort_scale_visible(ocr)
+        and first and first.get("action") == "select_option"
+        and first.get("target_text") == "Neutral"
+        and int((first.get("target_coords") or [0, 0])[0]) == 500
+        and int((first.get("target_coords") or [0, 0])[1]) < 800
+        and "how comfortable" not in str(first.get("target_text") or "").lower()
+        and second and second.get("target_text") == "Somewhat uncomfortable"
+        and (gen is None or str(gen.get("target_text") or "").lower() in {
+            "neutral", "somewhat uncomfortable", "somewhat comfortable", "very comfortable",
+        } or gen.get("skip_object_grounding"))
+    )
+    if passed:
+        logger.info("[SELF-CHECK] Comfort Likert taps Neutral/card, never the question title.")
+    else:
+        logger.error("[SELF-CHECK] Comfort Likert failed first=%s second=%s gen=%s", first, second, gen)
+    return passed

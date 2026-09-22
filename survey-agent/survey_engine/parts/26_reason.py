@@ -74,6 +74,12 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
     """Apply the mindset to a planned tap before it hits the device."""
     if not decision:
         return decision
+    if comfort_scale_visible(obs.ocr_text):
+        fill = comfort_likert_decision(obs)
+        if fill:
+            logger.info("[MINDSET] rationality: comfort Likert %s %r",
+                        fill.get("action"), fill.get("target_text"))
+            return fill
     if select_up_to_n_visible(obs.ocr_text):
         fill = select_up_to_n_decision(obs)
         if fill:

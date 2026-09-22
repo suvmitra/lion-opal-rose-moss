@@ -681,6 +681,9 @@ def verify_postcondition(
             logger.warning("[VERIFY] Select-one tap missed (hash unchanged); will retarget miss=%s.",
                            _SELECT_ONE_SESSION["misses"])
             return False
+        if comfort_scale_visible(after.ocr_text) or comfort_scale_visible(before.ocr_text):
+            logger.info("[VERIFY] Comfort Likert tick; required banner stays until Continue.")
+            return True
         if select_up_to_n_visible(after.ocr_text) or select_up_to_n_visible(before.ocr_text):
             logger.info("[VERIFY] Select-up-to-N tick; required banner stays until 3 boxes are checked.")
             return True

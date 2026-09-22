@@ -257,6 +257,8 @@ def preflight() -> bool:
         return False
     if not select_up_to_n_regression_self_check():
         return False
+    if not comfort_likert_regression_self_check():
+        return False
     if not captcha_code_regression_self_check():
         return False
     if not drag_drop_regression_self_check():

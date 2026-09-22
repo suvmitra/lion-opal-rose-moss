@@ -37,6 +37,8 @@ def matrix_grid_visible(obs: Observation) -> bool:
         return False
     if likert_slider_question_visible(obs.ocr_text, obs.ui_nodes):
         return False
+    if comfort_scale_visible(obs.ocr_text):
+        return False
     if looks_like_single_choice(obs.ocr_text):
         return False
     if matrix_semantic_hint(obs.ocr_text):

@@ -484,15 +484,26 @@ def option_labels_from_ocr(obs: Observation) -> list[str]:
 
 
 def pick_option_assumption(labels: list[str]) -> Optional[str]:
-    preferred = ("samsung", "buy another", "yes", "agree", "employed", "brennan", "dublin", "male")
+    preferred = ("samsung", "buy another", "yes", "agree", "employed", "brennan", "dublin", "male", "neutral")
     skip = ("none of these", "prefer not", "don't know", "not sure", "skip", "other please")
+    questionish = ("how comfortable", "how ", "which of", "which ", "what ", "please select")
+    usable = []
     for lab in labels:
+        low = lab.lower().strip()
+        if any(low.startswith(q) for q in ("how ", "which ", "what ", "please ")):
+            continue
+        if any(q in low for q in questionish if len(q) > 5):
+            continue
+        if len(lab) > 48:
+            continue
+        usable.append(lab)
+    for lab in usable:
         if any(p in lab.lower() for p in preferred):
             return lab
-    for lab in labels:
+    for lab in usable:
         if not any(s in lab.lower() for s in skip):
             return lab
-    return labels[0] if labels else None
+    return usable[0] if usable else None
 
 
 def _continue_decision(obs: Observation, reason: str, payload: Optional[str] = None) -> dict[str, Any]:
@@ -538,6 +549,8 @@ def generalized_unseen_router(obs: Observation) -> Optional[dict[str, Any]]:
         return heard_of_assistants_decision(obs)
     if select_up_to_n_visible(obs.ocr_text):
         return select_up_to_n_decision(obs)
+    if comfort_scale_visible(obs.ocr_text):
+        return comfort_likert_decision(obs)
     widget = generalized_widget_class(obs)
     blob = strip_transient_ocr(obs.ocr_text)
     lime = 0

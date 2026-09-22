@@ -158,6 +158,10 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = smartphone_brand_decision(obs)
             decision_source = "router-phone"
+        elif comfort_scale_visible(obs.ocr_text):
+            obs.screen_phase = "survey_question"
+            decision = comfort_likert_decision(obs)
+            decision_source = "router-comfort"
         elif heard_of_assistants_visible(obs.ocr_text) or select_up_to_n_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = heard_of_assistants_decision(obs) or select_up_to_n_decision(obs)
