@@ -582,11 +582,12 @@ def comfort_likert_decision(obs: Observation) -> Optional[dict[str, Any]]:
         _COMFORT_SESSION.update({"topic": topic, "picked": False})
     banner = "question is required" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     visual = []
-    if "select_n_visually_checked" in globals():
+    if "select_n_visually_checked" in globals() and not banner:
         visual = select_n_visually_checked(obs, list(_COMFORT_OPTIONS))
-    selected = any(pick.lower()[:10] in str(v).lower() for v in visual)
+    selected = (not banner) and any(pick.lower()[:10] in str(v).lower() for v in visual)
     if banner:
         _COMFORT_SESSION["picked"] = False
+        selected = False
     if not selected:
         tap = comfort_option_milli(obs, pick)
         logger.info("[COMFORT] SEE topic=%s pick=%s tap=%s visual=%s", topic, pick, tap, visual)
@@ -635,6 +636,7 @@ def comfort_likert_regression_self_check() -> bool:
         comfort_scale_visible(ocr)
         and first and first.get("action") == "select_option"
         and first.get("target_text") == "Neutral"
+        and first.get("action") != "click"
         and int((first.get("target_coords") or [0, 0])[0]) == 500
         and int((first.get("target_coords") or [0, 0])[1]) < 800
         and "how comfortable" not in str(first.get("target_text") or "").lower()

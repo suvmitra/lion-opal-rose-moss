@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.131": [
+        "Required banner means no Likert card is selected — tap Neutral, never the arrow.",
+        "Gray-card detector ignores tiny boxes and white cards (mean>=198).",
+    ],
     "24.0.130": [
         "Comfort Likert (Location/Microphone/Payment): tap Neutral or Somewhat uncomfortable, never the question title.",
         "Hard-route before RL/generalize; then centred footer arrow. Repeats for each topic.",

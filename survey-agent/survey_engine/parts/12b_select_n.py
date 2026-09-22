@@ -208,11 +208,13 @@ def select_n_visually_checked(obs: Observation, labels: list[str]) -> list[str]:
                 if len(bounds) != 4:
                     continue
                 x1, y1, x2, y2 = [int(v) for v in bounds]
-                crop = image[y1 + 6: max(y1 + 7, y2 - 6), x1 + 50: min(x2 - 8, x1 + 420)]
+                if (x2 - x1) < 220 or (y2 - y1) < 48:
+                    continue
+                crop = image[y1 + 10: max(y1 + 12, y2 - 10), x1 + 80: max(x1 + 81, x2 - 80)]
                 if crop.size == 0:
                     continue
                 mean = float(crop.mean())
-                if 140.0 < mean < 222.0 and lab not in found:
+                if mean < 198.0 and lab not in found:
                     found.append(lab)
                     logger.info("[SELECT N] Gray card %r mean=%.1f", lab, mean)
         return found
