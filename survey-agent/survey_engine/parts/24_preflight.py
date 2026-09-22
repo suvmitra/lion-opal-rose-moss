@@ -253,6 +253,8 @@ def preflight() -> bool:
         return False
     if not smartphone_brand_regression_self_check():
         return False
+    if not heard_of_assistants_regression_self_check():
+        return False
     if not captcha_code_regression_self_check():
         return False
     if not drag_drop_regression_self_check():

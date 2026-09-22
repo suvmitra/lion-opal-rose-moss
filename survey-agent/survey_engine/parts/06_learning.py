@@ -474,6 +474,10 @@ def option_labels_from_ocr(obs: Observation) -> list[str]:
             continue
         if re.match(r"^[\d.:%]+$", line):
             continue
+        if re.search(r"\d{1,2}:\d{2}", line) or re.search(r"\d{1,3}%", line):
+            continue
+        if any(tok in low for tok in ("jin", "linkedin", "battery")):
+            continue
         if line not in labels:
             labels.append(line)
     return labels[:12]
@@ -530,6 +534,8 @@ def generalized_unseen_router(obs: Observation) -> Optional[dict[str, Any]]:
         return None
     if captcha_code_question_visible(obs.ocr_text) or drag_drop_question_visible(obs.ocr_text):
         return None
+    if heard_of_assistants_visible(obs.ocr_text):
+        return heard_of_assistants_decision(obs)
     widget = generalized_widget_class(obs)
     blob = strip_transient_ocr(obs.ocr_text)
     lime = 0

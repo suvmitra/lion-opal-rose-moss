@@ -303,9 +303,13 @@ def find_screen_control(
             y = int(item.get("milli", [0, 0])[1])
             if y < 150:
                 score -= 20.0
+            if y < 500:
+                score -= 12.0
+            if 700 <= y <= 920:
+                score += 8.0
             if item.get("color") == "green" and 300 <= y <= 700:
                 score += 6.0
-            if y >= 720:
+            if y >= 930:
                 score -= 8.0
         score += float(item.get("confidence") or 0)
         if score >= 4.0:

@@ -549,6 +549,15 @@ def repair_decision_for_screen(
             for point in (gesture_start, gesture_end)
         )
         if not valid_gesture:
+            if heard_of_assistants_visible(obs.ocr_text):
+                fill = heard_of_assistants_decision(obs)
+                if fill:
+                    return fill
+                logger.warning("[DECISION REPAIR] Heard-of screen; scroll instead of ungrounded swipe.")
+                return {
+                    **decision, "action": "scroll_down", "list_scroll": True,
+                    "confidence_score": 0.9, "postcondition": "screen changed",
+                }
             if not quiet:
                 logger.warning("[DECISION REPAIR] Replaced ungrounded %s action with wait.", action)
             return {

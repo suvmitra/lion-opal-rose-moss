@@ -734,3 +734,49 @@ def smartphone_brand_regression_self_check() -> bool:
         logger.error("[SELF-CHECK] Phone brand failed first=%s second=%s reused=%s repaired=%s",
                      first, second, reused, repaired)
     return passed
+
+
+def heard_of_assistants_regression_self_check() -> bool:
+    """Heard-of AI screen: scroll to reveal choices, never tap status-bar OCR or intro y=453."""
+    intro = (
+        "Over the past few years there has been an increase in the development "
+        "and deployment of Artificial Intelligence assistants and chatbots, "
+        "which users often access on their smartphone.\n"
+        "Which of the following AI assistants and features have you heard of?"
+    )
+    listed = intro + "\nChatGPT\nGemini\nGoogle Assistant\nSiri"
+    blank = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="heard-blank",
+        ocr_text=intro, ui_nodes=[], kb={}, persona={},
+        screen_phase="survey_question", survey_tiles=[],
+    )
+    shown = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="heard-list",
+        ocr_text=listed, ui_nodes=[], kb={}, persona={},
+        screen_phase="survey_question", survey_tiles=[],
+    )
+    _HEARD_SESSION.update({"key": "", "n": 0, "ticked": []})
+    first = heard_of_assistants_decision(blank)
+    labels = option_labels_from_ocr(Observation(
+        step=0, screenshot=None, image_width=1, image_height=1,
+        device_width=1, device_height=1, screen_hash="chrome",
+        ocr_text="2:24 jin @ Fi! 24%8\nSurvey", ui_nodes=[], kb={}, persona={},
+        screen_phase="survey_question", survey_tiles=[],
+    ))
+    _HEARD_SESSION.update({"key": "", "n": 0, "ticked": []})
+    second = heard_of_assistants_decision(shown)
+    passed = bool(
+        heard_of_assistants_visible(intro)
+        and first and first.get("action") == "scroll_down" and first.get("list_scroll")
+        and not any("2:24" in str(x) for x in labels)
+        and second and second.get("action") == "select_option"
+        and second.get("target_text") == "ChatGPT"
+        and second.get("kb_key") == "ai_assistants_heard"
+    )
+    if passed:
+        logger.info("[SELF-CHECK] Heard-of AI scrolls then ticks ChatGPT, not status-bar OCR.")
+    else:
+        logger.error("[SELF-CHECK] Heard-of failed first=%s second=%s labels=%s", first, second, labels)
+    return passed

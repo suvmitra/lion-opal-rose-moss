@@ -146,7 +146,6 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = i_agree_consent_decision(obs)
             decision_source = "router-i-agree"
-            logger.info("[I AGREE] Hard-route coords=%s", None if not decision else decision.get("target_coords"))
         elif gender_choice_screen(obs) and not gender_radio_list(obs):
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
@@ -159,6 +158,10 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = smartphone_brand_decision(obs)
             decision_source = "router-phone"
+        elif heard_of_assistants_visible(obs.ocr_text):
+            obs.screen_phase = "survey_question"
+            decision = heard_of_assistants_decision(obs)
+            decision_source = "router-heard-of"
         elif birth_date_question_visible(obs.ocr_text) or adult_age_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = birth_date_decision(obs) if birth_date_question_visible(obs.ocr_text) else adult_age_screen_decision(obs)

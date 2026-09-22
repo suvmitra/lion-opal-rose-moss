@@ -633,3 +633,104 @@ def select_all_apply_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "select_all_pick": pick,
         "intended_options": planned,
     }
+
+
+_HEARD_SESSION: dict[str, Any] = {"key": "", "n": 0, "ticked": []}
+AI_HEARD_HINTS = (
+    "ChatGPT", "Gemini", "Copilot", "Siri", "Alexa", "Google Assistant",
+    "Bixby", "Claude", "Perplexity", "Meta AI", "Apple Intelligence",
+)
+AI_HEARD_PREFERRED = ("ChatGPT", "Gemini", "Google Assistant", "Copilot")
+
+
+def heard_of_assistants_visible(ocr_text: str) -> bool:
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    if "have you heard of" in text:
+        return True
+    return "which of the following" in text and (
+        "ai assistant" in text or "chatbot" in text or "artificial intelligence" in text
+    )
+
+
+def heard_of_option_labels(ocr_text: str) -> list[str]:
+    blob = str(ocr_text or "")
+    found: list[str] = []
+    for name in AI_HEARD_HINTS:
+        if re.search(rf"\b{re.escape(name)}\b", blob, re.I):
+            found.append(name)
+    return found
+
+
+def heard_of_arrow_milli(obs: Observation) -> list[int]:
+    for name in ("purple_submit_arrow_milli", "mapped_age_arrow_milli", "smartphone_continue_milli"):
+        fn = globals().get(name)
+        if not callable(fn):
+            continue
+        hit = fn(obs)
+        if hit and 520 <= int(hit[1]) <= 920:
+            return [int(hit[0]), int(hit[1])]
+    return [500, 860]
+
+
+def heard_of_assistants_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    """Intro + 'have you heard of' with choices below: scroll, tick known AIs, then purple arrow."""
+    if not heard_of_assistants_visible(obs.ocr_text):
+        return None
+    obs.screen_phase = "survey_question"
+    key = question_fingerprint(obs)
+    if _HEARD_SESSION.get("key") != key:
+        _HEARD_SESSION.update({"key": key, "n": 0, "ticked": []})
+    labels = heard_of_option_labels(obs.ocr_text)
+    arrow = heard_of_arrow_milli(obs)
+    if not labels:
+        n = int(_HEARD_SESSION.get("n") or 0)
+        if n < 6:
+            _HEARD_SESSION["n"] = n + 1
+            logger.info("[HEARD OF] Choices are below the intro; scroll webview %s/6", n + 1)
+            return {
+                "screen_state": "survey_question",
+                "question_text": current_question_text(obs),
+                "answer_reason": "AI-assistant choices are below the intro; scroll the page, then tick, then the purple arrow.",
+                "action": "scroll_down", "list_scroll": True,
+                "target_element_id": None, "target_text": None, "target_coords": None,
+                "confidence_score": 0.96, "postcondition": "screen changed",
+                "skip_object_grounding": True,
+            }
+        logger.info("[HEARD OF] Scroll budget used; purple arrow %s", arrow)
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+            "target_coords": arrow, "coordinate_authoritative": True,
+            "confidence_score": 0.9, "postcondition": "screen changed",
+            "answer_reason": "No choice labels after scrolling; tap the purple arrow.",
+            "skip_object_grounding": True, "object_kind": "button",
+        }
+    ticked = list(_HEARD_SESSION.get("ticked") or [])
+    planned = [name for name in AI_HEARD_PREFERRED if any(name.lower() in lab.lower() for lab in labels)] or labels[:3]
+    remaining = [name for name in planned if name.lower() not in {t.lower() for t in ticked}]
+    if remaining:
+        pick = remaining[0]
+        row = None
+        if "select_one_ocr_row_milli" in globals():
+            row = select_one_ocr_row_milli(obs, pick)
+        tap = [int(row[0]), int(row[1])] if row else [500, 520]
+        _HEARD_SESSION["ticked"] = ticked + [pick]
+        payload = ", ".join(_HEARD_SESSION["ticked"])
+        logger.info("[HEARD OF] Tick %r at %s then more/arrow", pick, tap)
+        return {
+            "screen_state": "survey_question", "action": "select_option",
+            "target_text": pick, "target_coords": tap, "coordinate_authoritative": True,
+            "input_payload": payload, "kb_key": "ai_assistants_heard", "kb_write": True,
+            "confidence_score": 0.95, "postcondition": "selected option is " + pick,
+            "answer_reason": f"Persona uses {pick}; tick it (select-all), then the purple arrow.",
+            "answer_provenance": "declared",
+            "source_basis": "persona tech_adoption / knowledge_base.json:ai_assistants_heard",
+        }
+    logger.info("[HEARD OF] Ticked %s; purple arrow %s", ticked, arrow)
+    return {
+        "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+        "target_coords": arrow, "coordinate_authoritative": True,
+        "input_payload": ", ".join(ticked), "kb_key": "ai_assistants_heard", "kb_write": True,
+        "confidence_score": 0.96, "postcondition": "screen changed",
+        "answer_reason": "Heard-of choices are ticked; tap the purple arrow (not the intro text).",
+        "skip_object_grounding": True, "object_kind": "button",
+    }

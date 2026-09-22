@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.124": [
+        "Heard-of AI assistants: scroll the webview to reveal choices, tick ChatGPT/Gemini, then the purple arrow.",
+        "Do not treat status-bar OCR as an option. Do not remap Next/Continue onto intro text at y<500.",
+    ],
     "24.0.123": [
         "Smartphone brand: ADB getprop → knowledge_base, tap that card, then purple arrow.",
         "Do not Continue on 'This question is required'. Progression cannot skip an unselected option.",
