@@ -102,7 +102,7 @@ EXACT_KB_QUESTION_HINTS: dict[str, tuple[str, ...]] = {
     "occupation_group": ("occupational group", "chief income earner"),
     "employment_status": ("employment status", "employed", "work full time"),
     "industry": ("industry", "sector do you work"),
-    "education": ("education", "highest degree", "qualification"),
+    "education": ("highest level of education", "highest degree", "qualification"),
     "marital_status": ("marital status", "married"),
     "gender": ("gender", "identify as", "are you?"),
     "number_of_children": ("how many dependent children", "how many children", "dependent children", "children under 18"),
@@ -128,7 +128,7 @@ def exact_kb_option_decision(obs: Observation) -> Optional[dict[str, Any]]:
         if not isinstance(answer, (str, int, float, bool)):
             continue
         answer_text = str(answer).strip()
-        if not answer_text:
+        if not answer_text or len(answer_text) <= 3:
             continue
         visible_label = None
         for option in option_labels_from_observation(obs):

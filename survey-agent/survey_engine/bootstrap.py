@@ -23,6 +23,7 @@ PART_FILES: tuple[str, ...] = (
     "10_children.py",
     "11_carousel.py",
     "12_maxdiff_selectall.py",
+    "12b_select_n.py",
     "13_select_one.py",
     "14_matrix.py",
     "15_progression.py",

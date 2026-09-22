@@ -536,6 +536,8 @@ def generalized_unseen_router(obs: Observation) -> Optional[dict[str, Any]]:
         return None
     if heard_of_assistants_visible(obs.ocr_text):
         return heard_of_assistants_decision(obs)
+    if select_up_to_n_visible(obs.ocr_text):
+        return select_up_to_n_decision(obs)
     widget = generalized_widget_class(obs)
     blob = strip_transient_ocr(obs.ocr_text)
     lime = 0
@@ -673,9 +675,10 @@ def rl_policy_decision(obs: Observation) -> Optional[dict[str, Any]]:
         return decision
     if action == "select_option":
         pick = str(template.get("input_payload") or template.get("target_text") or "")
-        if not pick:
-            pick = pick_option_assumption(option_labels_from_ocr(obs)) or ""
-        if not pick:
+        if not pick or len(pick.strip()) <= 3 or is_garbage_option_label(pick):
+            return None
+        visible = [lab for lab in option_labels_from_ocr(obs) if not is_garbage_option_label(lab)]
+        if visible and not any(pick.lower()[:12] in lab.lower() or lab.lower()[:12] in pick.lower() for lab in visible):
             return None
         logger.info("[RL] Replay select_option %r q=%.2f state=%s", pick, q, state)
         return {

@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.125": [
+        "Select-up-to-N: LLM/persona ticks real options then the purple arrow. Never OCR junk 'ee'.",
+        "education KB no longer matches 'Learning and education'. RL will not replay 1-3 letter labels.",
+    ],
     "24.0.124": [
         "Heard-of AI assistants: scroll the webview to reveal choices, tick ChatGPT/Gemini, then the purple arrow.",
         "Do not treat status-bar OCR as an option. Do not remap Next/Continue onto intro text at y<500.",

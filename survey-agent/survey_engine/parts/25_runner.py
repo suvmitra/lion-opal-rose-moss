@@ -158,10 +158,10 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = smartphone_brand_decision(obs)
             decision_source = "router-phone"
-        elif heard_of_assistants_visible(obs.ocr_text):
+        elif heard_of_assistants_visible(obs.ocr_text) or select_up_to_n_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
-            decision = heard_of_assistants_decision(obs)
-            decision_source = "router-heard-of"
+            decision = heard_of_assistants_decision(obs) or select_up_to_n_decision(obs)
+            decision_source = "router-multi"
         elif birth_date_question_visible(obs.ocr_text) or adult_age_question_visible(obs.ocr_text):
             obs.screen_phase = "survey_question"
             decision = birth_date_decision(obs) if birth_date_question_visible(obs.ocr_text) else adult_age_screen_decision(obs)
