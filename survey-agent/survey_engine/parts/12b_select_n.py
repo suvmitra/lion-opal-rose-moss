@@ -108,42 +108,48 @@ def select_up_to_rank(obs: Observation, labels: list[str], need: int) -> list[st
 
 
 def footer_cta_milli(obs: Observation) -> list[int]:
-    """Object-map / purple contour of the bottom arrow only (y>=800). Never a mid-list row."""
+    """Centre of the filled purple footer pill. Never a left-edge fragment (x=326)."""
+    y = 890
     try:
         scene = build_screen_object_map(obs)
-        best = None
         for item in scene.get("controls") or []:
             milli = list(item.get("visual_milli") or item.get("milli") or [])
             if len(milli) != 2:
                 continue
-            x, y = int(milli[0]), int(milli[1])
-            if y < 800 or y > 940 or abs(x - 500) > 220:
-                continue
-            if best is None or y > best[1]:
-                best = [x, y]
-        if best:
-            logger.info("[SELECT N] Grid footer CTA %s", best)
-            return best
+            cy = int(milli[1])
+            if 820 <= cy <= 940:
+                y = max(y, cy) if y != 890 else cy
     except Exception:
         pass
     purple = purple_submit_arrow_milli(obs) if "purple_submit_arrow_milli" in globals() else None
-    if purple and 800 <= int(purple[1]) <= 940:
-        return [int(purple[0]), int(purple[1])]
-    return [500, 875]
+    if purple and 820 <= int(purple[1]) <= 940:
+        y = int(purple[1])
+    logger.info("[SELECT N] Grid footer CTA [%s, %s]", 500, y)
+    return [500, y]
 
 
 def select_n_grid_milli(obs: Observation, pick: str, labels: Optional[list[str]] = None) -> list[int]:
-    """Left checkbox of the named row from the object grid, else label order."""
+    """Left checkbox of the named row; retry offsets when prior taps missed."""
+    miss = int(_SELECT_N_SESSION.get("miss") or 0)
     mapped = mapped_option_milli(obs, pick) if "mapped_option_milli" in globals() else None
     if mapped and 250 <= int(mapped[1]) <= 790:
-        logger.info("[SELECT N] Grid option %r %s", pick, mapped)
-        return [180, int(mapped[1])]
-    low = clean_option_label(pick).lower()
-    sequence = list(labels or []) or list(SELECT_N_ORDER)
-    for index, name in enumerate(sequence):
-        if name.lower()[:14] in low or low[:14] in name.lower():
-            return [180, 400 + index * 72]
-    return [180, 445]
+        x, y = 170, int(mapped[1])
+    else:
+        low = clean_option_label(pick).lower()
+        sequence = list(labels or []) or list(SELECT_N_ORDER)
+        x, y = 170, 445
+        for index, name in enumerate(sequence):
+            if name.lower()[:14] in low or low[:14] in name.lower():
+                x, y = 170, 445 + index * 78
+                break
+    x += (miss % 3) * 30 - 30
+    y += (miss % 3) * 12
+    logger.info("[SELECT N] Grid option %r [%s, %s] miss=%s", pick, x, y, miss)
+    return [max(120, min(260, x)), max(280, min(790, y))]
+
+
+def select_n_required_banner(obs: Observation) -> bool:
+    return "question is required" in re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
 
 
 def select_n_already_checked(obs: Observation, pick: str) -> bool:
@@ -157,8 +163,29 @@ def select_n_already_checked(obs: Observation, pick: str) -> bool:
     return False
 
 
+def select_n_visually_checked(obs: Observation, labels: list[str]) -> list[str]:
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return []
+    try:
+        image = cv2.imread(path)
+        if image is None:
+            return []
+        height, width = image.shape[:2]
+        found: list[str] = []
+        for index, lab in enumerate(labels[:8]):
+            y = int((445 + index * 78) / 1000 * height)
+            x = int(0.13 * width)
+            crop = image[max(0, y - 14): y + 14, max(0, x - 16): x + 16]
+            if crop.size and float(crop.mean()) < 205:
+                found.append(lab)
+        return found
+    except Exception:
+        return []
+
+
 def select_up_to_n_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Tick remaining real options on the grid, then the footer purple arrow."""
+    """6-step workflow: SEE → ASK → GRID → ACT → VALIDATE → ARROW."""
     if not select_up_to_n_visible(obs.ocr_text):
         return None
     obs.screen_phase = "survey_question"
@@ -166,36 +193,48 @@ def select_up_to_n_decision(obs: Observation) -> Optional[dict[str, Any]]:
     labels = [clean_option_label(x) for x in select_up_to_labels(obs)]
     key = select_n_session_key(obs)
     if _SELECT_N_SESSION.get("key") != key:
-        _SELECT_N_SESSION.update({"key": key, "ticked": [], "picks": select_up_to_rank(obs, labels, need)})
+        _SELECT_N_SESSION.update({"key": key, "ticked": [], "picks": [], "miss": 0, "attempted": []})
     picks = [clean_option_label(p) for p in (_SELECT_N_SESSION.get("picks") or [])] or select_up_to_rank(obs, labels, need)
     _SELECT_N_SESSION["picks"] = picks
-    ticked = [clean_option_label(t) for t in (_SELECT_N_SESSION.get("ticked") or [])]
-    for pick in picks:
-        if select_n_already_checked(obs, pick) and pick not in ticked:
-            ticked.append(pick)
+    banner = select_n_required_banner(obs)
+    visual = select_n_visually_checked(obs, labels)
+    if obs.screenshot:
+        ticked = [p for p in picks if select_n_already_checked(obs, p) or any(p.lower()[:12] in v.lower() for v in visual)]
+        if banner and len(ticked) < need:
+            _SELECT_N_SESSION["miss"] = int(_SELECT_N_SESSION.get("miss") or 0) + 1
+    else:
+        ticked = [clean_option_label(t) for t in (_SELECT_N_SESSION.get("attempted") or [])]
     _SELECT_N_SESSION["ticked"] = ticked
     remaining = [p for p in picks if p.lower() not in {t.lower() for t in ticked}]
-    if remaining and labels and len(ticked) < need:
-        pick = remaining[0]
+    logger.info(
+        "[SELECT N WORKFLOW] 1 SEE banner=%s visual=%s 2 ASK picks=%s 5 VALIDATE ticked=%s",
+        banner, visual, picks, ticked,
+    )
+    must_tick = bool(remaining and len(ticked) < need) or bool(banner and obs.screenshot and len(ticked) < need)
+    if must_tick and labels and picks:
+        pick = remaining[0] if remaining else picks[int(_SELECT_N_SESSION.get("miss") or 0) % len(picks)]
         tap = select_n_grid_milli(obs, pick, labels)
-        _SELECT_N_SESSION["ticked"] = ticked + [pick]
-        logger.info("[SELECT N] %s/%s tick %r grid=%s", len(ticked) + 1, need, pick, tap)
+        _SELECT_N_SESSION["attempted"] = list(_SELECT_N_SESSION.get("attempted") or []) + [pick]
+        logger.info("[SELECT N WORKFLOW] 3 GRID %r -> %s  4 ACT tick", pick, tap)
         return {
             "screen_state": "survey_question", "action": "select_option",
             "target_text": pick, "target_coords": tap, "coordinate_authoritative": True,
-            "input_payload": pick, "kb_key": "ai_assistant_excitement", "kb_write": False,
+            "input_payload": pick, "kb_key": "ai_assistant_valuable_features", "kb_write": False,
             "confidence_score": 0.95, "postcondition": "selected option is " + pick,
-            "answer_reason": f"Select up to {need}: tick {pick} on the grid, then the footer arrow.",
+            "answer_reason": (
+                f"SEE required={banner} checked={ticked}. ASK LLM/persona {picks}. "
+                f"GRID tick {pick} at {tap}. Do not Continue while the banner is visible."
+            ),
             "skip_object_grounding": True,
         }
     arrow = footer_cta_milli(obs)
-    logger.info("[SELECT N] ticked %s; footer arrow %s", ticked, arrow)
+    logger.info("[SELECT N WORKFLOW] 6 ARROW %s after %s", arrow, ticked)
     return {
         "screen_state": "survey_question", "action": "click", "target_text": "Continue",
         "target_coords": arrow, "coordinate_authoritative": True,
-        "input_payload": ", ".join(ticked), "kb_key": "ai_assistant_excitement", "kb_write": True,
+        "input_payload": ", ".join(ticked), "kb_key": "ai_assistant_valuable_features", "kb_write": True,
         "confidence_score": 0.96, "postcondition": "screen changed",
-        "answer_reason": f"Selected {ticked}; tap the footer purple arrow at {arrow}.",
+        "answer_reason": f"VALIDATE {need} boxes are selected and banner is gone; tap centred footer arrow {arrow}.",
         "skip_object_grounding": True, "object_kind": "button",
     }
 
@@ -219,12 +258,13 @@ def select_up_to_n_regression_self_check() -> bool:
         ocr_text=ocr, ui_nodes=[], kb={"education": "Master's Degree"}, persona={},
         screen_phase="survey_question", survey_tiles=[],
     )
-    _SELECT_N_SESSION.update({"key": "", "ticked": [], "picks": []})
+    _SELECT_N_SESSION.update({"key": "", "ticked": [], "picks": [], "attempted": [], "miss": 0})
     first = select_up_to_n_decision(obs)
     second = select_up_to_n_decision(obs)
     third = select_up_to_n_decision(obs)
-    noisy = Observation(**{**obs.__dict__, "ocr_text": ocr + "\n3:31 banner"})
-    arrow = select_up_to_n_decision(noisy)
+    clear_ocr = ocr.replace("This question is required\n", "")
+    clear = Observation(**{**obs.__dict__, "ocr_text": clear_ocr})
+    arrow = select_up_to_n_decision(clear)
     exact = exact_kb_option_decision(obs)
     labels = select_up_to_labels(obs)
     passed = bool(
@@ -237,6 +277,7 @@ def select_up_to_n_regression_self_check() -> bool:
         and second and second.get("target_text") != first.get("target_text")
         and third and third.get("action") == "select_option"
         and arrow and arrow.get("action") == "click"
+        and int((arrow.get("target_coords") or [0, 0])[0]) == 500
         and int((arrow.get("target_coords") or [0, 0])[1]) >= 800
         and arrow.get("skip_object_grounding")
         and (exact is None or str(exact.get("target_text") or "") != "ee")

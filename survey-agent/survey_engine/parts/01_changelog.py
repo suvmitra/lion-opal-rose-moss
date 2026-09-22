@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.128": [
+        "Select-N 6-step workflow: SEE screen, ASK LLM, GRID coords, ACT tick, VALIDATE banner, ARROW centre.",
+        "Required banner means boxes are empty — never Continue at x=326. Footer tap is always [500, y].",
+    ],
     "24.0.127": [
         "Select-up-to-N matches 'three' as well as '3'. Never tap the red required banner.",
         "Checkbox lists are not matrices. Tick 3 real options on the grid, then the footer arrow.",
