@@ -369,6 +369,8 @@ def ground_decision_to_screen_map(decision: dict[str, Any], obs: Observation) ->
         "select_dropdown", "open_date_picker", "open_time_picker", "long_press",
     }:
         return decision
+    if decision.get("skip_object_grounding"):
+        return decision
     control = _decision_control(decision, obs)
     if not control or float(control.get("confidence") or 0) < 0.70:
         return decision

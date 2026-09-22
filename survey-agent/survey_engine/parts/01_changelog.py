@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.126": [
+        "Select-up-to-N uses the object-map grid for each checkbox, then the footer arrow at y>=800.",
+        "Never tap y=705 as Continue. Strip OCR junk (YW). skip_object_grounding is honoured.",
+    ],
     "24.0.125": [
         "Select-up-to-N: LLM/persona ticks real options then the purple arrow. Never OCR junk 'ee'.",
         "education KB no longer matches 'Learning and education'. RL will not replay 1-3 letter labels.",

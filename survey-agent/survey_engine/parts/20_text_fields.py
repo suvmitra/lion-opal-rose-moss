@@ -617,7 +617,7 @@ def purple_submit_arrow_milli(obs: Observation) -> Optional[list[int]]:
                 continue
             mx = int((x + bw / 2) * 1000 / width)
             my = int((y + bh / 2) * 1000 / height)
-            if my < 390 or my > 870 or abs(mx - 500) > 220:
+            if my < 390 or my > 930 or abs(mx - 500) > 220:
                 continue
             score = (bw / width) * 50 + (bw / max(1, bh)) - abs(mx - 500) * 0.05
             if score > best_score:

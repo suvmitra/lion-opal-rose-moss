@@ -786,15 +786,14 @@ def prefer_progression_over_repeat(
                 if inferred and not is_progression_cta(str(inferred.get("target_text") or "")):
                     return inferred
                 return decision
+            if select_up_to_n_visible(obs.ocr_text):
+                fill = select_up_to_n_decision(obs)
+                if fill:
+                    return fill
             if select_all_apply_visible(obs.ocr_text):
                 fill = select_all_apply_decision(obs)
-                if fill and (select_all_lime_band_count(obs) >= 1 or fill.get("action") != "click"):
-                    logger.info("[PROGRESSION REPAIR] Select-all %s.", fill.get("action"))
-                    if not (select_all_lime_band_count(obs) < 1 and fill.get("action") == "click"):
-                        return fill
-            logger.info(
-                "[PROGRESSION REPAIR] Option %r already issued; clicking Continue instead of toggling it off.",
-                target,
-            )
+                if fill and fill.get("action") != "click":
+                    return fill
+            logger.info("[PROGRESSION REPAIR] Option %r already issued; clicking Continue.", target)
             return survey_next_decision(obs)
     return decision

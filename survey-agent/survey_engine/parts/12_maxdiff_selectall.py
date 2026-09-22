@@ -667,7 +667,7 @@ def heard_of_arrow_milli(obs: Observation) -> list[int]:
         if not callable(fn):
             continue
         hit = fn(obs)
-        if hit and 520 <= int(hit[1]) <= 920:
+        if hit and 780 <= int(hit[1]) <= 930:
             return [int(hit[0]), int(hit[1])]
     return [500, 860]
 
