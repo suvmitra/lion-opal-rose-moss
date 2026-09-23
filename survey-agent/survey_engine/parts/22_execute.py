@@ -1,7 +1,5 @@
 # 22_execute.py — shared engine namespace (do not import directly)
-
 # ------------------------------------------------------------------------------
-
 def shell_input_text(value: str) -> str:
     # Android `input text` accepts a restricted shell-ish encoding.
     # Spaces must be represented as %s. Escape characters that commonly break
@@ -19,8 +17,6 @@ def shell_input_text(value: str) -> str:
         .replace("(", "\\(")
         .replace(")", "\\)")
     )
-
-
 def type_digits(value: str) -> None:
     """WebView often ignores `input text`; digit keyevents land in the focused box."""
     for ch in str(value):
@@ -118,11 +114,7 @@ def option_tap_xy(
     node: Optional[dict[str, Any]],
     target_text: str,
 ) -> Optional[tuple[int, int]]:
-    """Tap the radio/checkbox to the left of a visible option label.
-
-    WebView rows often expose a wide wrapper whose center misses the circle, or
-    a text node whose center is the word rather than the control.
-    """
+    """Tap safely inside the full radio/checkbox row beside its visible label."""
     ocr_match = None
     if target_text and obs.screenshot and Path(obs.screenshot).exists():
         for psm in (11, 6, 3):
@@ -141,7 +133,7 @@ def option_tap_xy(
         width = max(1, x2 - x1)
         y = (y1 + y2) // 2
         if width <= max(180, int(obs.image_width * 0.28)):
-            x = max(8, x1 - max(36, int(obs.image_width * 0.045)))
+            x = max(int(obs.image_width * 0.38), (x1 + x2) // 2)
         else:
             x = x1 + max(28, int(width * 0.08))
         if y >= int(obs.image_height * 0.88) or y <= int(obs.image_height * 0.20):
@@ -426,7 +418,10 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             if action in {"select_option", "toggle_checkbox"} and not decision.get("skip_object_grounding")
             else None
         )
-        if (
+        if option_xy and action in {"select_option", "toggle_checkbox"}:
+            x, y = option_xy
+            logger.info("[ROW TAP] native=(%s,%s) text=%r", x, y, target_text)
+        elif (
             action in {"select_option", "toggle_checkbox", "click", "open_dropdown", "select_dropdown"}
             and decision.get("coordinate_authoritative") is True
             and isinstance(coords, list) and len(coords) == 2
@@ -584,6 +579,11 @@ def verify_postcondition(
 ) -> bool:
     condition = str(decision.get("postcondition") or "").lower()
 
+    introduced_error = required_validation_visible(after) and not required_validation_visible(before)
+    if introduced_error and ("screen changed" in condition or required_is_progression(decision)):
+        logger.warning("[VERIFY] Action introduced a validation error; screen change is failure.")
+        return False
+
     if decision.get("required_gate_progression"):
         return required_progression_verified(before, after)
 
@@ -640,6 +640,19 @@ def verify_postcondition(
         return opened
 
     if "selected option" in condition:
+        if decision.get("irish_region_radio") or irish_region_radio_question_visible(before.ocr_text):
+            wanted = str(decision.get("target_text") or "").strip()
+            structured = any(
+                (node.get("checked") or node.get("selected"))
+                and wanted.lower() in node_text(node).lower() for node in after.ui_nodes
+            )
+            changed = before.screen_hash != after.screen_hash and not introduced_error
+            if structured or changed:
+                _IRISH_REGION_SESSION.update({"key": required_question_key(after), "verified": True})
+                logger.info("[VERIFY] Irish region %r selected on the same question.", wanted)
+                return True
+            logger.warning("[VERIFY] Irish region row did not show a selected-state change.")
+            return False
         if county_question_visible(after.ocr_text) or county_question_visible(before.ocr_text):
             wanted = str(decision.get("target_text") or decision.get("input_payload") or "").strip()
             if wanted.lower() == intended_county(after).lower():
@@ -714,19 +727,9 @@ def verify_postcondition(
         changed = before.screen_hash != after.screen_hash
         if structured or visual or changed or progress_hit:
             return True
-        # Radio fill is often too small for phash and WebView omits checked=.
-        # After a successful single-select tap, do not require a hash change
-        # (the next cycle must click Continue instead of toggling the radio off).
-        if not multi_select_question(before) and target:
-            logger.info(
-                "[VERIFY] Accepting single-select tap for %r without hash/checked evidence.",
-                decision.get("target_text"),
-            )
-            return True
         return False
 
     if "matrix cell selected" in condition:
-        # Radio fill is a few pixels; WebView has no checked=. Count the tap.
         logger.info("[VERIFY] Accepting matrix cell tap without hash/checked evidence.")
         return True
 

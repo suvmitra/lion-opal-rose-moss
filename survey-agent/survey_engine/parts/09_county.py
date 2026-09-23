@@ -336,6 +336,59 @@ IRISH_COUNTIES = (
     "Wexford", "Wicklow",
 )
 
+_IRISH_REGION_SESSION: dict[str, Any] = {"key": "", "verified": False}
+
+
+def irish_region_radio_question_visible(ocr_text: str) -> bool:
+    text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
+    return bool("irish regions" in text and ("currently live" in text or "live in" in text))
+
+
+def intended_irish_region(obs: Observation) -> str:
+    raw = " ".join(str(kb_or_persona_value(obs, key) or "") for key in ("county", "city", "town"))
+    lowered = raw.lower()
+    if "dublin" in lowered or re.match(r"D\d", str((obs.kb or {}).get("area_code") or "").upper()):
+        return "Dublin"
+    groups = {
+        "Connacht": ("galway", "leitrim", "mayo", "roscommon", "sligo"),
+        "Munster": ("clare", "cork", "kerry", "limerick", "tipperary", "waterford"),
+        "Ulster": ("cavan", "donegal", "monaghan"),
+    }
+    for region, counties in groups.items():
+        if any(county in lowered for county in counties):
+            return region
+    return "Rest of Leinster (excluding Dublin)" if lowered.strip() else "Dublin"
+
+
+def irish_region_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
+    if not irish_region_radio_question_visible(obs.ocr_text):
+        return None
+    key = required_question_key(obs) if "required_question_key" in globals() else question_fingerprint(obs)
+    if _IRISH_REGION_SESSION.get("key") != key:
+        _IRISH_REGION_SESSION.update({"key": key, "verified": False})
+    wanted = intended_irish_region(obs)
+    if _IRISH_REGION_SESSION.get("verified"):
+        found = continue_button_on_screen(obs)
+        return {
+            "screen_state": "survey_question", "question_text": current_question_text(obs),
+            "answer_reason": "The declared Irish region is visibly selected; Continue is now eligible.",
+            "action": "click", "target_text": (found[1] if found else "Continue"),
+            "target_coords": (found[0] if found else [500, 704]), "coordinate_authoritative": True,
+            "input_payload": wanted, "kb_key": "county", "confidence_score": 0.99,
+            "postcondition": "screen changed", "selection_complete": True,
+        }
+    coords = body_option_coords(obs, wanted) or county_option_coords(obs, wanted) or [500, 500]
+    coords = [500, int(coords[1])]
+    return {
+        "screen_state": "survey_question", "question_text": current_question_text(obs),
+        "answer_reason": f"Select {wanted} from the declared county/city; navigation is a later verified step.",
+        "action": "select_option", "target_text": wanted, "target_coords": coords,
+        "coordinate_authoritative": False, "input_payload": wanted, "kb_key": "county",
+        "kb_write": False, "confidence_score": 0.99, "postcondition": f"selected option is {wanted}",
+        "selection_complete": True, "answer_provenance": "declared",
+        "source_basis": "knowledge_base.json:county/city/area_code", "irish_region_radio": True,
+    }
+
 
 def county_question_visible(ocr_text: str) -> bool:
     text = re.sub(r"\s+", " ", str(ocr_text or "").lower())
@@ -726,4 +779,3 @@ def county_list_scroll_action(obs: Observation, wanted: str) -> dict[str, Any]:
         "postcondition": "screen changed",
         "kb_key": "county",
     }
-

@@ -2,6 +2,7 @@
 
 _REQUIRED_GATE_SESSION: dict[str, Any] = {
     "active": False, "question_key": "", "answer_verified": False, "scrolls": 0,
+    "selected_target": "",
 }
 
 
@@ -41,6 +42,32 @@ def required_same_question(left: str, right: str) -> bool:
 def reset_required_gate() -> None:
     _REQUIRED_GATE_SESSION.update({
         "active": False, "question_key": "", "answer_verified": False, "scrolls": 0,
+        "selected_target": "",
+    })
+
+
+def question_answer_controls_visible(obs: Observation) -> bool:
+    if obs.screen_phase != "survey_question":
+        return False
+    if any(node.get("editable") or node.get("checkable") for node in obs.ui_nodes or []):
+        return True
+    text = str(obs.ocr_text or "")
+    return bool(
+        looks_like_single_choice(text) or select_all_apply_visible(text)
+        or open_text_question_visible(text) or matrix_question(obs)
+        or irish_region_radio_question_visible(text)
+        or required_validation_visible(obs)
+    )
+
+
+def register_answer_transaction(obs: Observation, target: str = "") -> None:
+    key = required_question_key(obs)
+    old = str(_REQUIRED_GATE_SESSION.get("question_key") or "")
+    if old and key and not required_same_question(old, key):
+        reset_required_gate()
+    _REQUIRED_GATE_SESSION.update({
+        "active": True, "question_key": key or old, "answer_verified": False,
+        "scrolls": 0, "selected_target": str(target or ""),
     })
 
 
@@ -189,6 +216,18 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
     if not decision:
         return decision
     observe_required_gate(obs)
+    action = str(decision.get("action") or "").lower()
+    if action in {"select_then_continue", "focus_select_continue"}:
+        register_answer_transaction(obs, str(decision.get("target_text") or ""))
+        logger.warning("[QUESTION TX] Split compound %s into answer-only selection.", action)
+        return split_required_compound_action(decision)
+    if action in {"select_option", "toggle_checkbox", "type_text", "type_comment", "set_slider", "select_matrix_cell"}:
+        register_answer_transaction(obs, str(decision.get("target_text") or ""))
+        out = dict(decision)
+        out["question_transaction_answer"] = True
+        return out
+    if not _REQUIRED_GATE_SESSION.get("active") and required_is_progression(decision) and question_answer_controls_visible(obs):
+        register_answer_transaction(obs)
     if not _REQUIRED_GATE_SESSION.get("active"):
         return decision
     if _REQUIRED_GATE_SESSION.get("answer_verified"):
@@ -198,11 +237,7 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
             out["postcondition"] = "required question advanced"
             return out
         return decision
-    action = str(decision.get("action") or "").lower()
-    if action in {"select_then_continue", "focus_select_continue"}:
-        logger.warning("[REQUIRED GATE] Split compound %s into answer-only selection.", action)
-        return split_required_compound_action(decision)
-    if action in {"scroll_down", "scroll_up", "select_option", "toggle_checkbox", "type_text", "type_comment", "set_slider", "select_matrix_cell"}:
+    if action in {"scroll_down", "scroll_up"}:
         return decision
     if action == "click" and not required_is_progression(decision):
         return decision
@@ -231,14 +266,15 @@ def mark_required_gate_answer(before: Observation, after: Observation) -> None:
         return
     old = str(_REQUIRED_GATE_SESSION.get("question_key") or required_question_key(before))
     new = required_question_key(after)
-    if new and old and not required_same_question(old, new) and required_validation_visible(after):
+    if new and old and not required_same_question(old, new):
         _REQUIRED_GATE_SESSION.update({
-            "active": True, "question_key": new, "answer_verified": False, "scrolls": 0,
+            "active": question_answer_controls_visible(after), "question_key": new,
+            "answer_verified": False, "scrolls": 0, "selected_target": "",
         })
-        logger.info("[REQUIRED GATE] Page revealed another required question; footer remains locked.")
+        logger.info("[QUESTION TX] Answer revealed a new question; footer remains locked.")
         return
     _REQUIRED_GATE_SESSION["answer_verified"] = True
-    logger.info("[REQUIRED GATE] Answer action verified; footer may be attempted with strict transition verification.")
+    logger.info("[QUESTION TX] Same-question answer verified; footer may be attempted once.")
 
 
 def required_progression_verified(before: Observation, after: Observation) -> bool:
@@ -272,6 +308,12 @@ def required_gate_regression_self_check() -> bool:
         "I prefer maximum choice. I prefer security and privacy. I am not sure."
     )})
     reset_required_gate()
+    first = required_field_action_guard(lower, {
+        "action": "select_then_continue", "target_text": "Dublin", "target_coords": [140, 506],
+        "continue_coords": [500, 703], "postcondition": "screen changed",
+    })
+    no_early_footer = first.get("action") == "select_option" and not first.get("continue_coords")
+    reset_required_gate()
     blocked = required_field_action_guard(top, {
         "action": "click", "target_text": "Continue »,", "target_coords": [500, 910],
         "postcondition": "screen changed", "confidence_score": 0.92,
@@ -288,7 +330,7 @@ def required_gate_regression_self_check() -> bool:
     })
     unchanged = Observation(**{**base, "screen_hash": "required-shift", "ocr_text": lower.ocr_text})
     passed = bool(
-        blocked.get("action") == "scroll_down" and latched
+        no_early_footer and blocked.get("action") == "scroll_down" and latched
         and split.get("action") == "select_option" and not split.get("continue_coords")
         and allowed.get("required_gate_progression")
         and not required_progression_verified(lower, unchanged)

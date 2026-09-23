@@ -313,7 +313,7 @@ def select_one_keyboard_decision(obs: Observation, pick: str) -> dict[str, Any]:
         "target_text": pick,
         "target_coords": None,
         "input_payload": pick,
-        "kb_key": "hovis_unavailable_action",
+        "kb_key": "hovis_unavailable_action" if hovis_unavailable_visible(obs.ocr_text) else observation_kb_key(obs),
         "confidence_score": 0.88,
         "postcondition": "screen changed",
         "selection_complete": True,
@@ -322,6 +322,9 @@ def select_one_keyboard_decision(obs: Observation, pick: str) -> dict[str, Any]:
 
 def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Tap the recommended radio, then Continue. Retarget on miss; keys as last resort."""
+    region = irish_region_radio_decision(obs)
+    if region:
+        return region
     quoted = quoted_instruction_decision(obs)
     if quoted:
         return quoted
@@ -364,7 +367,7 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
             "target_coords": coords,
             "coordinate_authoritative": True,
             "input_payload": pick,
-            "kb_key": "hovis_unavailable_action",
+            "kb_key": "hovis_unavailable_action" if hovis_unavailable_visible(obs.ocr_text) else observation_kb_key(obs),
             "confidence_score": 0.96,
             "postcondition": "screen changed",
             "selection_complete": True,
@@ -388,25 +391,23 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
         if int(continue_coords[1]) >= 900:
             continue_coords = [500, 778]
     tap_points = [circle, text_pt, [220, first_row[1]]]
-    logger.info("[SELECT ONE] select_then_continue pick=%r taps=%s continue=%s gray=%s",
-                pick, tap_points, continue_coords, gray_rows)
+    logger.info("[SELECT ONE] answer-only pick=%r taps=%s gray=%s", pick, tap_points, gray_rows)
     _SELECT_ONE_SESSION["taps"] = int(_SELECT_ONE_SESSION.get("taps") or 0) + 1
     return {
         "screen_state": "survey_question",
         "question_text": current_question_text(obs),
-        "answer_reason": f"Tap {pick} on the gray row, then Continue.",
-        "action": "select_then_continue",
+        "answer_reason": f"Tap {pick}; verify this same question is selected before Continue.",
+        "action": "select_option",
         "target_element_id": None,
         "target_text": pick,
         "target_coords": circle,
         "tap_points": tap_points,
-        "continue_coords": continue_coords,
-        "coordinate_authoritative": True,
+        "coordinate_authoritative": False,
         "input_payload": pick,
-        "kb_key": "hovis_unavailable_action",
+        "kb_key": "hovis_unavailable_action" if hovis_unavailable_visible(obs.ocr_text) else observation_kb_key(obs),
         "kb_write": False,
         "confidence_score": 0.95,
-        "postcondition": "screen changed",
+        "postcondition": f"selected option is {pick}",
         "selection_complete": True,
     }
 

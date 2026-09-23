@@ -110,17 +110,16 @@ def hovis_unavailable_select_one_regression_self_check() -> bool:
         "postcondition": "screen changed",
     })
     coords = (first or {}).get("target_coords")
-    cont = (first or {}).get("continue_coords") or []
     passed = bool(
         phase == "survey_question"
         and looks_like_single_choice(ocr)
-        and first and first.get("action") == "select_then_continue"
+        and first and first.get("action") == "select_option"
         and first.get("input_payload")
         and "buy another" in str(first.get("input_payload")).lower()
         and isinstance(coords, list) and 400 <= int(coords[1]) <= 650
-        and isinstance(cont, list) and int(cont[1]) < 900
-        and nav and nav.get("action") == "select_then_continue"
-        and inspected and inspected.get("action") == "select_then_continue"
+        and not first.get("continue_coords")
+        and nav and nav.get("action") == "select_option"
+        and inspected and inspected.get("action") == "select_option"
     )
     if passed:
         logger.info("[SELF-CHECK] Hovis-unavailable Select-one taps a radio with payload, not Continue.")

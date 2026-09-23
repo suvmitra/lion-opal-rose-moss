@@ -86,7 +86,13 @@ def mark_verified_answer_flow(before: Observation, after: Observation) -> bool:
     before_sig = active_question_signature(before)
     after_sig = active_question_signature(after)
     _QUESTION_FLOW_SESSION.update({"answered_signature": before_sig, "settle_cycles": 0})
-    if before_sig and after_sig and before_sig != after_sig:
+    before_key = required_question_key(before) if "required_question_key" in globals() else before_sig
+    after_key = required_question_key(after) if "required_question_key" in globals() else after_sig
+    if before_sig.startswith("comfort:") and after_sig.startswith("comfort:"):
+        same = before_sig == after_sig
+    else:
+        same = required_same_question(before_key, after_key) if "required_same_question" in globals() else before_sig == after_sig
+    if before_key and after_key and not same:
         logger.info("[PAGE SERIES] Auto-advanced %s -> %s; answer next item before footer.", before_sig, after_sig)
         return False
     return True

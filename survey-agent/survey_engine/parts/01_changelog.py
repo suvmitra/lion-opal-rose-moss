@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.135": [
+        "Adds a per-question transaction: answer, verify the same question, then and only then use Arrow/Continue/Next/Submit.",
+        "Treats auto-revealed questions as new work and stabilizes question identity across red validation banners and OCR shortening.",
+        "Expands narrow OCR labels into safe full-row selection taps and prevents grounding from overwriting retry coordinates with the same missed label center.",
+        "Rejects validation-error pages as progress so failed compound actions cannot receive positive RL reward.",
+        "Routes Irish-region radio questions from county/city/area-code knowledge and removes the unrelated Hovis answer key.",
+    ],
     "24.0.134": [
         "Adds a non-bypassable required-field gate: Arrow, Continue, Next and Submit stay locked until the active answer is verified.",
         "Latches required validation across scrolling, maps complete answer cards, and scrolls the form body when options are clipped below the fold.",

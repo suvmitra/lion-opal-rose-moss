@@ -409,7 +409,12 @@ def ground_decision_to_screen_map(decision: dict[str, Any], obs: Observation) ->
     if not points:
         points = [list(control.get("visual_milli") or control["milli"])]
     out = dict(decision)
-    out["target_coords"] = points[0]
+    chosen = points[0]
+    if action in {"select_option", "toggle_checkbox"} and control.get("role") == "label":
+        # OCR labels are often narrow, non-clickable children of a full-width
+        # WebView row. Keep their precise y but tap safely inside the row.
+        chosen = [500, int(chosen[1])]
+    out["target_coords"] = chosen
     out["target_bounds"] = list(control.get("visual_bounds") or control["bounds"])
     out["target_control_role"] = control.get("role")
     out["target_control_source"] = control.get("source")
