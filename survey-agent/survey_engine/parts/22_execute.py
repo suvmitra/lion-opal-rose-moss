@@ -318,19 +318,19 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                     _AGE_SESSION["typed"] = True
                     logger.info("[AGE] Typed %r at native=(%s,%s)", payload, x, y)
                 arrow = decision.get("arrow_coords")
-                if not (isinstance(arrow, list) and len(arrow) == 2) and "purple_submit_arrow_milli" in globals():
-                    arrow = purple_submit_arrow_milli(obs) or mapped_age_arrow_milli(obs)
-                if isinstance(arrow, list) and len(arrow) == 2:
+                if (
+                    isinstance(arrow, list) and len(arrow) == 2
+                    and int(arrow[0]) >= 620
+                ):
                     ax, ay = normalized_to_native(
                         arrow, (obs.image_width, obs.image_height),
                         (obs.device_width, obs.device_height),
                     )
                     time.sleep(0.2)
                     webview_click(ax, ay)
-                    logger.info("[AGE] Arrow after type native=(%s,%s) milli=%s", ax, ay, arrow)
+                    logger.info("[AGE] Next after type native=(%s,%s) milli=%s", ax, ay, arrow)
                 else:
-                    logger.info("[AGE] Typed %r at native=(%s,%s) miss=%s",
-                                payload, x, y, _AGE_FIELD_MISS.get("n"))
+                    logger.info("[AGE] Typed %r; leaving Back alone until the box shows the number.", payload)
             else:
                 tap_native(x, y)
                 time.sleep(0.55)

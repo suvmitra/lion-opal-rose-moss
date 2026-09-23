@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.144": [
+        "An empty age box types 44. A remembered typed flag cannot skip that.",
+        "The red Back circle is not the Next button. Next question is the pill to its right, and only after 44 is visible.",
+    ],
     "24.0.143": [
         "Checked Male taps the mapped Next question button, including the red pill at the bottom right.",
         "The required gate no longer replaces that button with another Male tap.",

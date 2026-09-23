@@ -541,17 +541,23 @@ def adult_age_payload(obs: Observation) -> str:
 
 
 def age_box_crop_ocr(obs: Observation) -> str:
-    """OCR the thin band just above Continue — not the red 'no more than 99' line."""
+    """OCR the rounded age box itself, not the gap above the footer buttons."""
     path = str(obs.screenshot or "")
     if not path or not Path(path).exists():
         return ""
     try:
         with Image.open(path) as image:
             width, height = image.size
-            cy = int(height * int(adult_age_continue_coords(obs)[1]) / 1000)
-            y1 = max(0, cy - int(height * 0.09))
-            y2 = max(y1 + 16, cy - int(height * 0.018))
-            crop = image.crop((int(width * 0.08), y1, int(width * 0.75), y2)).convert("L")
+            mapped = mapped_age_input_milli(obs)
+            if mapped:
+                cy = int(height * int(mapped[1]) / 1000)
+                y1 = max(0, cy - int(height * 0.03))
+                y2 = min(height, cy + int(height * 0.03))
+            else:
+                cy = int(height * 0.36)
+                y1 = max(0, cy - int(height * 0.04))
+                y2 = min(height, cy + int(height * 0.04))
+            crop = image.crop((int(width * 0.08), y1, int(width * 0.92), y2)).convert("L")
             crop = crop.point(lambda pixel: 255 if pixel > 170 else 0)
             raw = pytesseract.image_to_string(
                 crop, config="--psm 7 -c tessedit_char_whitelist=0123456789"
@@ -658,29 +664,37 @@ def mapped_age_input_milli(obs: Observation) -> Optional[list[int]]:
 
 
 def mapped_age_arrow_milli(obs: Observation) -> Optional[list[int]]:
+    """The Next question pill. Never the red Back circle to its left."""
     if "build_screen_object_map" not in globals():
         return None
     try:
         scene = build_screen_object_map(obs)
     except Exception:
         return None
-    best, best_y = None, 0
+    buttons: list[tuple[int, int, str]] = []
     for item in scene.get("controls") or []:
         if str(item.get("role") or "") != "button":
             continue
         label = str(item.get("label") or "").lower()
         if any(tok in label for tok in ("close", "reload", "survey")):
             continue
+        if re.search(r"\b(?:back|previous)\b", label):
+            continue
         milli = list(item.get("visual_milli") or item.get("milli") or [])
         if len(milli) != 2:
             continue
         x, y = int(milli[0]), int(milli[1])
-        if y < 400 or y > 720 or abs(x - 500) > 260:
+        if y < 400 or y > 860 or not 80 <= x <= 980:
             continue
-        if y > best_y:
-            best_y, best = y, [x, y]
-    if best:
-        logger.info("[AGE] Mapped arrow button milli=%s", best)
+        buttons.append((x, y, label))
+    named = [item for item in buttons if any(word in item[2] for word in ("next", "continue", "submit"))]
+    pool = named or [item for item in buttons if item[0] >= 620]
+    if not pool:
+        logger.info("[AGE] No Next question button; not using the Back arrow.")
+        return None
+    pick = max(pool, key=lambda item: (1 if "next" in item[2] or "continue" in item[2] else 0, item[0]))
+    best = [pick[0], pick[1]]
+    logger.info("[AGE] Mapped Next question milli=%s label=%r", best, pick[2])
     return best
 
 
@@ -699,10 +713,10 @@ def adult_age_field_coords(obs: Observation) -> list[int]:
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
     mapped = mapped_age_arrow_milli(obs)
-    if mapped:
+    if mapped and int(mapped[0]) >= 560:
         return mapped
     arrow = purple_submit_arrow_milli(obs)
-    if arrow:
+    if arrow and int(arrow[0]) >= 620:
         return arrow
     path = str(obs.screenshot or "")
     height = max(1, int(obs.image_height or 1))
@@ -729,17 +743,29 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     if too_big:
         _AGE_SESSION["typed"] = False
     arrow = adult_age_continue_coords(obs)
-    already = (digits == wanted or bool(_AGE_SESSION.get("typed"))) and not too_big
-    logger.info("[AGE REASON] object=text_box box=%r typed=%s kb=%s → %s arrow=%s",
+    if int(arrow[0]) < 560:
+        arrow = None
+    box_ready = digits == wanted and not too_big
+    if not box_ready:
+        _AGE_SESSION["typed"] = False
+    logger.info("[AGE REASON] object=text_box box=%r typed=%s kb=%s → %s next=%s",
                 digits, _AGE_SESSION.get("typed"), keyboard_visible_on_survey(obs),
-                "arrow" if already else "type_then_arrow", arrow)
-    if already:
+                "next" if box_ready else "type", arrow)
+    if box_ready and arrow:
         return {
-            "screen_state": "survey_question", "action": "click", "target_text": "arrow",
+            "screen_state": "survey_question", "action": "click", "target_text": "Next question",
             "target_coords": arrow, "coordinate_authoritative": True, "kb_key": "age",
             "confidence_score": 0.97, "postcondition": "screen changed",
-            "answer_reason": f"Age {wanted} is in the box or just typed; tap the purple arrow.",
+            "answer_reason": f"Age {wanted} is in the box; tap Next question, not Back.",
             "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
+        }
+    if box_ready:
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": "Next question",
+            "target_coords": [720, 560], "coordinate_authoritative": True, "kb_key": "age",
+            "confidence_score": 0.9, "postcondition": "screen changed",
+            "answer_reason": f"Age {wanted} is in the box; tap the Next question pill on the right.",
+            "skip_object_grounding": True, "object_kind": "button",
         }
     field = adult_age_field_coords(obs)
     return {
@@ -747,7 +773,7 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "target_text": "age input field", "target_coords": field,
         "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
         "confidence_score": 0.99, "postcondition": "screen changed",
-        "answer_reason": f"Tap text box, type {wanted}, tap purple arrow once.",
-        "arrow_coords": arrow, "submit_after_type": True,
+        "answer_reason": f"Type {wanted} into the age box. Do not tap Back.",
+        "submit_after_type": True,
         "skip_object_grounding": True, "object_kind": "text_input",
     }
