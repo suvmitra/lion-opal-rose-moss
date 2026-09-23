@@ -157,7 +157,7 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
             role = "button"
         elif 0.70 <= aspect <= 1.40 and bw <= int(width * 0.15):
             role = "choice"
-        elif aspect >= 2.4 and color == "neutral":
+        elif aspect >= 2.4 and color == "neutral" and bh <= int(height * 0.12):
             role = "input_or_listbox"
         else:
             role = "visual_region"

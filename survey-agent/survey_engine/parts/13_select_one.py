@@ -63,6 +63,7 @@ def looks_like_single_choice(ocr_text: str) -> bool:
         "not available in a store",
         "brand of smartphone", "smartphone do you currently",
         "which brand of",
+        "would you agree", "do you agree to share",
     ))
 
 

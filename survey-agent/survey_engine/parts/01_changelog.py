@@ -5,6 +5,12 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.138": [
+        "Treats every newly visible radio question as a fresh answer transaction and blocks Continue/Next until the selected state is visually verified.",
+        "Prevents stale RL, learned actions and answer-attempt history from counting as a completed answer on the current screen.",
+        "Recognizes Eircode-sharing consent as a Yes/No choice, loads it from the knowledge base or asks the terminal operator instead of typing the postal code.",
+        "Filters progress indicators and validation prose from answer options, maps oversized outlined panels as regions rather than inputs, and prioritizes exact accessibility rows over unsafe OCR hits.",
+    ],
     "24.0.137": [
         "Distinguishes Eircode/privacy disclosure pages from unanswered forms, clears stale required-question locks, and permits the real Continue control.",
         "Ranks exact option labels ahead of substring matches, so Dublin can never resolve to Rest of Leinster (excluding Dublin), and verifies the filled radio on the intended row.",

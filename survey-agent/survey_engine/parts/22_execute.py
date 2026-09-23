@@ -121,7 +121,10 @@ def option_tap_xy(
         for psm in (11, 6, 3):
             matches.extend(ocr_line_nodes(Path(obs.screenshot), psm=psm))
         ocr_match = best_option_text_node(matches, target_text)
-    source = ocr_match or node
+    # Accessibility labels are already tied to the correct WebView row.  OCR is
+    # only a fallback: short partial matches such as "No" can otherwise resolve
+    # to Android navigation text at the bottom of the screenshot.
+    source = node or ocr_match
     if source and in_system_nav(source.get("bounds") or [], obs.image_height):
         logger.warning("[OPTION TAP] Ignoring nav-bar node bounds=%s for %r", source.get("bounds"), target_text)
         source = None
@@ -755,4 +758,3 @@ def verify_postcondition(
 
     # Conservative default: action caused a state change.
     return before.screen_hash != after.screen_hash
-

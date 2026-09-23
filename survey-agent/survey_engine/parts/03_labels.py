@@ -122,7 +122,7 @@ def is_chrome_option_label(text: str) -> bool:
         return True
     return any(marker in key for marker in (
         "close button", "close this survey", "close survey", "go back",
-        "privacy", "accessibility", "reload", "cashout", "help",
+        "privacy", "accessibility", "reload", "cashout", "help", "progress bar",
     )) or key in {"x", "×", "✕"}
 
 
