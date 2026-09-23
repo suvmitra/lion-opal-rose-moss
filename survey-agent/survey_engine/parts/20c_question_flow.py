@@ -33,7 +33,14 @@ def active_question_signature(obs: Observation) -> str:
             topic = str(_COMFORT_SESSION.get("topic") or "item")
         return "comfort:" + topic
     stem = re.sub(r"\s+", " ", str(current_question_text(obs) or "").lower()).strip()
-    if len(stem) < 12 or re.search(r"\b\d{1,2}:\d{2}\b", stem):
+    mark = text.rfind("?")
+    if mark >= 0:
+        words = re.findall(r"[a-z0-9']+", text[max(0, mark - 90):mark + 1])
+        while words and (words[0].isdigit() or len(words[0]) <= 2):
+            words.pop(0)
+        if len(words) >= 3:
+            stem = " ".join(words)
+    elif len(stem) < 12 or re.search(r"\b\d{1,2}:\d{2}\b", stem):
         lines = [re.sub(r"\s+", " ", line).strip().lower() for line in str(obs.ocr_text or "").splitlines()]
         questions = [line for line in lines if "?" in line and 12 <= len(line) <= 260]
         stem = max(questions, key=len) if questions else stem
@@ -166,7 +173,7 @@ def mapped_footer_control(obs: Observation) -> Optional[dict[str, Any]]:
         if len(milli) != 2 or item.get("role") != "button" or not item.get("enabled", True):
             continue
         x, y = int(milli[0]), int(milli[1])
-        if not (250 <= x <= 750 and 760 <= y < nav_top):
+        if not (180 <= x <= 980 and 760 <= y < nav_top):
             continue
         label = _clean_control_label(item.get("label") or "")
         forbidden = any(word in label for word in ("close", "reload", "privacy", "help", "back"))

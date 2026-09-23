@@ -233,6 +233,24 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
                 "skip_object_grounding": True,
                 "answer_reason": "Control type is a text box. Type the stored age before Next.",
             }
+    stored_gender = str((obs.kb or {}).get("gender") or "Male").strip() or "Male"
+    if gender_choice_screen(obs) and selected_option_visual(obs, stored_gender):
+        found = continue_button_on_screen(obs)
+        if found and int(found[0][1]) >= 700:
+            coords, label = list(found[0]), str(found[1])
+        else:
+            footer = mapped_footer_control(obs)
+            milli = list((footer or {}).get("milli") or [])
+            coords = [int(milli[0]), int(milli[1])] if len(milli) == 2 else [740, 896]
+            label = str((footer or {}).get("label") or "Next question")
+        logger.info("[REQUIRED GATE] %s is checked; Next question at %s.", stored_gender, coords)
+        return {
+            "screen_state": "survey_question", "action": "click", "target_text": label,
+            "target_coords": coords, "target_element_id": None, "coordinate_authoritative": True,
+            "skip_object_grounding": True, "kb_key": "gender", "confidence_score": 0.98,
+            "postcondition": "screen changed", "selection_complete": True, "six_step_footer": True,
+            "answer_reason": f"{stored_gender} is already checked. Tap Next question.",
+        }
     if gender_choice_screen(obs) and (
         ("next question" in target_now.lower() and str(decision.get("action") or "") == "select_option")
         or str(decision.get("target_text") or "").lower() in {"female", "other"}

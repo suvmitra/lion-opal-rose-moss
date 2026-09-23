@@ -517,6 +517,28 @@ def six_step_regression_self_check() -> bool:
         kb={"gender": "Male"}, persona={}, screen_phase="survey_question", survey_tiles=[],
     )
     gender_plan, _, gender_halt = plan_six_steps(gender, 0, False, set())
+    checked = Observation(
+        step=0, screenshot=None, image_width=1440, image_height=3088,
+        device_width=1440, device_height=3088, screen_hash="six-gender-next",
+        ocr_text="What is your gender?\nMale\nFemale\nNext question",
+        ui_nodes=[
+            {"id": 27, "text": "Male", "content_desc": "", "class": "Button",
+             "bounds": [234, 688, 1316, 832], "clickable": True, "checkable": True,
+             "checked": True, "editable": False, "enabled": True, "selected": True},
+            {"id": 39, "text": "Female", "content_desc": "", "class": "Button",
+             "bounds": [234, 944, 1316, 1087], "clickable": True, "checkable": True,
+             "checked": False, "editable": False, "enabled": True, "selected": False},
+            {"id": 89, "text": "Next question", "content_desc": "", "class": "Button",
+             "bounds": [777, 2708, 1358, 2831], "clickable": True, "checkable": False,
+             "checked": False, "editable": False, "enabled": True, "selected": False},
+        ],
+        kb={"gender": "Male"}, persona={}, screen_phase="survey_question", survey_tiles=[],
+    )
+    next_plan, _, next_halt = plan_six_steps(checked, 0, False, set())
+    guarded = required_field_action_guard(checked, {
+        "action": "click", "target_text": "Continue", "target_coords": [500, 455],
+        "confidence_score": 0.97,
+    })
     _AGE_SESSION.clear()
     _AGE_SESSION.update(saved_age)
     passed = bool(
@@ -528,9 +550,19 @@ def six_step_regression_self_check() -> bool:
         and gender_plan
         and str(gender_plan.get("target_text") or "").lower() == "male"
         and not is_progression_cta(str(gender_plan.get("target_text") or ""))
+        and next_halt is None
+        and next_plan
+        and next_plan.get("action") == "click"
+        and "next" in str(next_plan.get("target_text") or "").lower()
+        and int((next_plan.get("target_coords") or [0, 0])[1]) >= 800
+        and guarded.get("action") == "click"
+        and int((guarded.get("target_coords") or [0, 0])[1]) >= 800
     )
     if passed:
-        logger.info("[SELF-CHECK] Six-step loop types 44 and selects Male before any footer.")
+        logger.info("[SELF-CHECK] Six-step loop types 44, selects Male, then taps Next question.")
     else:
-        logger.error("[SELF-CHECK] Six-step loop failed age=%s gender=%s", age_plan, gender_plan)
+        logger.error(
+            "[SELF-CHECK] Six-step loop failed age=%s gender=%s next=%s guarded=%s",
+            age_plan, gender_plan, next_plan, guarded,
+        )
     return passed

@@ -5,6 +5,11 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.143": [
+        "Checked Male taps the mapped Next question button, including the red pill at the bottom right.",
+        "The required gate no longer replaces that button with another Male tap.",
+        "Question identity ignores status-bar noise, so the same gender page is not treated as a new question.",
+    ],
     "24.0.142": [
         "Every screen goes through six steps: map controls, one model question, KB or one terminal ask, mapped tap, verify, then footer.",
         "Continue/Next is refused while age is empty, Male is unchecked, or a required banner is still up.",

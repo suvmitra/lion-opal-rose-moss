@@ -469,11 +469,13 @@ def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
             for n in obs.ui_nodes
         )
     if selected:
-        blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
-        if "next question" in blob:
-            found = continue_button_on_screen(obs) if "continue_button_on_screen" in globals() else None
-            coords = list(found[0]) if found else [740, 890]
-            text = "Next question"
+        found = continue_button_on_screen(obs) if "continue_button_on_screen" in globals() else None
+        footer = mapped_footer_control(obs) if not found and "mapped_footer_control" in globals() else None
+        if found:
+            coords, text = list(found[0]), str(found[1] or "Next question")
+        elif footer:
+            coords = [int(v) for v in (footer.get("milli") or [740, 896])]
+            text = str(footer.get("label") or "Next question")
         else:
             mid = gender_continue_milli(obs)
             coords = list(mid) if mid else [500, 455]

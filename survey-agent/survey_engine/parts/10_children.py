@@ -87,11 +87,11 @@ def continue_button_on_screen(obs: Observation) -> Optional[tuple[list[int], str
         text = node_text(node)
         if not text or not is_progression_cta(text):
             continue
-        if not cta_node_on_screen(node, obs):
-            continue
         cx, cy = node_center(node)
         yf = cy / height
-        if yf > 0.96:
+        if yf > 0.96 or yf < 0.45:
+            continue
+        if not cta_node_on_screen(node, obs) and yf < 0.72:
             continue
         hits.append((
             [
