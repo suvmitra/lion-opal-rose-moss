@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.136": [
+        "Keeps failed-action learning attached to the current decision key, preventing an Irish-region failure from being persisted as age.",
+        "Includes the v24.0.135 question transaction, safe row targeting, stable question identity and validation-aware verification fixes.",
+    ],
     "24.0.135": [
         "Adds a per-question transaction: answer, verify the same question, then and only then use Arrow/Continue/Next/Submit.",
         "Treats auto-revealed questions as new work and stabilizes question identity across red validation banners and OCR shortening.",

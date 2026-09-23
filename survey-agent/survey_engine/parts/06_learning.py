@@ -154,7 +154,7 @@ def improve_survey_intelligence(
         entry["last_issue"] = ""
     else:
         entry["failures"] = int(entry.get("failures") or 0) + 1
-        entry["last_issue"] = str(issue or action)[:200]
+        entry["last_issue"] = str(issue or action)[:200]; entry["kb_key"] = decision.get("kb_key") or entry.get("kb_key")
     entry["stems"] = stems
     entry["updated_at_utc"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     lessons[lid] = entry
