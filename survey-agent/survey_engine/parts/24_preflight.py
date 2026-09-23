@@ -241,6 +241,8 @@ def preflight() -> bool:
         return False
     if not age_text_entry_regression_self_check():
         return False
+    if not six_step_regression_self_check():
+        return False
     if not birth_date_regression_self_check():
         return False
     if not kb_choice_regression_self_check():

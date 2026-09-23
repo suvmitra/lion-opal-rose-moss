@@ -634,6 +634,9 @@ def verify_postcondition(
         if decision.get("maxdiff_done") and before.screen_hash == after.screen_hash:
             _MAXDIFF_SESSION["force_scroll"] = True
             logger.warning("[VERIFY] MaxDiff Continue miss; next cycle scrolls instead of retapping the nav bar.")
+        if decision.get("six_step_footer") and active_question_signature(before) == active_question_signature(after):
+            logger.warning("[SIX] 5 same question after footer; a hash change is not progress.")
+            return False
         return before.screen_hash != after.screen_hash
 
     if "contains" in condition and decision.get("input_payload"):

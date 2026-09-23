@@ -5,6 +5,11 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.142": [
+        "Every screen goes through six steps: map controls, one model question, KB or one terminal ask, mapped tap, verify, then footer.",
+        "Continue/Next is refused while age is empty, Male is unchecked, or a required banner is still up.",
+        "A footer tap that leaves the same question on screen is not counted as progress.",
+    ],
     "24.0.141": [
         "Age self-check no longer calls the image model. Empty box types 44; a typed or visible 44 taps the arrow.",
         "A missing screenshot is not the current directory, so vision calls cannot fail with Permission denied on '.'.",
