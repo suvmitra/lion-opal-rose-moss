@@ -251,6 +251,22 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
             "postcondition": "screen changed", "selection_complete": True, "six_step_footer": True,
             "answer_reason": f"{stored_gender} is already checked. Tap Next question.",
         }
+    if (
+        county_question_visible(obs.ocr_text)
+        and not county_dropdown_open(obs.ocr_text)
+        and county_selection_complete(obs)
+    ):
+        nxt = county_dropdown_decision(obs)
+        if nxt and str(nxt.get("action") or "") == "click":
+            nxt = dict(nxt)
+            nxt["county_next"] = True
+            nxt["skip_object_grounding"] = True
+            nxt["coordinate_authoritative"] = True
+            logger.info(
+                "[REQUIRED GATE] Closed combo already shows %s; tap Next question.",
+                intended_county(obs),
+            )
+            return nxt
     if gender_choice_screen(obs) and (
         ("next question" in target_now.lower() and str(decision.get("action") or "") == "select_option")
         or str(decision.get("target_text") or "").lower() in {"female", "other"}

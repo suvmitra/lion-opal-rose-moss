@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.145": [
+        "Dublin already in the closed county combo taps Next question. It does not open the list again.",
+        "An open list on a chosen county is closed first. Next is not used as the dismiss tap.",
+    ],
     "24.0.144": [
         "An empty age box types 44. A remembered typed flag cannot skip that.",
         "The red Back circle is not the Next button. Next question is the pill to its right, and only after 44 is visible.",

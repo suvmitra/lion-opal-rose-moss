@@ -542,15 +542,18 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
     shown = county_displayed_value(obs)
     if county_selection_complete(obs) and not county_dropdown_open(obs.ocr_text):
         logger.info("[COUNTY] %s already selected; grounding Continue.", wanted)
+        label = "Next question" if "next question" in str(obs.ocr_text or "").lower() else "Continue »"
         return {
             "screen_state": "survey_question",
             "question_text": current_question_text(obs),
             "answer_reason": f"County {wanted} is selected from knowledge_base city.",
             "action": "click",
             "target_element_id": None,
-            "target_text": "Continue »",
-            "target_coords": county_continue_coords(obs) or [500, 875],
+            "target_text": label,
+            "target_coords": county_continue_coords(obs) or ([740, 902] if "next" in label.lower() else [500, 875]),
             "coordinate_authoritative": True,
+            "skip_object_grounding": True,
+            "county_next": True,
             "kb_key": "county",
             "kb_write": True,
             "input_payload": wanted,
@@ -585,21 +588,20 @@ def county_dropdown_decision(obs: Observation) -> Optional[dict[str, Any]]:
                 "postcondition": f"selected option is {wanted}",
                 "selection_complete": False,
             }
-        if cont and int(cont[1]) >= 860:
-            logger.info("[COUNTY] Sticky Continue at %s (not a county row)", cont)
-            _COUNTY_SESSION["picked"] = True
+        if _COUNTY_SESSION.get("picked") or _COUNTY_SESSION.get("tapped") or county_picked_visual(obs):
+            logger.info("[COUNTY] %s is checked and the list is open; close the list before Next.", wanted)
             return {
                 "screen_state": "survey_question",
                 "question_text": current_question_text(obs),
-                "answer_reason": f"{wanted} chosen; tap the footer Continue bar, not a county row.",
+                "answer_reason": f"{wanted} is already chosen. Close the list, then tap Next question.",
                 "action": "click",
-                "target_text": "Continue",
-                "target_coords": cont,
+                "target_text": "county list",
+                "target_coords": [500, 243],
                 "coordinate_authoritative": True,
+                "skip_object_grounding": True,
                 "kb_key": "county",
-                "input_payload": wanted,
-                "confidence_score": 0.97,
-                "postcondition": "screen changed",
+                "confidence_score": 0.96,
+                "postcondition": "county list closed",
                 "selection_complete": True,
             }
         if county_picked_visual(obs) or _COUNTY_SESSION.get("picked") or _COUNTY_SESSION.get("tapped"):

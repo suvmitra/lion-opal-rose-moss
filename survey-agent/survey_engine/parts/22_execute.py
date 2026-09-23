@@ -509,7 +509,7 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
                     "[SAFE TAP] Object-mapped target bounds=%s native=(%s,%s) nav_top=%s",
                     decision.get("target_bounds"), x, y, nav_milli,
                 )
-            if action == "select_option" or "start" in tlow or "agree" in tlow or "participate" in tlow or decision.get("i_agree_continue") or (
+            if action == "select_option" or "start" in tlow or "agree" in tlow or "participate" in tlow or decision.get("i_agree_continue") or decision.get("county_next") or (
                 str(decision.get("kb_key") or "") == "age" and "continue" in tlow
             ):
                 webview_click(x, y)
@@ -659,6 +659,11 @@ def verify_postcondition(
         if not opened:
             logger.warning("[VERIFY] County list is still closed (need 4+ county names).")
         return opened
+
+    if "county list closed" in condition:
+        closed = not county_dropdown_open(after.ocr_text)
+        logger.info("[VERIFY] County list closed=%s", closed)
+        return closed
 
     if "selected option" in condition:
         wanted_exact = str(decision.get("target_text") or decision.get("input_payload") or "").strip()
