@@ -367,6 +367,10 @@ def irish_region_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
     if _IRISH_REGION_SESSION.get("key") != key:
         _IRISH_REGION_SESSION.update({"key": key, "verified": False})
     wanted = intended_irish_region(obs)
+    if selected_option_visual(obs, wanted):
+        _IRISH_REGION_SESSION["verified"] = True
+        if _REQUIRED_GATE_SESSION.get("active"):
+            _REQUIRED_GATE_SESSION["answer_verified"] = True
     if _IRISH_REGION_SESSION.get("verified"):
         found = continue_button_on_screen(obs)
         return {

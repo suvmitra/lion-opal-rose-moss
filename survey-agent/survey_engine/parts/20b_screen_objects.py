@@ -102,6 +102,17 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
     height, width = image.shape[:2]
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     candidates: list[dict[str, Any]] = []
+    prose_bounds = []
+    for semantic in obs.ui_nodes or []:
+        bounds = semantic.get("bounds") or []
+        text = node_text(semantic).strip()
+        if (
+            len(bounds) == 4 and len(text) >= 120
+            and not semantic.get("clickable") and not semantic.get("editable")
+            and not semantic.get("checkable")
+            and (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]) >= width * height * 0.12
+        ):
+            prose_bounds.append([int(value) for value in bounds])
 
     def add_box(
         box: list[int], source: str, color: str, confidence: float,
@@ -114,6 +125,13 @@ def _visual_regions(obs: Observation, lines: list[dict[str, Any]]) -> tuple[list
         if y1 < int(height * 0.025) or y2 > int(height * 0.986):
             return
         if y1 >= int(height * 0.55) and source == "opencv-shape":
+            return
+        center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+        if source == "opencv-shape" and any(
+            _box_contains(prose, center_x, center_y, 0) for prose in prose_bounds
+        ):
+            # Letter contours inside a large accessibility paragraph are text,
+            # not dozens of radios/list boxes.
             return
         for current in candidates:
             if _box_iou(box, current["bounds"]) > 0.82:
@@ -250,7 +268,11 @@ def build_screen_object_map(obs: Observation, persist: bool = False) -> dict[str
         else:
             controls.append(candidate)
 
-    interactive = [item for item in controls if item.get("role") != "label" or item.get("clickable")]
+    actionable_roles = {"button", "choice", "dropdown", "text_input", "input_or_listbox"}
+    interactive = [
+        item for item in controls
+        if item.get("clickable") or item.get("editable") or item.get("role") in actionable_roles
+    ]
     paragraphs: list[dict[str, Any]] = []
     for line in lines:
         label = line["label"].strip()

@@ -203,6 +203,8 @@ def preflight_s4_access() -> bool:
 def preflight() -> bool:
     if not bounded_stagnation_regression_self_check():
         return False
+    if not notice_and_exact_option_regression_self_check():
+        return False
     if not screen_object_map_regression_self_check():
         return False
     if not question_flow_regression_self_check():

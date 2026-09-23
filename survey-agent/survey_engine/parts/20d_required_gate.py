@@ -49,6 +49,8 @@ def reset_required_gate() -> None:
 def question_answer_controls_visible(obs: Observation) -> bool:
     if obs.screen_phase != "survey_question":
         return False
+    if information_notice_page(obs):
+        return False
     if any(node.get("editable") or node.get("checkable") for node in obs.ui_nodes or []):
         return True
     text = str(obs.ocr_text or "")
@@ -73,7 +75,7 @@ def register_answer_transaction(obs: Observation, target: str = "") -> None:
 
 def observe_required_gate(obs: Observation) -> None:
     """Latch validation across scrolls, where the red banner leaves the viewport."""
-    if obs.screen_phase != "survey_question":
+    if obs.screen_phase != "survey_question" or information_notice_page(obs):
         reset_required_gate()
         return
     key = required_question_key(obs)
@@ -215,6 +217,13 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
     """Final safety barrier: an unanswered required field always owns the next action."""
     if not decision:
         return decision
+    if information_notice_page(obs) and required_is_progression(decision):
+        reset_required_gate()
+        out = dict(decision)
+        out["information_notice_progression"] = True
+        out["postcondition"] = "information notice advanced"
+        logger.info("[REQUIRED GATE] Disclosure page has no answer control; allowing %r.", out.get("target_text"))
+        return out
     observe_required_gate(obs)
     action = str(decision.get("action") or "").lower()
     if action in {"select_then_continue", "focus_select_continue"}:
@@ -267,11 +276,14 @@ def mark_required_gate_answer(before: Observation, after: Observation) -> None:
     old = str(_REQUIRED_GATE_SESSION.get("question_key") or required_question_key(before))
     new = required_question_key(after)
     if new and old and not required_same_question(old, new):
+        locked = question_answer_controls_visible(after)
         _REQUIRED_GATE_SESSION.update({
-            "active": question_answer_controls_visible(after), "question_key": new,
+            "active": locked, "question_key": new,
             "answer_verified": False, "scrolls": 0, "selected_target": "",
         })
-        logger.info("[QUESTION TX] Answer revealed a new question; footer remains locked.")
+        logger.info(
+            "[QUESTION TX] Screen changed after answer; new answer controls=%s.", locked
+        )
         return
     _REQUIRED_GATE_SESSION["answer_verified"] = True
     logger.info("[QUESTION TX] Same-question answer verified; footer may be attempted once.")

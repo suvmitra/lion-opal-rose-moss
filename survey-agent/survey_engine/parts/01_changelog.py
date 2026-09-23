@@ -5,6 +5,12 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.137": [
+        "Distinguishes Eircode/privacy disclosure pages from unanswered forms, clears stale required-question locks, and permits the real Continue control.",
+        "Ranks exact option labels ahead of substring matches, so Dublin can never resolve to Rest of Leinster (excluding Dublin), and verifies the filled radio on the intended row.",
+        "Maps paragraph glyphs as prose instead of fake choices and excludes non-actionable containers from the interactive screen graph.",
+        "Interprets terminal phrases such as 'Click on Continue button' as navigation commands and refuses to persist them as postal codes or other personal facts.",
+    ],
     "24.0.136": [
         "Keeps failed-action learning attached to the current decision key, preventing an Irish-region failure from being persisted as age.",
         "Includes the v24.0.135 question transaction, safe row targeting, stable question identity and validation-aware verification fixes.",

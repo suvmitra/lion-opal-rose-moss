@@ -1,7 +1,5 @@
 # 06_learning.py — shared engine namespace (do not import directly)
 
-
-
 def update_kb(
     key: str,
     value: Any,
@@ -13,6 +11,9 @@ def update_kb(
 ) -> None:
     ck = canonical_key(key)
     if not ck or value in (None, ""):
+        return
+    if isinstance(value, str) and operator_progression_command(value):
+        logger.error("[KB] Refusing to persist navigation command %r as personal key %s.", value, ck)
         return
     kb = load_kb()
     old = kb.get(ck)

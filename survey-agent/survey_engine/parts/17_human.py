@@ -155,6 +155,15 @@ def capture_human_answer_decision(
     if not matched:
         return None
 
+    if text_entry and operator_progression_command(str(matched[0])):
+        target = navigation_cta_decision(obs)
+        if target:
+            logger.warning("[HUMAN COMMAND] Interpreted %r as navigation, not personal data.", matched[0])
+            target["answer_reason"] = "Operator explicitly requested the visible progression control."
+            target["source_basis"] = "Human terminal navigation command"
+            target["answer_provenance"] = "declared"
+            return target
+
     kb_key = resolve_text_kb_key(question) or observation_kb_key(obs)
     if children_count_question_visible(obs.ocr_text):
         kb_key = "number_of_children"

@@ -20,6 +20,8 @@ def captcha_code_question_visible(ocr_text: str) -> bool:
 
 
 def matrix_grid_visible(obs: Observation) -> bool:
+    if "information_notice_page" in globals() and information_notice_page(obs):
+        return False
     if maxdiff_question_visible(obs.ocr_text):
         return False
     if captcha_code_question_visible(obs.ocr_text) or drag_drop_question_visible(obs.ocr_text):

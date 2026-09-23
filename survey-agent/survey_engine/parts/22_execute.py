@@ -117,10 +117,10 @@ def option_tap_xy(
     """Tap safely inside the full radio/checkbox row beside its visible label."""
     ocr_match = None
     if target_text and obs.screenshot and Path(obs.screenshot).exists():
+        matches: list[dict[str, Any]] = []
         for psm in (11, 6, 3):
-            ocr_match = text_match_node(ocr_line_nodes(Path(obs.screenshot), psm=psm), target_text)
-            if ocr_match:
-                break
+            matches.extend(ocr_line_nodes(Path(obs.screenshot), psm=psm))
+        ocr_match = best_option_text_node(matches, target_text)
     source = ocr_match or node
     if source and in_system_nav(source.get("bounds") or [], obs.image_height):
         logger.warning("[OPTION TAP] Ignoring nav-bar node bounds=%s for %r", source.get("bounds"), target_text)
@@ -133,7 +133,9 @@ def option_tap_xy(
         width = max(1, x2 - x1)
         y = (y1 + y2) // 2
         if width <= max(180, int(obs.image_width * 0.28)):
-            x = max(int(obs.image_width * 0.38), (x1 + x2) // 2)
+            # Label centres are reliable WebView hit targets. A fixed 38% x
+            # missed narrow radio rows and could hit another option.
+            x = (x1 + x2) // 2
         else:
             x = x1 + max(28, int(width * 0.08))
         if y >= int(obs.image_height * 0.88) or y <= int(obs.image_height * 0.20):
@@ -613,6 +615,16 @@ def verify_postcondition(
         return ok
 
     if "screen changed" in condition:
+        raw_target = str(decision.get("target_text") or "")
+        option_target = normalized_option_label(raw_target)
+        option_click = bool(
+            re.search(r"\b(?:radio|option|choice)\b", raw_target.lower())
+            or decision.get("irish_region_radio")
+        )
+        if option_click and option_target:
+            ok = selected_option_visual(after, option_target)
+            logger.info("[VERIFY] Exact option click target=%r selected=%s", option_target, ok)
+            return ok
         if decision.get("maxdiff_done") and before.screen_hash == after.screen_hash:
             _MAXDIFF_SESSION["force_scroll"] = True
             logger.warning("[VERIFY] MaxDiff Continue miss; next cycle scrolls instead of retapping the nav bar.")
@@ -644,10 +656,11 @@ def verify_postcondition(
             wanted = str(decision.get("target_text") or "").strip()
             structured = any(
                 (node.get("checked") or node.get("selected"))
-                and wanted.lower() in node_text(node).lower() for node in after.ui_nodes
+                and normalized_option_label(wanted) == normalized_option_label(node_text(node))
+                for node in after.ui_nodes
             )
-            changed = before.screen_hash != after.screen_hash and not introduced_error
-            if structured or changed:
+            visual = selected_option_visual(after, wanted)
+            if structured or visual:
                 _IRISH_REGION_SESSION.update({"key": required_question_key(after), "verified": True})
                 logger.info("[VERIFY] Irish region %r selected on the same question.", wanted)
                 return True
@@ -743,57 +756,3 @@ def verify_postcondition(
     # Conservative default: action caused a state change.
     return before.screen_hash != after.screen_hash
 
-
-def recover_from_failure(obs: Observation, decision: dict[str, Any], attempt: int) -> Optional[dict[str, Any]]:
-    if attempt >= MAX_ACTION_RETRIES:
-        return None
-
-    action = str(decision.get("action", "")).lower()
-    logger.warning("[RECOVERY] action=%s attempt=%s", action, attempt)
-
-    if action in {"type_text", "type_comment"}:
-        # Re-dump UI and let the next LLM cycle decide; do not guess a field.
-        return {"action": "wait"}
-
-    if start_gate_visible(obs.ocr_text) and action == "click":
-        _START_SESSION["misses"] = int(_START_SESSION.get("misses") or 0) + 1
-        logger.warning("[RECOVERY] Start! miss=%s; retarget pill, do not scroll.", _START_SESSION["misses"])
-        fill = navigation_cta_decision(obs)
-        if fill:
-            fill["press_ms"] = 160
-            return fill
-        return {"action": "wait"}
-
-    if i_agree_consent_visible(obs.ocr_text) and action == "click":
-        if i_agree_already_selected(obs) or decision.get("i_agree_continue"):
-            _I_AGREE_SESSION["continue_misses"] = int(_I_AGREE_SESSION.get("continue_misses") or 0) + 1
-        fill = i_agree_consent_decision(obs)
-        if fill:
-            logger.warning("[RECOVERY] Consent retarget %s %s", fill.get("target_text"), fill.get("target_coords"))
-            return fill
-        return {"action": "wait"}
-
-    if action == "click" and ranking_question_visible(obs.ocr_text):
-        return {"action": "wait", "postcondition": "screen stable for re-observation", "confidence_score": 0.7}
-
-    if action == "click" and likert_slider_question_visible(obs.ocr_text, obs.ui_nodes):
-        used = _LIKERT_SCROLLS.get(question_fingerprint(obs), 0)
-        _LIKERT_SCROLLS[question_fingerprint(obs)] = used + 1
-        return likert_scroll_decision(obs, likert_missing_names(obs), used)
-
-    if action == "click" and (
-        obs.screen_phase in {"survey_landing", "navigation"} or info_page_needs_scroll(obs)
-    ) and not ranking_question_visible(obs.ocr_text) and not likert_slider_question_visible(obs.ocr_text, obs.ui_nodes):
-        scrolled = scroll_until_cta_decision(obs)
-        if scrolled:
-            return scrolled
-        return {"action": "scroll_down", "postcondition": "screen changed", "confidence_score": 0.9}
-
-    if action in {
-        "click", "select_option", "toggle_checkbox", "select_dropdown",
-        "select_matrix_cell", "set_slider", "swipe", "drag", "pick_file",
-        "handle_permission", "open_date_picker", "open_time_picker", "set_picker_value",
-    }:
-        return {"action": "wait"}
-
-    return {"action": "wait"}
