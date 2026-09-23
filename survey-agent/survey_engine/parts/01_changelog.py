@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.141": [
+        "Age self-check no longer calls the image model. Empty box types 44; a typed or visible 44 taps the arrow.",
+        "A missing screenshot is not the current directory, so vision calls cannot fail with Permission denied on '.'.",
+    ],
     "24.0.140": [
         "Gender startup check matches the rule: unchecked Male is tapped, not skipped for Continue.",
         "A checked Male card still uses Continue; a Next-question footer is used only when that label is on screen.",

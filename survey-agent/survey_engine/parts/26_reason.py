@@ -205,11 +205,11 @@ def mindset_regression_self_check() -> bool:
 def think_from_screenshot(obs: Observation, fact: str) -> dict[str, Any]:
     """Ask the image model what is actually on screen before we tap."""
     path = Path(str(obs.screenshot or ""))
+    if not obs.screenshot or not path.is_file():
+        return {}
     key = f"{getattr(obs, 'screen_hash', '')}:{fact[:60]}"
     if key in _THINK_CACHE:
         return _THINK_CACHE[key]
-    if not path.exists():
-        return {}
     if not gemini_configured() and not (salad_configured() and _SALAD_ONLINE):
         logger.warning("[THINK] No image model; using local OCR only.")
         return {}
@@ -256,55 +256,16 @@ def _digits_in_thought(thought: dict[str, Any]) -> str:
 
 
 def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """SEE the box, THEN act. VLM is asked when OCR did not read the number."""
+    """Local age rule first. Do not call the image model when the box state is already known."""
     local = _LOCAL_ADULT_AGE(obs)
     if local is None:
         return None
     wanted = adult_age_payload(obs)
-    digits = adult_age_visible_digits(obs)
-    too_big = bool(re.search(r"4{3,6}", str(digits or "")))
-    if _AGE_SESSION.get("typed") and digits != wanted:
-        _AGE_SESSION["typed"] = False
-    if digits == wanted and not too_big:
-        logger.info("[THINK] SEE box=%s typed=%s THEREFORE purple arrow",
-                    digits or wanted, _AGE_SESSION.get("typed"))
-        coords = adult_age_continue_coords(obs)
-        return {
-            **local,
-            "action": "click", "target_text": "arrow", "target_coords": coords,
-            "coordinate_authoritative": True, "input_payload": None, "kb_key": "age",
-            "answer_reason": "SEE age entered. THEREFORE tap the purple arrow; do not retype.",
-            "dismiss_keyboard": False, "skip_object_grounding": True, "object_kind": "button",
-        }
-    if local.get("action") == "type_text" and str(local.get("input_payload")) == wanted:
-        logger.info("[THINK] SEE box=%r THEREFORE type %s (local)", digits or "empty/wrong", wanted)
+    if local.get("action") == "type_text":
+        local["input_payload"] = wanted
+        local["submit_after_type"] = True
+        local["kb_key"] = "age"
+        logger.info("[THINK] SEE box empty/wrong THEREFORE type %s (local)", wanted)
         return local
-    thought = think_from_screenshot(
-        obs,
-        f"knowledge_base age={wanted}. Read the rounded text box. "
-        "If it is 4444 or over 99, replace with 44, then Continue.",
-    )
-    seen = _digits_in_thought(thought) or digits
-    logger.info("[THINK] SEE local=%r vlm=%r wanted=%s", digits, seen, wanted)
-    if seen == wanted and thought.get("action") == "click":
-        coords = thought.get("target_coords") if isinstance(thought.get("target_coords"), list) else adult_age_continue_coords(obs)
-        return {
-            **local, "action": "click", "target_text": "arrow",
-            "target_coords": coords or adult_age_continue_coords(obs),
-            "coordinate_authoritative": True, "kb_key": "age",
-            "answer_reason": f"VLM SEE {thought.get('see')}. THEREFORE purple arrow.",
-            "dismiss_keyboard": False, "skip_object_grounding": True,
-        }
-    coords = adult_age_field_coords(obs)
-    if isinstance(thought.get("target_coords"), list) and thought.get("action") == "type_text":
-        coords = thought["target_coords"]
-    return {
-        "screen_state": "survey_question", "action": "type_text",
-        "target_text": "age input field", "target_coords": coords,
-        "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
-        "confidence_score": 0.99, "postcondition": f"field contains {wanted}",
-        "answer_reason": (
-            f"SEE box={seen or 'unread'}. THEREFORE replace with {wanted}. "
-            f"{thought.get('therefore') or ''}"
-        ).strip(),
-    }
+    logger.info("[THINK] SEE age ready THEREFORE %s", local.get("target_text") or "arrow")
+    return local
