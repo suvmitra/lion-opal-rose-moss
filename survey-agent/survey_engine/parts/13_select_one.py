@@ -469,15 +469,24 @@ def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
             for n in obs.ui_nodes
         )
     if selected:
-        found = continue_button_on_screen(obs) if "continue_button_on_screen" in globals() else None
-        coords = list(found[0]) if found else [740, 900]
-        logger.info("[GENDER] %s selected; Next at %s", intended, coords)
+        blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
+        if "next question" in blob:
+            found = continue_button_on_screen(obs) if "continue_button_on_screen" in globals() else None
+            coords = list(found[0]) if found else [740, 890]
+            text = "Next question"
+        else:
+            mid = gender_continue_milli(obs)
+            coords = list(mid) if mid else [500, 455]
+            if int(coords[1]) > 620:
+                coords = [500, 455]
+            text = "Continue"
+        logger.info("[GENDER] %s selected; %s at %s", intended, text, coords)
         return {
-            "screen_state": "survey_question", "action": "click", "target_text": "Next question",
+            "screen_state": "survey_question", "action": "click", "target_text": text,
             "target_coords": coords, "coordinate_authoritative": True, "target_element_id": None,
             "kb_key": "gender", "confidence_score": 0.97, "postcondition": "screen changed",
             "selection_complete": True, "skip_object_grounding": True,
-            "answer_reason": f"{intended} is the checked row; tap Next question.",
+            "answer_reason": f"{intended} is the checked row; tap {text}.",
         }
     coords = gender_male_milli(obs)
     logger.info("[GENDER] Tap %s at %s; do not accept Female or Other.", intended, coords)

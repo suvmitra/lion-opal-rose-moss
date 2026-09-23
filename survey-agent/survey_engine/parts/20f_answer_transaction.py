@@ -95,11 +95,19 @@ def visible_radio_choice_question(obs: Observation) -> bool:
 
 
 def actual_answer_selected(obs: Observation, target: str = "") -> bool:
+    """Checked row or filled radio only. Session memory is not a selection."""
     if target and selected_option_visual(obs, target):
         return True
-    if selected_option_labels(obs):
-        return True
-    return bool(answer_already_selected(obs) or teal_radio_filled(obs))
+    needle = str(target or "").strip().lower()
+    for node in obs.ui_nodes or []:
+        if not (node.get("checked") or node.get("selected")):
+            continue
+        label = node_text(node).strip().lower()
+        if needle and label != needle:
+            continue
+        if label or not needle:
+            return True
+    return bool(teal_radio_filled(obs))
 
 
 def question_answer_controls_visible(obs: Observation) -> bool:
@@ -173,7 +181,11 @@ def prefer_progression_over_repeat(
         action = str(decision.get("action") or "").lower()
         target = str(decision.get("target_text") or "").strip()
         if action in {"click", "select_option", "toggle_checkbox"} and target:
-            if not is_progression_cta(target) and not actual_answer_selected(obs, target):
+            if (
+                not is_progression_cta(target)
+                and not is_forbidden_progression_target(target)
+                and not actual_answer_selected(obs, target)
+            ):
                 return decision
     return _BASE_PREFER_PROGRESSION_OVER_REPEAT(decision, obs, stagnation_count)
 

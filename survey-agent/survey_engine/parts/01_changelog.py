@@ -5,6 +5,11 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.140": [
+        "Gender startup check matches the rule: unchecked Male is tapped, not skipped for Continue.",
+        "A checked Male card still uses Continue; a Next-question footer is used only when that label is on screen.",
+        "Privacy and Back taps are still rewritten. An unchecked radio is not.",
+    ],
     "24.0.139": [
         "What age are you? is a text field: type knowledge_base age 44. Next question is never an answer.",
         "Stored gender Male is tapped on its own row. Female or Other cannot verify a Male answer.",

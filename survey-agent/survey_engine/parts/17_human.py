@@ -442,11 +442,9 @@ def gender_continue_regression_self_check() -> bool:
         and second.get("target_element_id") != 23
         and "privacy" not in str(second.get("target_text") or "").lower()
         and "back" not in cta_core(str(second.get("target_text") or ""))
-        and repaired.get("action") == "click"
-        and is_progression_cta(str(repaired.get("target_text") or ""))
-        and learned_click.get("action") == "click"
-        and is_progression_cta(str(learned_click.get("target_text") or ""))
-        and "male" not in str(learned_click.get("target_text") or "").lower()
+        and repaired.get("target_text") == "Male"
+        and learned_click.get("action") in {"click", "select_option"}
+        and str(learned_click.get("target_text") or "").lower() == "male"
         and privacy.get("action") == "click"
         and "privacy" not in str(privacy.get("target_text") or "").lower()
         and next_decision.get("target_element_id") == 41
