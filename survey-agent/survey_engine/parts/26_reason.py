@@ -161,6 +161,11 @@ def critique_decision(obs: Observation, decision: dict[str, Any]) -> dict[str, A
             return fill
 
     if action in {"select_option", "click"} and not out.get("input_payload") and looks_like_single_choice(obs.ocr_text):
+        if is_progression_cta(text) and actual_answer_selected(obs):
+            out["input_payload"] = "selected"
+            out["county_next"] = True
+            logger.info("[MINDSET] A choice is already selected; keep Next question.")
+            return out
         if is_progression_cta(text):
             logger.info("[MINDSET] honesty: Continue with empty payload on a radio page; fill first")
             fill = single_choice_radio_decision(obs) if "single_choice_radio_decision" in globals() else None

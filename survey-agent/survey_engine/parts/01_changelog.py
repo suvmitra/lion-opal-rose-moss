@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.146": [
+        "A filled radio is done. Next question is tapped. The instruction sentence is not an answer.",
+        "An empty employment list uses the knowledge-base status. Full-time does not match part-time.",
+    ],
     "24.0.145": [
         "Dublin already in the closed county combo taps Next question. It does not open the list again.",
         "An open list on a chosen county is closed first. Next is not used as the dismiss tap.",

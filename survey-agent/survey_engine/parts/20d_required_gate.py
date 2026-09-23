@@ -284,6 +284,13 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
         return out
     observe_required_gate(obs)
     action = str(decision.get("action") or "").lower()
+    if looks_like_single_choice(obs.ocr_text) and (
+        required_is_progression(decision) or action == "focus_select_continue"
+    ):
+        chosen = single_choice_radio_decision(obs)
+        if chosen and str(chosen.get("action") or "") == "click" and is_progression_cta(str(chosen.get("target_text") or "")):
+            logger.info("[REQUIRED GATE] A choice is already selected; keep Next question.")
+            return chosen
     if action in {"select_then_continue", "focus_select_continue"}:
         register_answer_transaction(obs, str(decision.get("target_text") or ""))
         logger.warning("[QUESTION TX] Split compound %s into answer-only selection.", action)

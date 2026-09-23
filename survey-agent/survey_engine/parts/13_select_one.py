@@ -307,6 +307,107 @@ def gray_radio_row_milli(obs: Observation) -> list[list[int]]:
         return []
 
 
+def _real_choice_labels(obs: Observation) -> list[str]:
+    """Radio rows only. Instruction sentences are not answers."""
+    labels: list[str] = []
+    for lab in option_labels_from_ocr(obs):
+        low = lab.lower().strip()
+        if is_progression_cta(lab) or is_banner_or_instruction_label(lab):
+            continue
+        if any(tok in low for tok in (
+            "please", "e.g", "if more", "applicable", "for example", "most of your",
+        )):
+            continue
+        if low not in {item.lower() for item in labels}:
+            labels.append(lab)
+    return labels
+
+
+def _stored_choice_label(obs: Observation, labels: list[str]) -> Optional[str]:
+    """Map a knowledge-base fact onto a visible row. Full-time must not hit part-time."""
+    key = observation_kb_key(obs) or ""
+    stored = str(kb_or_persona_value(obs, key) or "").strip().lower()
+    if not stored or not labels:
+        return None
+    wants_full = "full" in stored and "part" not in stored
+    wants_part = "part" in stored
+    for lab in labels:
+        low = lab.lower()
+        if wants_full and "full" in low and "part" not in low:
+            return lab
+        if wants_part and "part" in low:
+            return lab
+        if "self" in stored and "self" in low:
+            return lab
+        if "unemploy" in stored and "unemploy" in low:
+            return lab
+        if "student" in stored and low.startswith("student"):
+            return lab
+        if "home" in stored or "family" in stored:
+            if "home" in low or "family" in low:
+                return lab
+    for lab in labels:
+        low = lab.lower()
+        if stored in low or low in stored:
+            return lab
+    return None
+
+
+def _filled_choice_label(obs: Observation, labels: list[str]) -> Optional[str]:
+    for lab in labels:
+        try:
+            if selected_option_visual(obs, lab):
+                return lab
+        except Exception:
+            continue
+    path = str(obs.screenshot or "")
+    if not path or not Path(path).exists():
+        return None
+    image = cv2.imread(path)
+    if image is None:
+        return None
+    height, width = image.shape[:2]
+    blue = cv2.inRange(cv2.cvtColor(image, cv2.COLOR_BGR2HSV), (88, 55, 35), (138, 255, 255))
+    count, _, stats, centers = cv2.connectedComponentsWithStats(blue, 8)
+    for index in range(1, count):
+        bw, bh, area = int(stats[index][2]), int(stats[index][3]), int(stats[index][4])
+        cx, cy = centers[index]
+        if area < 120 or cx > width * 0.24 or not (0.30 * height <= cy <= 0.82 * height):
+            continue
+        if 0.55 <= bw / max(1, bh) <= 1.8 and 8 <= bw <= int(width * 0.12):
+            logger.info("[SELECT ONE] Filled radio at milli=%s", [int(cx * 1000 / width), int(cy * 1000 / height)])
+            return "selected"
+    return None
+
+
+def _next_after_choice(obs: Observation, chosen: str) -> dict[str, Any]:
+    found = None
+    try:
+        found = continue_button_on_screen(obs)
+    except Exception:
+        found = None
+    coords = list(found[0]) if found else [740, 896]
+    if int(coords[0]) < 560 or int(coords[1]) < 800:
+        coords = [740, 896]
+    logger.info("[SELECT ONE] %r already selected; Next question at %s", chosen, coords)
+    return {
+        "screen_state": "survey_question",
+        "question_text": current_question_text(obs),
+        "answer_reason": f"{chosen} is already selected. Tap Next question.",
+        "action": "click",
+        "target_text": "Next question",
+        "target_coords": coords,
+        "coordinate_authoritative": True,
+        "skip_object_grounding": True,
+        "county_next": True,
+        "input_payload": chosen,
+        "kb_key": observation_kb_key(obs),
+        "confidence_score": 0.97,
+        "postcondition": "screen changed",
+        "selection_complete": True,
+    }
+
+
 def select_one_keyboard_decision(obs: Observation, pick: str) -> dict[str, Any]:
     return {
         "screen_state": "survey_question",
@@ -347,17 +448,21 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
         elif "don't buy" in blob or "do not buy" in blob:
             pick = "Don't buy any bread"
         else:
-            labels = [
-                lab for lab in option_labels_from_ocr(obs)
-                if not is_progression_cta(lab) and "next question" not in lab.lower()
-            ]
-            pick = pick_option_assumption(labels) or ""
+            labels = _real_choice_labels(obs)
+            filled = _filled_choice_label(obs, labels)
+            if filled:
+                return _next_after_choice(obs, filled)
+            pick = _stored_choice_label(obs, labels) or pick_option_assumption(labels) or ""
             if not pick:
                 return None
     key = question_fingerprint(obs)
     if _SELECT_ONE_SESSION.get("key") != key:
         _SELECT_ONE_SESSION.update({"key": key, "taps": 0, "misses": 0, "verified": False})
     unanswered = "please select an answer" in blob
+    labels = _real_choice_labels(obs)
+    filled = _filled_choice_label(obs, labels)
+    if filled:
+        return _next_after_choice(obs, filled)
     if _SELECT_ONE_SESSION.get("verified") or ((not unanswered) and select_all_lime_band_count(obs) >= 1):
         found = maxdiff_continue_coords(obs) or continue_button_on_screen(obs)
         coords = found[0] if found else [500, 778]
