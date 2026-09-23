@@ -584,6 +584,9 @@ def verify_postcondition(
 ) -> bool:
     condition = str(decision.get("postcondition") or "").lower()
 
+    if decision.get("required_gate_progression"):
+        return required_progression_verified(before, after)
+
     if "cookie overlay dismissed" in condition:
         return not cookie_consent_visible(after.ocr_text, after.ui_nodes)
 

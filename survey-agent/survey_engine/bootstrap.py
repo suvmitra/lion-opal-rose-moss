@@ -35,6 +35,7 @@ PART_FILES: tuple[str, ...] = (
     "20a_form_controls.py",
     "20b_screen_objects.py",
     "20c_question_flow.py",
+    "20d_required_gate.py",
     "21_open_text.py",
     "22_execute.py",
     "23_checks_c.py",

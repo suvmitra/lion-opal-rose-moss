@@ -174,6 +174,8 @@ def improve_survey_intelligence(
 
 def lesson_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Replay a stored lesson or a seeded router for the visible question."""
+    if "required_gate_locked" in globals() and required_gate_locked(obs):
+        return None
     blob = re.sub(r"\s+", " ", str(obs.ocr_text or "").lower())
     lessons: dict[str, Any] = dict(DEFAULT_SURVEY_LESSONS)
     stored = (obs.kb or {}).get("survey_lessons")
@@ -212,6 +214,8 @@ def lesson_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
 
 def learned_action_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Reuse a verified semantic-screen action only while its confidence is high."""
+    if "required_gate_locked" in globals() and required_gate_locked(obs):
+        return None
     if obs.screen_phase != "survey_question":
         return None
     if gender_choice_screen(obs):
@@ -649,6 +653,8 @@ def rl_action_id(decision: dict[str, Any]) -> str:
 
 def rl_policy_decision(obs: Observation) -> Optional[dict[str, Any]]:
     """Replay the highest-Q action for this widget class / stem."""
+    if "required_gate_locked" in globals() and required_gate_locked(obs):
+        return None
     policy = _load_rl_policy()
     if not policy:
         return None

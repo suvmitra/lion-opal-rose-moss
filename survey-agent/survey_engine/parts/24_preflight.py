@@ -207,6 +207,8 @@ def preflight() -> bool:
         return False
     if not question_flow_regression_self_check():
         return False
+    if not required_gate_regression_self_check():
+        return False
     if not navigation_regression_self_check():
         return False
     if not consent_and_embedded_cta_regression_self_check():

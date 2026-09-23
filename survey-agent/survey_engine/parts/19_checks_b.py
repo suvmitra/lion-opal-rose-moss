@@ -143,21 +143,25 @@ def rl_generalization_regression_self_check() -> bool:
         ocr_text=ocr, ui_nodes=[], kb={}, persona={},
         screen_phase="navigation", survey_tiles=[],
     )
+    reset_required_gate()
     klass = generalized_widget_class(obs)
     gen = generalized_unseen_router(obs)
     update_rl_policy(obs, gen or {}, True, after=obs)
     replay = rl_policy_decision(obs)
+    guarded = required_field_action_guard(obs, gen or {})
     payload = str((gen or {}).get("input_payload") or "")
     passed = bool(
         klass == "select_one"
         and gen and gen.get("action") in {"select_option", "select_then_continue"}
         and payload
         and "buy another" in payload.lower()
-        and replay and replay.get("action") in {"select_option", "click", "select_then_continue"}
-        and replay.get("input_payload")
+        and replay is None
+        and guarded.get("action") == "select_option"
+        and not guarded.get("continue_coords")
     )
+    reset_required_gate()
     if passed:
-        logger.info("[SELF-CHECK] Unseen Select-one generalizes and RL replays a payload.")
+        logger.info("[SELF-CHECK] Required Select-one suppresses RL and splits answer from Continue.")
     else:
         logger.error("[SELF-CHECK] RL/generalize failed class=%s gen=%s replay=%s", klass, gen, replay)
     return passed

@@ -81,6 +81,8 @@ def page_flow_prompt(obs: Observation) -> str:
 
 def mark_verified_answer_flow(before: Observation, after: Observation) -> bool:
     """Return True only when the same answered item still needs page progression."""
+    if "mark_required_gate_answer" in globals():
+        mark_required_gate_answer(before, after)
     before_sig = active_question_signature(before)
     after_sig = active_question_signature(after)
     _QUESTION_FLOW_SESSION.update({"answered_signature": before_sig, "settle_cycles": 0})

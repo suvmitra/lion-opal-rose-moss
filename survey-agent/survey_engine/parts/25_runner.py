@@ -502,6 +502,7 @@ def main() -> int:
         decision = inspect_decision(obs, decision)
         if i_agree_consent_visible(obs.ocr_text):
             decision = i_agree_consent_decision(obs, decision)
+        decision = required_field_action_guard(obs, decision)
         if decision.get("screen_state") == "dashboard":
             # A phase-repaired home action is deterministic routing, not a
             # learned survey answer. Never store it in learned_screen_actions.

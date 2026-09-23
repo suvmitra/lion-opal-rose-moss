@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.134": [
+        "Adds a non-bypassable required-field gate: Arrow, Continue, Next and Submit stay locked until the active answer is verified.",
+        "Latches required validation across scrolling, maps complete answer cards, and scrolls the form body when options are clipped below the fold.",
+        "Suppresses stale lesson, learned-screen and RL navigation while a required answer is outstanding; a focused vision pass chooses the grounded answer instead.",
+        "Splits select-and-continue compound actions into answer then validation then footer, preventing premature page submission.",
+        "Verifies required-page progression by question identity, so a mere viewport/hash change cannot earn positive RL reward.",
+    ],
     "24.0.133": [
         "Adds page-series planning: one verified option is not page completion when the form auto-reveals another required subquestion.",
         "Tracks topic-aware active-question signatures, waits for JavaScript transitions, and unlocks the fixed footer only after the series settles.",
