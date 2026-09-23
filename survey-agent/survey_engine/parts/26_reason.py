@@ -263,7 +263,9 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
     wanted = adult_age_payload(obs)
     digits = adult_age_visible_digits(obs)
     too_big = bool(re.search(r"4{3,6}", str(digits or "")))
-    if (digits == wanted or _AGE_SESSION.get("typed")) and not too_big:
+    if _AGE_SESSION.get("typed") and digits != wanted:
+        _AGE_SESSION["typed"] = False
+    if digits == wanted and not too_big:
         logger.info("[THINK] SEE box=%s typed=%s THEREFORE purple arrow",
                     digits or wanted, _AGE_SESSION.get("typed"))
         coords = adult_age_continue_coords(obs)

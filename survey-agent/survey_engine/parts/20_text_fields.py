@@ -524,7 +524,10 @@ def adult_age_question_visible(ocr_text: str) -> bool:
         "state their ages", "their ages", "child's age", "age of your child",
     )):
         return False
-    return bool(re.search(r"what is your age|how old are you", blob))
+    return bool(re.search(
+        r"what is your age|what age are you|how old are you|enter a whole number",
+        blob,
+    )) and "their ages" not in blob and "child" not in blob
 
 
 def adult_age_payload(obs: Observation) -> str:

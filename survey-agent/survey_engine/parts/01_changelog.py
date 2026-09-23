@@ -5,6 +5,11 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.139": [
+        "What age are you? is a text field: type knowledge_base age 44. Next question is never an answer.",
+        "Stored gender Male is tapped on its own row. Female or Other cannot verify a Male answer.",
+        "A screen-hash change on the same question is not progression, and Male is not matched inside Female.",
+    ],
     "24.0.138": [
         "Treats every newly visible radio question as a fresh answer transaction and blocks Continue/Next until the selected state is visually verified.",
         "Prevents stale RL, learned actions and answer-attempt history from counting as a completed answer on the current screen.",

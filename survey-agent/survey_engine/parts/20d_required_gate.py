@@ -217,6 +217,30 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
     """Final safety barrier: an unanswered required field always owns the next action."""
     if not decision:
         return decision
+    target_now = str(decision.get("target_text") or decision.get("input_payload") or "")
+    if adult_age_question_visible(obs.ocr_text) and (
+        is_progression_cta(target_now) or "next question" in target_now.lower()
+        or str(decision.get("action") or "") in {"click", "select_option"}
+    ):
+        if not adult_age_in_field(obs, adult_age_payload(obs)):
+            logger.warning("[REQUIRED GATE] Age field empty; refusing %r.", target_now)
+            return {
+                "screen_state": "survey_question", "action": "type_text",
+                "target_text": "age input field", "target_coords": adult_age_field_coords(obs),
+                "coordinate_authoritative": True, "input_payload": adult_age_payload(obs),
+                "kb_key": "age", "kb_write": False, "confidence_score": 0.99,
+                "postcondition": "field contains " + adult_age_payload(obs),
+                "skip_object_grounding": True,
+                "answer_reason": "Control type is a text box. Type the stored age before Next.",
+            }
+    if gender_choice_screen(obs) and (
+        ("next question" in target_now.lower() and str(decision.get("action") or "") == "select_option")
+        or str(decision.get("target_text") or "").lower() in {"female", "other"}
+    ):
+        fill = gender_screen_decision(obs)
+        if fill:
+            logger.warning("[REQUIRED GATE] Gender stays %s, not %r.", fill.get("target_text"), target_now)
+            return fill
     if information_notice_page(obs) and required_is_progression(decision):
         reset_required_gate()
         out = dict(decision)

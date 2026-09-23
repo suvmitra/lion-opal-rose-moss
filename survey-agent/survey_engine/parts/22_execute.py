@@ -423,7 +423,10 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             if action in {"select_option", "toggle_checkbox"} and not decision.get("skip_object_grounding")
             else None
         )
-        if option_xy and action in {"select_option", "toggle_checkbox"}:
+        if option_xy and action in {"select_option", "toggle_checkbox"} and not (
+            decision.get("coordinate_authoritative") is True
+            and isinstance(coords, list) and len(coords) == 2
+        ):
             x, y = option_xy
             logger.info("[ROW TAP] native=(%s,%s) text=%r", x, y, target_text)
         elif (
@@ -655,6 +658,18 @@ def verify_postcondition(
         return opened
 
     if "selected option" in condition:
+        wanted_exact = str(decision.get("target_text") or decision.get("input_payload") or "").strip()
+        if str(decision.get("kb_key") or "") == "gender" or (
+            gender_choice_screen(before) and str(decision.get("action") or "") == "select_option"
+        ):
+            if "next" in wanted_exact.lower() or wanted_exact.lower() in {"female", "other"}:
+                logger.warning("[VERIFY] Refusing %r as the stored gender.", wanted_exact)
+                return False
+            if not selected_option_visual(after, wanted_exact or "Male"):
+                logger.warning("[VERIFY] %r is not the checked gender row.", wanted_exact)
+                return False
+            logger.info("[VERIFY] Gender row %r is selected.", wanted_exact)
+            return True
         if decision.get("irish_region_radio") or irish_region_radio_question_visible(before.ocr_text):
             wanted = str(decision.get("target_text") or "").strip()
             structured = any(

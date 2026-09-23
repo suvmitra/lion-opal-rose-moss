@@ -205,6 +205,8 @@ def preflight() -> bool:
         return False
     if not fresh_question_transaction_regression_self_check():
         return False
+    if not age_gender_invariant_regression_self_check():
+        return False
     if not notice_and_exact_option_regression_self_check():
         return False
     if not screen_object_map_regression_self_check():

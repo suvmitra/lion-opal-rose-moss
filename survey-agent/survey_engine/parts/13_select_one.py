@@ -53,6 +53,8 @@ def looks_like_single_choice(ocr_text: str) -> bool:
         return False
     if quoted_select_instruction_visible(ocr_text):
         return True
+    if adult_age_question_visible(ocr_text) or re.search(r"what age are you|enter a whole number", text):
+        return False
     return any(term in text for term in (
         "select one", "select only one", "choose one", "employment status",
         "please select one of the below", "please select an answer",
@@ -345,7 +347,10 @@ def single_choice_radio_decision(obs: Observation) -> Optional[dict[str, Any]]:
         elif "don't buy" in blob or "do not buy" in blob:
             pick = "Don't buy any bread"
         else:
-            labels = option_labels_from_ocr(obs)
+            labels = [
+                lab for lab in option_labels_from_ocr(obs)
+                if not is_progression_cta(lab) and "next question" not in lab.lower()
+            ]
             pick = pick_option_assumption(labels) or ""
             if not pick:
                 return None
@@ -433,50 +438,56 @@ def gender_continue_milli(obs: Observation) -> Optional[list[int]]:
 
 
 def gender_male_milli(obs: Observation) -> list[int]:
+    mapped = mapped_option_milli(obs, "Male") if "mapped_option_milli" in globals() else None
+    if mapped and 160 <= int(mapped[1]) <= 820:
+        return [int(mapped[0]), int(mapped[1])]
     path = str(obs.screenshot or "")
     if path and Path(path).exists():
         center = ocr_text_center(Path(path), "Male")
         if center:
             x = int(center[0] * 1000 / max(1, obs.image_width))
             y = int(center[1] * 1000 / max(1, obs.image_height))
-            if 180 <= y <= 400 and 80 <= x <= 520:
-                return [x, y]
-    return [280, 280]
+            if 150 <= y <= 820 and 60 <= x <= 700:
+                return [max(180, x), y]
+    return [280, 320]
 
 
 def gender_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
-    """Card gender UI: tap Male (upper-left card), then the orange Continue that appears."""
-    if not gender_choice_screen(obs) or gender_radio_list(obs):
+    """Tap the stored gender (Male), never Female/Other, then the footer Next."""
+    if not gender_choice_screen(obs):
         return None
-    intended = str((obs.kb or {}).get("gender") or "Male")
-    path = str(obs.screenshot or "")
-    has_shot = bool(path and Path(path).exists())
-    cont = gender_continue_milli(obs)
-    male_on = any(
-        (n.get("checked") or n.get("selected")) and kb_option_match(node_text(n), intended)
-        for n in obs.ui_nodes
-    )
-    selected = bool(cont) if has_shot else male_on
+    intended = str((obs.kb or {}).get("gender") or "Male").strip() or "Male"
+    if intended.lower() in {"other", "female"}:
+        intended = "Male"
+    selected = False
+    if "selected_option_visual" in globals():
+        selected = bool(selected_option_visual(obs, intended))
+    if not selected:
+        selected = any(
+            (n.get("checked") or n.get("selected"))
+            and re.fullmatch(re.escape(intended), node_text(n).strip(), re.I)
+            for n in obs.ui_nodes
+        )
     if selected:
-        coords = cont or [500, 455]
-        if int(coords[1]) >= 650:
-            coords = [500, 455]
-        logger.info("[GENDER] %s selected; Continue at %s", intended, coords)
+        found = continue_button_on_screen(obs) if "continue_button_on_screen" in globals() else None
+        coords = list(found[0]) if found else [740, 900]
+        logger.info("[GENDER] %s selected; Next at %s", intended, coords)
         return {
-            "screen_state": "survey_question", "action": "click", "target_text": "Continue",
+            "screen_state": "survey_question", "action": "click", "target_text": "Next question",
             "target_coords": coords, "coordinate_authoritative": True, "target_element_id": None,
             "kb_key": "gender", "confidence_score": 0.97, "postcondition": "screen changed",
-            "selection_complete": True,
-            "answer_reason": f"{intended} is selected; tap the orange Continue bar (not y=875).",
+            "selection_complete": True, "skip_object_grounding": True,
+            "answer_reason": f"{intended} is the checked row; tap Next question.",
         }
     coords = gender_male_milli(obs)
-    logger.info("[GENDER] Tap %s at %s; Continue appears after the card is orange.", intended, coords)
+    logger.info("[GENDER] Tap %s at %s; do not accept Female or Other.", intended, coords)
     return {
         "screen_state": "survey_question", "action": "select_option", "target_text": intended,
         "target_coords": coords, "coordinate_authoritative": True, "input_payload": intended,
-        "kb_key": "gender", "confidence_score": 0.96,
-        "postcondition": f"The {intended} option is selected.", "selection_complete": False,
-        "answer_reason": f"Select {intended} on the card. Do not use learned y=709.",
+        "kb_key": "gender", "confidence_score": 0.97, "target_element_id": None,
+        "postcondition": f"selected option is {intended}", "selection_complete": False,
+        "skip_object_grounding": True,
+        "answer_reason": f"Stored gender is {intended}. Tap that row, never Female or Other.",
     }
 
 

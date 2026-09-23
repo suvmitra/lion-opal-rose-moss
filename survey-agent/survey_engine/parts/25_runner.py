@@ -143,7 +143,7 @@ def main() -> int:
             obs.screen_phase = "survey_question"
             decision = i_agree_consent_decision(obs)
             decision_source = "router-i-agree"
-        elif gender_choice_screen(obs) and not gender_radio_list(obs):
+        elif gender_choice_screen(obs):
             obs.screen_phase = "survey_question"
             decision = gender_screen_decision(obs)
             decision_source = "router-gender"

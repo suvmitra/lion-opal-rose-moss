@@ -42,7 +42,7 @@ def text_match_node(nodes: list[dict[str, Any]], target: str) -> Optional[dict[s
             continue
         if combined == target:
             exact.append(n)
-        elif target in combined or combined in target:
+        elif re.search(rf"(?<!\w){re.escape(target)}(?!\w)", combined):
             partial.append(n)
     def node_area(node: dict[str, Any]) -> int:
         bounds = node.get("bounds") or []
