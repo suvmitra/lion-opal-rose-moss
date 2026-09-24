@@ -5,6 +5,10 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.147": [
+        "An empty comment box is typed from Gemini. The question sentence is not the answer.",
+        "Open-text pages are not scrolled as if radio options were missing, and Submit waits until the box is filled.",
+    ],
     "24.0.146": [
         "A filled radio is done. Next question is tapped. The instruction sentence is not an answer.",
         "An empty employment list uses the knowledge-base status. Full-time does not match part-time.",

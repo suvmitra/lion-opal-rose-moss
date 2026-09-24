@@ -121,6 +121,8 @@ def required_full_answer_cards(obs: Observation) -> list[dict[str, Any]]:
 
 
 def required_options_need_scroll(obs: Observation) -> bool:
+    if open_text_question_visible(obs.ocr_text):
+        return False
     if len(required_full_answer_cards(obs)) >= 2:
         return False
     checkable = [node for node in obs.ui_nodes if node.get("checkable") and node.get("enabled", True)]
@@ -326,6 +328,11 @@ def required_field_action_guard(obs: Observation, decision: dict[str, Any]) -> d
             inferred["required_gate_answer"] = True
             logger.warning("[REQUIRED GATE] Replaced footer with grounded answer %r.", inferred.get("target_text"))
             return inferred
+        if open_text_question_visible(obs.ocr_text):
+            typed = open_text_answer_decision(obs)
+            if typed:
+                logger.info("[REQUIRED GATE] Open comment is empty; type the answer, do not ask the terminal.")
+                return typed
         return {
             "screen_state": "survey_question", "action": "request_human",
             "target_text": None, "confidence_score": 0.99,

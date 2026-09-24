@@ -165,6 +165,8 @@ def open_text_is_chrome_line(line: str) -> bool:
         "imagine you", "power to change", "what issue", "steps would you",
         "hello", "submit", "please fill", "fill in this", "q w e r", "honeyboard",
         "change one thing", "about the world",
+        "if you won", "million dollar", "would buy", "first thing",
+        "what would be", "language:", "english",
     )
     if any(token in lowered for token in skip):
         return True
@@ -203,6 +205,8 @@ def open_text_screen_key(obs: Observation) -> str:
         return "bread_brands_aware"
     if "change one thing" in blob or "what issue would you" in blob:
         return "world_change_issue"
+    if "million" in blob or "first thing you would buy" in blob or "would you buy" in blob:
+        return "million_dollar_purchase"
     return question_fingerprint(obs)
 
 
@@ -215,25 +219,25 @@ def open_text_is_garbage(text: str) -> bool:
 
 
 def open_text_field_empty(obs: Observation) -> bool:
-    """Placeholder or red 'fill in this field' means the box has no answer."""
+    """Placeholder means empty. A remembered sentence counts only when the placeholder is gone."""
     if not open_text_question_visible(obs.ocr_text):
         return False
-    if open_text_empty_banner(obs):
+    if open_text_empty_banner(obs) or open_text_placeholder_visible(obs):
         return True
     current = open_text_current_value(obs)
-    real = bool(current.strip()) and not open_text_is_chrome_line(current)
-    if open_text_placeholder_visible(obs) and (
-        not real or open_text_word_count(current) < min_words_required(obs.ocr_text)
-    ):
-        return True
-    if real and current.lower() not in current_question_text(obs).lower():
-        return False
-    typed = _OPEN_TEXT_TYPED.get(open_text_screen_key(obs)) or _OPEN_TEXT_TYPED.get(
-        question_fingerprint(obs)
+    typed = str(
+        _OPEN_TEXT_TYPED.get(open_text_screen_key(obs))
+        or _OPEN_TEXT_TYPED.get(question_fingerprint(obs))
+        or ""
     )
-    if typed and not open_text_is_garbage(str(typed)) and not open_text_placeholder_visible(obs):
+    if typed and not open_text_is_garbage(typed):
         return False
-    return not real
+    if not current.strip() or open_text_is_chrome_line(current):
+        return True
+    question = current_question_text(obs).lower().strip()
+    if question and current.lower().strip() == question:
+        return True
+    return False
 
 
 def open_text_clear_false_typed(obs: Observation) -> None:
