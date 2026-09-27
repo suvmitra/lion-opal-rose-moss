@@ -5,6 +5,12 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.148": [
+        "Adds one signature-bound interaction contract after every router: answer controls must be visibly complete before Continue, Next, Submit or an arrow can run.",
+        "A dynamically revealed question clears prior verification immediately; the new question owns the next action instead of inheriting stale completion state.",
+        "Post-action verification refreshes accessibility nodes by default, so newly revealed radios, dropdowns and text boxes are detected from the current screen.",
+        "The multimodal planner receives a normalized screen contract and the preflight suite checks stale-Next rejection on a new unanswered question.",
+    ],
     "24.0.147": [
         "An empty comment box is typed from Gemini. The question sentence is not the answer.",
         "Open-text pages are not scrolled as if radio options were missing, and Submit waits until the box is filled.",

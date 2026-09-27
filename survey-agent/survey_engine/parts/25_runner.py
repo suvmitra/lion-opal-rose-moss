@@ -18,7 +18,7 @@ def observe(
     else:
         device_w, device_h = get_device_size()
     text = ocr(path)
-    if light and previous is not None:
+    if light and previous is not None and not VERIFY_FRESH_UI:
         nodes = previous.ui_nodes
     else:
         nodes = dump_ui_nodes()
@@ -191,6 +191,7 @@ def main() -> int:
         if i_agree_consent_visible(obs.ocr_text):
             decision = i_agree_consent_decision(obs, decision)
         decision = required_field_action_guard(obs, decision)
+        decision = enforce_interaction_contract(obs, decision)
         if decision.get("screen_state") == "dashboard":
             # A phase-repaired home action is deterministic routing, not a
             # learned survey answer. Never store it in learned_screen_actions.
@@ -415,6 +416,7 @@ def main() -> int:
 
         verified = verify_postcondition(decision, obs, after)
         note_six_step_result(obs, after, decision, verified)
+        note_interaction_contract_result(obs, after, decision, verified)
         log_action({
             **action_log_row,
             "post_action_phase": after.screen_phase,

@@ -10,7 +10,7 @@ class _SkipVlm(Exception):
 _SIX_STEP = {"signature": "", "verified": False}
 
 
-def six_step_ask() -> str:
+def six_step_ask(obs: Optional[Observation] = None) -> str:
     return (
         "SIX STEPS. Reply with one JSON action only.\n"
         "1. Name the unanswered control: text box, radio, checkbox, dropdown, rank, or slider.\n"
@@ -19,6 +19,7 @@ def six_step_ask() -> str:
         "4. target_coords are milli 0-1000 from the control map. Do not reuse a stale node id.\n"
         "5. Do not tap Continue, Next, Submit, or an arrow until that answer is visible.\n"
         "6. A hash change while the same question remains is not progress.\n"
+        + (("SCREEN_CONTRACT=" + interaction_contract_prompt(obs) + "\n") if obs is not None else "")
     )
 
 
@@ -34,9 +35,10 @@ def _six_see(obs: Observation) -> dict:
         key = str(item.get("role") or item.get("kind") or "?")
         kinds[key] = kinds.get(key, 0) + 1
     signature = active_question_signature(obs)
+    contract = interaction_contract_state(obs)
     logger.info(
         "[SIX] 1 MAP sig=%s controls=%s kinds=%s verified=%s",
-        signature[:90], len(controls), kinds, _SIX_STEP.get("verified"),
+        signature[:90], len(controls), kinds, contract.get("complete"),
     )
     return scene
 
@@ -147,6 +149,7 @@ def plan_six_steps(obs, stagnation, pending_advance, excluded_labels):
         logger.info("[SIX] 3 %s %s", decision.get("action"), decision.get("target_text"))
     decision = _six_ground(obs, decision)
     decision = _six_lock_footer(obs, decision)
+    decision = enforce_interaction_contract(obs, decision)
     return decision, source, None
 
 
@@ -420,8 +423,8 @@ def _classify_screen(obs, stagnation, pending_advance, excluded_labels):
                 decision_source = "router"
         else:
             logger.info("[SIX] 2 ASK the model for one next action")
-            prompt = six_step_ask() + build_observation_prompt(obs, ultra_compact=False)
-            compact_retry_prompt = six_step_ask() + build_observation_prompt(obs, ultra_compact=True)
+            prompt = six_step_ask(obs) + build_observation_prompt(obs, ultra_compact=False)
+            compact_retry_prompt = six_step_ask(obs) + build_observation_prompt(obs, ultra_compact=True)
         try:
             if decision is not None or not obs.screenshot or not shot.is_file():
                 raise _SkipVlm()

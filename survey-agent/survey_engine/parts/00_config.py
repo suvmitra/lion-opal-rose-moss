@@ -35,7 +35,7 @@ except ImportError as exc:
     raise SystemExit(1)
 
 
-VERSION = "24.0.147"
+VERSION = "24.0.148"
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
@@ -67,6 +67,9 @@ SAVE_SCREEN_MAPS = os.getenv(
 MAX_AGENT_STEPS = int(os.getenv("MAX_AGENT_STEPS", "200"))
 MAX_ACTION_RETRIES = int(os.getenv("MAX_ACTION_RETRIES", "3"))
 POST_ACTION_WAIT = float(os.getenv("POST_ACTION_WAIT", "0.7"))
+VERIFY_FRESH_UI = os.getenv(
+    "VERIFY_FRESH_UI", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
 REQUESTED_VISION_MAX_DIM = int(os.getenv("VISION_MAX_DIM", "1152"))
 VISION_MAX_DIM = min(REQUESTED_VISION_MAX_DIM, 1152)
 VISION_RETRY_MAX_DIM = min(int(os.getenv("VISION_RETRY_MAX_DIM", "1024")), 1024)
