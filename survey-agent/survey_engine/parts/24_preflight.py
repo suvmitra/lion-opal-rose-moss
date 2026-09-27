@@ -213,6 +213,8 @@ def preflight() -> bool:
         return False
     if not question_flow_regression_self_check():
         return False
+    if not question_signature_noise_regression_self_check():
+        return False
     if not required_gate_regression_self_check():
         return False
     if not navigation_regression_self_check():
@@ -238,6 +240,8 @@ def preflight() -> bool:
     if not human_input_pets_regression_self_check():
         return False
     if not gender_continue_regression_self_check():
+        return False
+    if not underline_input_regression_self_check():
         return False
     if not age_text_entry_regression_self_check():
         return False

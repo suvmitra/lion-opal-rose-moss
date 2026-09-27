@@ -7,6 +7,9 @@ def visual_text_field_coords(obs: Observation) -> list[int]:
     fallback = [500, 750]
     if not obs.screenshot or not Path(obs.screenshot).exists():
         return fallback
+    underline = underline_text_input_coords(obs)
+    if underline:
+        return underline
     try:
         with Image.open(obs.screenshot) as source:
             image = source.convert("RGB")
@@ -16,7 +19,7 @@ def visual_text_field_coords(obs: Observation) -> list[int]:
             image = image.resize((scaled_width, scaled_height), Image.Resampling.BILINEAR)
             pixels = image.load()
             candidates: list[tuple[float, int]] = []
-            for y in range(int(scaled_height * 0.45), int(scaled_height * 0.84)):
+            for y in range(int(scaled_height * 0.18), int(scaled_height * 0.84)):
                 neutral = 0
                 for x in range(image.width):
                     red, green, blue = pixels[x, y]
@@ -336,6 +339,7 @@ def text_entry_field_candidates(obs: Observation) -> list[list[int]]:
             int(max(0, min(1000, cx * 1000 / max(1, obs.image_width)))),
             int(max(0, min(1000, cy * 1000 / max(1, obs.image_height)))),
         ])
+    add(underline_text_input_coords(obs))
     add(empty_rounded_input_coords(obs))
     add(below_instruction_coords(obs))
     visual = visual_text_field_coords(obs)
@@ -640,6 +644,10 @@ def purple_submit_arrow_milli(obs: Observation) -> Optional[list[int]]:
 
 
 def mapped_age_input_milli(obs: Observation) -> Optional[list[int]]:
+    underline = underline_text_input_coords(obs)
+    if underline and 150 <= int(underline[1]) <= 650:
+        logger.info("[AGE] Mapped underline input milli=%s", underline)
+        return underline
     if "build_screen_object_map" not in globals():
         return None
     try:
@@ -653,7 +661,7 @@ def mapped_age_input_milli(obs: Observation) -> Optional[list[int]]:
         if len(milli) != 2:
             continue
         y = int(milli[1])
-        if role in {"text_input", "input_or_listbox"} and 250 <= y <= 580:
+        if role in {"text_input", "input_or_listbox"} and 150 <= y <= 650:
             best = [max(180, min(820, int(milli[0]))), y]
             if role == "text_input":
                 logger.info("[AGE] Mapped text_input milli=%s", best)
@@ -671,7 +679,9 @@ def mapped_age_arrow_milli(obs: Observation) -> Optional[list[int]]:
         scene = build_screen_object_map(obs)
     except Exception:
         return None
-    buttons: list[tuple[int, int, str]] = []
+    input_milli = mapped_age_input_milli(obs)
+    input_y = int(input_milli[1]) if input_milli else 160
+    buttons: list[tuple[int, int, str, int]] = []
     for item in scene.get("controls") or []:
         if str(item.get("role") or "") != "button":
             continue
@@ -684,15 +694,17 @@ def mapped_age_arrow_milli(obs: Observation) -> Optional[list[int]]:
         if len(milli) != 2:
             continue
         x, y = int(milli[0]), int(milli[1])
-        if y < 400 or y > 860 or not 80 <= x <= 980:
+        if y < max(190, input_y + 20) or y > 920 or not 80 <= x <= 980:
             continue
-        buttons.append((x, y, label))
-    named = [item for item in buttons if any(word in item[2] for word in ("next", "continue", "submit"))]
-    pool = named or [item for item in buttons if item[0] >= 620]
+        bounds = item.get("visual_bounds") or item.get("bounds") or []
+        width = int(bounds[2]) - int(bounds[0]) if len(bounds) == 4 else 0
+        buttons.append((x, y, label, width))
+    named = [item for item in buttons if any(word in item[2] for word in ("next", "continue", "submit", ">>", "→", "›"))]
+    pool = named or [item for item in buttons if 330 <= item[0] <= 760 and item[3] >= obs.image_width * 0.35]
     if not pool:
         logger.info("[AGE] No Next question button; not using the Back arrow.")
         return None
-    pick = max(pool, key=lambda item: (1 if "next" in item[2] or "continue" in item[2] else 0, item[0]))
+    pick = max(pool, key=lambda item: (1 if "next" in item[2] or "continue" in item[2] else 0, item[3], item[0]))
     best = [pick[0], pick[1]]
     logger.info("[AGE] Mapped Next question milli=%s label=%r", best, pick[2])
     return best
@@ -707,8 +719,12 @@ def adult_age_field_coords(obs: Observation) -> list[int]:
     if found and 240 <= int(found[1]) <= 580:
         logger.info("[AGE] Field from rounded box %s", found)
         return [max(220, min(780, int(found[0]))), int(found[1])]
-    logger.info("[AGE] Field fallback [500, 360] (box, not title)")
-    return [500, 360]
+    instruction = below_instruction_coords(obs)
+    if instruction:
+        logger.info("[AGE] Field below instruction %s", instruction)
+        return instruction
+    logger.info("[AGE] Field fallback [180, 250] (left-aligned input, not title)")
+    return [180, 250]
 
 
 def adult_age_continue_coords(obs: Observation) -> list[int]:
@@ -772,8 +788,9 @@ def adult_age_screen_decision(obs: Observation) -> Optional[dict[str, Any]]:
         "screen_state": "survey_question", "action": "type_text",
         "target_text": "age input field", "target_coords": field,
         "coordinate_authoritative": True, "input_payload": wanted, "kb_key": "age",
-        "confidence_score": 0.99, "postcondition": "screen changed",
+        "confidence_score": 0.99, "postcondition": f"age input contains {wanted}",
         "answer_reason": f"Type {wanted} into the age box. Do not tap Back.",
-        "submit_after_type": True,
+        "submit_after_type": False,
         "skip_object_grounding": True, "object_kind": "text_input",
     }
+

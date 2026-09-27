@@ -268,6 +268,27 @@ def build_screen_object_map(obs: Observation, persist: bool = False) -> dict[str
         else:
             controls.append(candidate)
 
+    # Underline-only WebView inputs have no accessibility node or rectangle.
+    # Promote the pixel-grounded underline to a first-class text_input so every
+    # router (including the unknown-screen VLM fallback) can target it.
+    underline = underline_text_input_coords(obs) if "underline_text_input_coords" in globals() else None
+    if underline:
+        px = int(underline[0] * width / 1000)
+        py = int(underline[1] * height / 1000)
+        synthetic = [
+            max(0, px - int(width * 0.10)), max(0, py - int(height * 0.025)),
+            min(width, px + int(width * 0.10)), min(height, py + int(height * 0.015)),
+        ]
+        if not any(_box_iou(synthetic, item.get("bounds") or [0, 0, 0, 0]) > 0.35 for item in controls):
+            controls.append({
+                "id": None, "label": "underline input field", "role": "text_input",
+                "kind": "text_input", "bounds": synthetic, "center": [px, py],
+                "milli": [int(underline[0]), int(underline[1])],
+                "grid": [min(5, int(px * 6 / width)), min(9, int(py * 10 / height))],
+                "source": "opencv-underline", "confidence": 0.94, "color": "neutral",
+                "clickable": True, "editable": True, "enabled": True,
+            })
+
     actionable_roles = {"button", "choice", "dropdown", "text_input", "input_or_listbox"}
     interactive = [
         item for item in controls

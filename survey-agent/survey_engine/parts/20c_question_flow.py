@@ -35,7 +35,18 @@ def active_question_signature(obs: Observation) -> str:
     stem = re.sub(r"\s+", " ", str(current_question_text(obs) or "").lower()).strip()
     mark = text.rfind("?")
     if mark >= 0:
-        words = re.findall(r"[a-z0-9']+", text[max(0, mark - 90):mark + 1])
+        fragment = text[max(0, mark - 220):mark + 1]
+        # Screenshot OCR often flattens the Android status bar, survey header,
+        # progress percentage and question into one line.  Anchor at the first
+        # interrogative starter so clock/battery/progress changes cannot create
+        # a new question transaction for the same visible field.
+        starters = list(re.finditer(
+            r"\b(?:what|which|how|would|do|does|did|are|is|was|were|who|where|when|why|have|has|can|could|should|will)\b",
+            fragment,
+        ))
+        if starters:
+            fragment = fragment[starters[0].start():]
+        words = re.findall(r"[a-z0-9']+", fragment)
         while words and (words[0].isdigit() or len(words[0]) <= 2):
             words.pop(0)
         if len(words) >= 3:
@@ -46,6 +57,30 @@ def active_question_signature(obs: Observation) -> str:
         stem = max(questions, key=len) if questions else stem
     stem = re.sub(r"[^a-z0-9 ?]+", " ", stem)
     return "question:" + re.sub(r"\s+", " ", stem).strip()[:180]
+
+
+def question_signature_noise_regression_self_check() -> bool:
+    """Status/progress/keyboard OCR changes must not create a new question."""
+    common = dict(
+        step=0, screenshot=None, image_width=955, image_height=2048,
+        device_width=1440, device_height=3088, ui_nodes=[], kb={"age": 44},
+        persona={}, screen_phase="survey_question", survey_tiles=[],
+    )
+    before = Observation(
+        **common, screen_hash="age-a",
+        ocr_text="1:06 Survey 76% How old are you?",
+    )
+    after = Observation(
+        **common, screen_hash="age-b",
+        ocr_text="1:07 CC 16% CED How old are you? Go 1 2 3",
+    )
+    left, right = active_question_signature(before), active_question_signature(after)
+    passed = left == right == "question:how old are you"
+    if passed:
+        logger.info("[SELF-CHECK] Question signature ignores status/progress/keyboard noise.")
+    else:
+        logger.error("[SELF-CHECK] Question signature drifted: %r != %r", left, right)
+    return passed
 
 
 def page_series_state(obs: Observation) -> dict[str, Any]:

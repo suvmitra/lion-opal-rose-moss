@@ -308,13 +308,19 @@ def execute_action(decision: dict[str, Any], obs: Observation) -> ActionResult:
             if str(decision.get("kb_key") or "") == "age":
                 _AGE_FIELD_MISS["n"] = int(_AGE_FIELD_MISS.get("n") or 0) + 1
                 webview_click(x, y)
-                time.sleep(0.55)
+                # WebView focus and the Samsung numeric IME animate separately.
+                # Wait for focus, tap once more inside the grounded field, then
+                # type.  Previously keyevents were sent while the IME was still
+                # opening, so the keyboard appeared but the field stayed blank.
+                time.sleep(0.9)
+                webview_click(x, y)
+                time.sleep(0.35)
                 if not _AGE_SESSION.get("typed"):
                     adb(["shell", "input", "keyevent", "KEYCODE_MOVE_END"], timeout=10)
                     for _ in range(8):
                         adb(["shell", "input", "keyevent", "KEYCODE_DEL"], timeout=10)
                     type_digits(str(payload))
-                    time.sleep(0.35)
+                    time.sleep(0.8)
                     _AGE_SESSION["typed"] = True
                     logger.info("[AGE] Typed %r at native=(%s,%s)", payload, x, y)
                 arrow = decision.get("arrow_coords")
@@ -586,6 +592,15 @@ def verify_postcondition(
     after: Observation,
 ) -> bool:
     condition = str(decision.get("postcondition") or "").lower()
+
+    if (
+        str(decision.get("action") or "").lower() in {"type_text", "type_comment"}
+        and str(decision.get("kb_key") or "") == "age"
+    ):
+        wanted = str(decision.get("input_payload") or "").strip()
+        ok = bool(wanted) and adult_age_in_field(after, wanted)
+        logger.info("[VERIFY] Age input wanted=%r visible=%r ok=%s", wanted, adult_age_visible_digits(after), ok)
+        return ok
 
     introduced_error = required_validation_visible(after) and not required_validation_visible(before)
     if introduced_error and ("screen changed" in condition or required_is_progression(decision)):

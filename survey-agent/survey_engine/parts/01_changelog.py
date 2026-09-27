@@ -5,6 +5,13 @@
 # ------------------------------------------------------------------------------
 
 CHANGELOG = {
+    "24.0.149": [
+        "Detects underline-only WebView inputs from pixels and exposes them as text_input objects even when UIAutomator reports editable=0.",
+        "Age entry targets the real short underline instead of the old [500,360] fallback, waits for Samsung IME focus, then types the knowledge-base value.",
+        "Text-entry verification requires the requested age to be visibly present; opening the keyboard or changing status-bar pixels cannot falsely complete the question.",
+        "Question signatures discard clock, battery, progress and keyboard OCR noise, so the same question cannot be reset merely because the IME opened.",
+        "Navigation recognizes compact mid-page arrow buttons only after the current input is visibly complete.",
+    ],
     "24.0.148": [
         "Adds one signature-bound interaction contract after every router: answer controls must be visibly complete before Continue, Next, Submit or an arrow can run.",
         "A dynamically revealed question clears prior verification immediately; the new question owns the next action instead of inheriting stale completion state.",

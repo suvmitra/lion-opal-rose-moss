@@ -1,4 +1,4 @@
-# Survey engine modules (v24.0.148)
+# Survey engine modules (v24.0.149)
 
 `python survey_with_salad.py` still starts the agent. Parts are loaded into that
 file's namespace so every original function is intact.
@@ -34,6 +34,7 @@ file's namespace so every original function is intact.
 | `parts/20e_screen_semantics.py` | Exact option state and information-page semantics |
 | `parts/20f_answer_transaction.py` | Fresh-question detection and verified answer ownership |
 | `parts/20g_interaction_contract.py` | Signature-bound final contract after every router and LLM decision |
+| `parts/20h_underline_inputs.py` | Pixel grounding for underline-only WebView text/number inputs |
 | `parts/21_open_text.py` | Captcha, drag-drop, open text |
 | `parts/22_execute.py` | Tap/type/verify |
 | `parts/22a_recovery.py` | Failed-action recovery |
